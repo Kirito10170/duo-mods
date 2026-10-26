@@ -109,12 +109,31 @@ int LayerAt(float y) {
 
 // ---- Ready page -----------------------------------------------------------------------------
 struct AbilityName {
-    std::string_view id, name;
+    std::string_view id, name, icon;
 };
-constexpr AbilityName Abilities[]{{"UltraHand", "Ultrahand"}, {"Fuse", "Fuse"},
-                                  {"Ascend", "Ascend"},       {"Recall", "Recall"},
-                                  {"Autobuild", "Autobuild"}, {"Camera", "Camera"},
-                                  {"Purah", "Purah Pad"}};
+// Pouch.SpecialPower ids, display names and their icon actors in /UI/Tex/Icon.
+constexpr AbilityName Abilities[]{
+    {"UltraHand", "Ultrahand", "Obj_UltraHand"},
+    {"Fuse", "Fuse", "Obj_OneTouchBond"},
+    {"OneTouchBond", "Fuse", "Obj_OneTouchBond"},
+    {"Ascend", "Ascend", "Obj_Tooreroof"},
+    {"Tooreroof", "Ascend", "Obj_Tooreroof"},
+    {"Recall", "Recall", "Obj_ReverseRecorder"},
+    {"ReverseRecorder", "Recall", "Obj_ReverseRecorder"},
+    {"Autobuild", "Autobuild", "Obj_AutoBuilder"},
+    {"AutoBuilder", "Autobuild", "Obj_AutoBuilder"},
+    {"Camera", "Camera", "Obj_Camera"},
+};
+constexpr std::size_t MaxAbilities = 8;
+
+const AbilityName* FindAbility(std::string_view id) {
+    if (id.starts_with("Obj_"))
+        id.remove_prefix(4);
+    for (const auto& a : Abilities)
+        if (a.id == id)
+            return &a;
+    return nullptr;
+}
 
 std::string AbilityText(const std::vector<std::string>& ids) {
     std::string out;
@@ -122,9 +141,8 @@ std::string AbilityText(const std::vector<std::string>& ids) {
         if (id.empty())
             continue;
         std::string_view name = id;
-        for (const auto& a : Abilities)
-            if (a.id == id)
-                name = a.name;
+        if (const auto* a = FindAbility(id))
+            name = a->name;
         if (!out.empty())
             out += "\n";
         out += name;
@@ -237,13 +255,18 @@ struct Module {
         }
         const auto romfs = MakeRomfsReader(*host);
         std::shared_ptr<const TotkAssets::Image> image;
-        if (logical == "player_marker") {
-            // The update may renumber the layout archive; try the known spellings.
-            for (const char* archive : {"Common.Product.142.Nin_NX_NVN", "Common.Product.140.Nin_NX_NVN",
+        // "common/<tex>": a texture of the Common layout archive, whose versioned name the
+        // update may change; "player_marker" is Link's arrow from it.
+        std::string common;
+        if (logical == "player_marker")
+            common = "Nt_MapPlayerIconNew_00^s";
+        else if (logical.starts_with("common/"))
+            common = logical.substr(7);
+        if (!common.empty()) {
+            for (const char* archive : {"Common.Product.140.Nin_NX_NVN", "Common.Product.142.Nin_NX_NVN",
                                         "Common.Product.120.Nin_NX_NVN", "Common.Product.110.Nin_NX_NVN",
                                         "Common.Product.100.Nin_NX_NVN"})
-                if ((image = assets.Load(romfs, std::string{"lyt/"} + archive +
-                                                    "/Nt_MapPlayerIconNew_00^s")))
+                if ((image = assets.Load(romfs, std::string{"lyt/"} + archive + "/" + common)))
                     break;
         } else {
             image = assets.Load(romfs, logical);
@@ -364,6 +387,8 @@ struct Module {
             }
             const auto i = static_cast<std::size_t>(index);
             h.publish_text(h.userdata, (key + ".name").c_str(), ItemText((*names)[i]).c_str());
+            h.publish_text(h.userdata, (key + ".icon").c_str(),
+                           ("module:totk:icon/" + (*names)[i]).c_str());
             std::string durability;
             if (lives && i < lives->size()) {
                 // Save editors mark gear unbreakable with a huge Life (2,100,000,000 + n).
@@ -375,8 +400,21 @@ struct Module {
             }
             h.publish_text(h.userdata, (key + ".durability_text").c_str(), durability.c_str());
         }
-        if (const auto powers = gmd.GetString64Array(Murmur3("Pouch.SpecialPower.Content.Name")))
+        if (const auto powers = gmd.GetString64Array(Murmur3("Pouch.SpecialPower.Content.Name"))) {
             h.publish_text(h.userdata, "totk.ready.abilities_lines", AbilityText(*powers).c_str());
+            std::size_t n = 0;
+            for (const auto& id : *powers) {
+                if (id.empty() || n == MaxAbilities)
+                    continue;
+                const auto* a = FindAbility(id);
+                const std::string key = "totk.ready.ability." + std::to_string(n++);
+                h.publish_text(h.userdata, (key + ".name").c_str(),
+                               a ? std::string{a->name}.c_str() : id.c_str());
+                h.publish_text(h.userdata, (key + ".icon").c_str(),
+                               ("module:totk:icon/" + std::string{a ? a->icon : id}).c_str());
+            }
+            h.publish_i64(h.userdata, "totk.ready.ability.count", static_cast<s64>(n));
+        }
     }
 
     template <class G>

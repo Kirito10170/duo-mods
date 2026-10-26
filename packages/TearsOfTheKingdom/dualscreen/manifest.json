@@ -1117,45 +1117,21 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      108,
-      50,
-      160,
-      28
+      46,
+      28,
+      124,
+      124
      ],
-     "text": "Shield",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "need_bind": "totk.supported"
+     "src_bind": "totk.ready.shield.icon",
+     "need_bind": "totk.ready.shield.valid"
     },
     {
      "type": "label",
      "rect": [
       108,
-      84,
-      160,
-      72
-     ],
-     "text": "",
-     "text_scale": 3,
-     "color": "#FFFFFCC6",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "wrap_width": 160,
-     "max_lines": 2,
-     "text_bind": "totk.ready.shield.name",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      108,
-      150,
+      152,
       180,
       50
      ],
@@ -1164,8 +1140,10 @@
      "color": "#FFFFFFFF",
      "align": "center",
      "text_center_h": 50,
+     "outline": "#C8000A19",
+     "outline_px": 2,
      "text_bind": "totk.ready.shield.durability_text",
-     "need_bind": "totk.supported"
+     "need_bind": "totk.ready.shield.valid"
     },
     {
      "type": "rect",
@@ -1194,45 +1172,21 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      1132,
-      50,
-      160,
-      28
+      1070,
+      28,
+      124,
+      124
      ],
-     "text": "Bow",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "need_bind": "totk.supported"
+     "src_bind": "totk.ready.bow.icon",
+     "need_bind": "totk.ready.bow.valid"
     },
     {
      "type": "label",
      "rect": [
       1132,
-      84,
-      160,
-      72
-     ],
-     "text": "",
-     "text_scale": 3,
-     "color": "#FFFFFCC6",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "wrap_width": 160,
-     "max_lines": 2,
-     "text_bind": "totk.ready.bow.name",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      1132,
-      150,
+      152,
       180,
       50
      ],
@@ -1241,8 +1195,10 @@
      "color": "#FFFFFFFF",
      "align": "center",
      "text_center_h": 50,
+     "outline": "#C8000A19",
+     "outline_px": 2,
      "text_bind": "totk.ready.bow.durability_text",
-     "need_bind": "totk.supported"
+     "need_bind": "totk.ready.bow.valid"
     },
     {
      "type": "rect",
@@ -1271,45 +1227,21 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      1132,
-      774,
-      160,
-      28
+      1070,
+      752,
+      124,
+      124
      ],
-     "text": "Weapon",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "need_bind": "totk.supported"
+     "src_bind": "totk.ready.weapon.icon",
+     "need_bind": "totk.ready.weapon.valid"
     },
     {
      "type": "label",
      "rect": [
       1132,
-      808,
-      160,
-      72
-     ],
-     "text": "",
-     "text_scale": 3,
-     "color": "#FFFFFCC6",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "wrap_width": 160,
-     "max_lines": 2,
-     "text_bind": "totk.ready.weapon.name",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      1132,
-      874,
+      876,
       180,
       50
      ],
@@ -1318,8 +1250,10 @@
      "color": "#FFFFFFFF",
      "align": "center",
      "text_center_h": 50,
+     "outline": "#C8000A19",
+     "outline_px": 2,
      "text_bind": "totk.ready.weapon.durability_text",
-     "need_bind": "totk.supported"
+     "need_bind": "totk.ready.weapon.valid"
     },
     {
      "type": "rect",
@@ -1359,26 +1293,22 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      110,
+      72,
       252,
-      160,
-      40
+      72,
+      72
      ],
-     "text": "Hearts",
-     "text_scale": 3,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
+     "src": "module:totk:common/HeartW_00^s",
+     "tint": "#FFE8434F",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       108,
-      300,
+      330,
       168,
       90
      ],
@@ -1394,7 +1324,7 @@
      "type": "label",
      "rect": [
       110,
-      400,
+      430,
       160,
       40
      ],
@@ -1411,7 +1341,7 @@
      "type": "bar",
      "rect": [
       36,
-      460,
+      490,
       144,
       10
      ],
@@ -1447,19 +1377,15 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      110,
-      572,
-      160,
-      40
+      79,
+      568,
+      58,
+      58
      ],
-     "text": "Battery",
-     "text_scale": 3,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
+     "src": "module:totk:common/PouchIconRTEnergy_58x58^s",
+     "tint": "#FF5FC8F0",
      "need_bind": "totk.supported"
     },
     {
@@ -1482,7 +1408,7 @@
      "type": "bar",
      "rect": [
       36,
-      740,
+      730,
       144,
       10
      ],
@@ -1497,7 +1423,7 @@
      "type": "label",
      "rect": [
       110,
-      780,
+      770,
       160,
       40
      ],
@@ -1513,7 +1439,7 @@
      "type": "label",
      "rect": [
       108,
-      830,
+      820,
       168,
       80
      ],
@@ -1553,9 +1479,9 @@
      "type": "label",
      "rect": [
       1125,
-      252,
+      244,
       170,
-      40
+      36
      ],
      "text": "Abilities",
      "text_scale": 3,
@@ -1566,22 +1492,41 @@
      "need_bind": "totk.supported"
     },
     {
+     "type": "image",
+     "rect": [
+      1046,
+      290,
+      76,
+      76
+     ],
+     "src_bind": "totk.ready.ability.{i}.icon",
+     "repeat": 8,
+     "repeat_bind": "totk.ready.ability.count",
+     "repeat_cols": 2,
+     "repeat_dx": 86,
+     "repeat_row_dy": 106,
+     "need_bind": "totk.supported"
+    },
+    {
      "type": "label",
      "rect": [
-      1125,
-      304,
-      170,
-      400
+      1084,
+      368,
+      76,
+      24
      ],
      "text": "",
-     "text_scale": 3,
+     "text_scale": 2,
      "color": "#FFFFFCC6",
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "wrap_width": 170,
-     "line_gap": 12,
-     "text_bind": "totk.ready.abilities_lines",
+     "text_bind": "totk.ready.ability.{i}.name",
+     "repeat": 8,
+     "repeat_bind": "totk.ready.ability.count",
+     "repeat_cols": 2,
+     "repeat_dx": 86,
+     "repeat_row_dy": 106,
      "need_bind": "totk.supported"
     },
     {

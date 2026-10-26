@@ -469,6 +469,12 @@ std::optional<std::pair<std::string, std::string>> Decoder::Resolve(std::string_
             return std::nullopt;
         return std::pair{"/UI/Map/MainField/" + std::string{rest} + ".bntx.zs", std::string{}};
     }
+    if (kind == "icon") {
+        // An actor's inventory icon (items, gear, abilities): one texture named like the file.
+        if (!SafeName(rest))
+            return std::nullopt;
+        return std::pair{"/UI/Tex/Icon/" + std::string{rest} + ".bntx.zs", std::string{}};
+    }
     if (kind == "lyt") {
         const auto s2 = rest.find('/');
         if (s2 == std::string_view::npos)

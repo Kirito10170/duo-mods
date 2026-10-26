@@ -71,6 +71,7 @@ std::optional<Image> DecodeBntx(std::span<const std::uint8_t> bntx, std::string_
 /// Logical image keys served to the manifest as module:totk:<key>:
 ///   map/<L>_<CC>-<RR>_<ZZ>[_<flags>]  a map tile, /UI/Map/MainField/<same>.bntx.zs; L is G
 ///                                     (Surface), S (Sky) or U (Depths), ZZ the zoom 00..04
+///   icon/<Actor>                      an inventory icon, /UI/Tex/Icon/<Actor>.bntx.zs
 ///   lyt/<Archive>/<Tex>               a texture from /UI/LayoutArchive/<Archive>.blarc.zs
 ///                                     timg/__Combined.bntx (icons, frames)
 /// Thread-safe, cached (LRU by bytes). Nothing decoded is persisted or shipped.

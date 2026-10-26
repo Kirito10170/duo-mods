@@ -121,18 +121,23 @@ def unsupported_notice():
                  4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind=CONTENT_GATE)
 
 
-def gear_tile(r, slot, title, bar_top=True):
-    """A BOTW-style gear tile: slot, item name, durability number."""
+def gear_tile(r, slot):
+    """A BOTW-style gear tile: the item's own icon and its durability."""
     x, y, w, h = r
-    g = {"need_bind": CONTENT_GATE}
-    out = [rect(r, TILE_BG_SOLID, TILE_FRAME_GOLD, frame=3, **g)]
-    out.append(label([x + 10, y + 32, w - 20, 28], title, 2, CREAM_DIM, align="center", **g))
-    out.append(label([x + 10, y + 66, w - 20, 72], "", 3, CREAM, align="center",
-                     wrap_width=w - 20, max_lines=2, text_bind=f"totk.ready.{slot}.name", **g))
-    out.append(label([x, y + h - 58, w, 50], "", 5, "#FFFFFFFF", upright=True, align="center",
-                     text_center_h=50, text_bind=f"totk.ready.{slot}.durability_text", **g))
+    g = {"need_bind": f"totk.ready.{slot}.valid"}
+    out = [rect(r, TILE_BG_SOLID, TILE_FRAME_GOLD, frame=3, need_bind=CONTENT_GATE)]
+    out.append({"type": "image", "rect": [x + (w - 124) // 2, y + 10, 124, 124],
+                "src_bind": f"totk.ready.{slot}.icon", **g})
+    out.append(label([x, y + h - 56, w, 50], "", 5, "#FFFFFFFF", upright=True, align="center",
+                     text_center_h=50, outline="#C8000A19", outline_px=2,
+                     text_bind=f"totk.ready.{slot}.durability_text", **g))
     out.append(rect(r, CLEAR, frame=0, on_tap="go_inventory"))
     return out
+
+
+def common(tex):
+    """A texture of the game's Common layout archive, served by the module."""
+    return f"module:totk:common/{tex}"
 
 
 def side_panel(r, accent_left=True):
@@ -165,33 +170,38 @@ def ready_page():
     w.append(label([mx, my + mh + 18, mw, 56], "", 4, TITLE_BLUE, align="center",
                    text_center_h=56, text_bind="totk.map.layer_name", **g))
     # Corners: shield and bow on top, battery and weapon at the bottom (BOTW's places).
-    w += gear_tile([18, 18, 180, 190], "shield", "Shield")
-    w += gear_tile([1042, 18, 180, 190], "bow", "Bow")
-    w += gear_tile([1042, 742, 180, 190], "weapon", "Weapon")
+    w += gear_tile([18, 18, 180, 190], "shield")
+    w += gear_tile([1042, 18, 180, 190], "bow")
+    w += gear_tile([1042, 742, 180, 190], "weapon")
     # Left: hearts.
     w += side_panel([18, 232, 180, 300])
-    w.append(label([30, 252, 160, 40], "Hearts", 3, CREAM_DIM, align="center", **g))
-    w.append(label([24, 300, 168, 90], "", 8, "#FFFFFFFF", upright=True, align="center",
+    w.append(image([72, 252, 72, 72], common("HeartW_00^s"), tint=HEART_RED, **g))
+    w.append(label([24, 330, 168, 90], "", 8, "#FFFFFFFF", upright=True, align="center",
                    text_center_h=90, text_bind="totk.ready.hearts", **g))
-    w.append(label([30, 400, 160, 40], "", 3, CREAM_DIM, align="center",
+    w.append(label([30, 430, 160, 40], "", 3, CREAM_DIM, align="center",
                    text_bind="totk.ready.hearts_of", **g))
-    w.append({"type": "bar", "rect": [36, 460, 144, 10], "bind": "totk.ready.life_pct",
+    w.append({"type": "bar", "rect": [36, 490, 144, 10], "bind": "totk.ready.life_pct",
               "max": 100, "bg": "#40FFFCC6", "color": HEART_RED, "frame": 0, **g})
-    # Left bottom: Zonai battery.
+    # Left bottom: Zonai battery and stamina.
     w += side_panel([18, 552, 180, 380])
-    w.append(label([30, 572, 160, 40], "Battery", 3, CREAM_DIM, align="center", **g))
+    w.append(image([79, 568, 58, 58], common("PouchIconRTEnergy_58x58^s"), tint=TITLE_BLUE, **g))
     w.append(label([24, 630, 168, 90], "", 7, "#FFFFFFFF", upright=True, align="center",
                    text_center_h=90, text_bind="totk.ready.battery_text", **g))
-    w.append({"type": "bar", "rect": [36, 740, 144, 10], "bind": "totk.ready.battery_pct",
+    w.append({"type": "bar", "rect": [36, 730, 144, 10], "bind": "totk.ready.battery_pct",
               "max": 100, "bg": "#40FFFCC6", "color": TITLE_BLUE, "frame": 0, **g})
-    w.append(label([30, 780, 160, 40], "Stamina", 3, CREAM_DIM, align="center", **g))
-    w.append(label([24, 830, 168, 80], "", 6, STAMINA_GREEN, upright=True, align="center",
+    w.append(label([30, 770, 160, 40], "Stamina", 3, CREAM_DIM, align="center", **g))
+    w.append(label([24, 820, 168, 80], "", 6, STAMINA_GREEN, upright=True, align="center",
                    text_center_h=80, text_bind="totk.ready.stamina_text", **g))
-    # Right: abilities.
+    # Right: abilities, two to a row, icon over name.
     w += side_panel([1032, 232, 190, 490], accent_left=False)
-    w.append(label([1040, 252, 170, 40], "Abilities", 3, CREAM_DIM, align="center", **g))
-    w.append(label([1040, 304, 170, 400], "", 3, CREAM, align="center", wrap_width=170,
-                   line_gap=12, text_bind="totk.ready.abilities_lines", **g))
+    w.append(label([1040, 244, 170, 36], "Abilities", 3, CREAM_DIM, align="center", **g))
+    w.append({"type": "image", "rect": [1046, 290, 76, 76], "src_bind": "totk.ready.ability.{i}.icon",
+              "repeat": 8, "repeat_bind": "totk.ready.ability.count", "repeat_cols": 2,
+              "repeat_dx": 86, "repeat_row_dy": 106, **g})
+    w.append(label([1046, 368, 76, 24], "", 2, CREAM, align="center",
+                   text_bind="totk.ready.ability.{i}.name", repeat=8,
+                   repeat_bind="totk.ready.ability.count", repeat_cols=2, repeat_dx=86,
+                   repeat_row_dy=106, **g))
     w += bottom_bar([("Inventory", "go_inventory"), ("Map", "go_map"), ("Settings", "go_options")])
     # Ready's buttons sit centred under the minimap, like BOTW's.
     for item in w[-6:]:
