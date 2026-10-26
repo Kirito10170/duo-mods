@@ -369,7 +369,10 @@ constexpr std::size_t MaxItems = 420;
 // and a write to it verified to stick.
 enum CheatId : std::size_t { CheatDurability, CheatArrows, CheatRupees, CheatBattery, CheatStamina,
                              NumCheats };
-constexpr bool CheatReady[NumCheats]{true, true, true, true, false};
+constexpr bool CheatReady[NumCheats]{true, true, true, true, true};
+// The player actor: the one heap object whose first word is this vtable. Its live stamina is
+// the f32 at +0x1404 (GameData PlayerStatus.Stamina follows it).
+constexpr u64 PlayerVtable = 0x3920648, PlayerStamina = 0x1404;
 // Equipped gear keeps its live durability on the held actor as a pair of {u64 vtable, s32 value}
 // entries (current, previous), 0x10 apart; the pouch's Content.Life follows them.
 constexpr u64 DurabilityVtable = 0x391D670;
@@ -519,6 +522,8 @@ struct Module {
     };
     std::array<HeldGear, 3> held{};
     u64 scan_cursor{0};
+    // Unlimited stamina: the player actor, found the same way.
+    u64 player{0}, player_cursor{0};
     int spawn_tab{0}, spawn_selected{0};
     std::optional<std::pair<int, int>> spawn_request; // {tab, row} of a pressed Add button
     s32 spawn_amount{1};
@@ -716,6 +721,61 @@ struct Module {
         PublishSpawn(h, gmd);
     }
 
+    // Unlimited stamina: keep the player's live stamina at the maximum.
+    template <class G>
+    void HoldStamina(const EdenDsmodHostApi& h, G& gmd) {
+        const u64 vtable = h.main_base + PlayerVtable;
+        if (player) {
+            u64 vt{};
+            if (!h.read_memory(h.userdata, player, &vt, 8) || vt != vtable)
+                player = 0; // a load rebuilt the player
+        }
+        if (!player) {
+            player = ScanFor(h, player_cursor, [&](const u8* p, u64) {
+                u64 vt;
+                std::memcpy(&vt, p, 8);
+                return vt == vtable;
+            });
+            if (player)
+                TotkNetLog::Log("stamina: player at %llx", static_cast<unsigned long long>(player));
+            return;
+        }
+        const auto max = gmd.GetFloat(Murmur3("PlayerStatus.MaxStamina"));
+        float now{};
+        if (!max || !std::isfinite(*max) || *max <= 0 ||
+            !h.read_memory(h.userdata, player + PlayerStamina, &now, 4) || !(now < *max))
+            return;
+        const float full = *max;
+        h.write_memory(h.userdata, player + PlayerStamina, &full, sizeof full);
+    }
+
+    // One slice of a heap scan at 8-byte steps from `cursor`; the address of the first match,
+    // or 0 (the cursor moves on, wrapping at the end of the heap).
+    template <class Match>
+    u64 ScanFor(const EdenDsmodHostApi& h, u64& cursor, Match match) {
+        if (!h.get_heap_begin || !h.get_heap_end)
+            return 0;
+        const u64 begin = h.get_heap_begin(h.userdata), end = h.get_heap_end(h.userdata);
+        if (end <= begin)
+            return 0;
+        if (cursor < begin || cursor >= end)
+            cursor = begin;
+        const u64 stop = std::min(end, cursor + DurabilityScanBytes);
+        std::vector<u8> chunk((1u << 20) + 0x20);
+        for (u64 at = cursor; at < stop; at += 1u << 20) {
+            const std::size_t n = static_cast<std::size_t>(std::min<u64>(chunk.size(), end - at));
+            if (n < 8 || !h.read_memory(h.userdata, at, chunk.data(), n))
+                continue;
+            for (std::size_t o = 0; o + 8 <= n && o < (1u << 20); o += 8)
+                if (match(chunk.data() + o, at + o)) {
+                    cursor = at + o + 8;
+                    return at + o;
+                }
+        }
+        cursor = stop >= end ? begin : stop;
+        return 0;
+    }
+
     // Infinite durability for the equipped weapon, bow and shield. The pouch value is copied
     // from the held actor every frame, so the actor's own entry is what gets held: found once
     // per equip by scanning the heap for the durability pair with the pouch's value, then
@@ -792,8 +852,11 @@ struct Module {
                 std::memcpy(&vt1, chunk.data() + o + 0x10, 8);
                 if (vt1 != vtable)
                     continue;
-                s32 v0;
+                s32 v0, v1;
                 std::memcpy(&v0, chunk.data() + o + 8, 4);
+                std::memcpy(&v1, chunk.data() + o + 0x18, 4);
+                if (v0 != v1)
+                    continue; // the pair (current, previous) agrees while the item is held
                 for (std::size_t k = 0; k < 3; ++k)
                     if (!held[k].id.empty() && held[k].entries.size() < 4 && v0 == life[k]) {
                         held[k].entries.push_back(at + o);
@@ -951,7 +1014,7 @@ struct Module {
             h.publish_text(h.userdata, ("totk.cheat." + std::to_string(i) + ".text").c_str(),
                            !CheatReady[i] ? "Coming soon" : on[i] ? "On" : "Off");
         h.publish_text(h.userdata, "totk.cheat.note",
-                       "Cheats marked Coming soon are still being mapped in the game's memory.");
+                       "Cheats stay on until you turn them off or close the game. Durability and stamina can take a few seconds to take hold.");
         if (!h.write_memory)
             return;
         const auto hold_int = [&](u32 hash, s32 want) {
@@ -976,6 +1039,8 @@ struct Module {
         else
             for (auto& g : held)
                 g = {};
+        if (on[CheatStamina])
+            HoldStamina(h, gmd);
         if (on[CheatArrows]) {
             const auto names = gmd.GetString64Array(Murmur3("Pouch.Arrow.Content.Name"));
             const auto stock = gmd.GetIntArray(Murmur3("Pouch.Arrow.Content.StockNum"));
