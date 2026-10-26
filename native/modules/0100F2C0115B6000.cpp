@@ -296,11 +296,11 @@ struct Module {
             h.publish_text(h.userdata, (key + ".name").c_str(), ItemText((*names)[i]).c_str());
             std::string durability;
             if (lives && i < lives->size()) {
-                // Shields store 2,100,000,000 + durability (meaning of the bias not yet known).
-                s32 v = (*lives)[i];
-                if (v >= 2'100'000'000)
-                    v -= 2'100'000'000;
-                if (v >= 0 && v < 100000)
+                // Save editors mark gear unbreakable with a huge Life (2,100,000,000 + n).
+                const s32 v = (*lives)[i];
+                if (v >= 2'000'000'000)
+                    durability = "MAX";
+                else if (v >= 0)
                     durability = std::to_string(v);
             }
             h.publish_text(h.userdata, (key + ".durability_text").c_str(), durability.c_str());
