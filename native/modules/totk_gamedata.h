@@ -196,6 +196,16 @@ public:
             return std::nullopt;
         return *r + 0x1C;
     }
+    /// Guest address of element `index`'s 64-byte text buffer in a String64Array (element =
+    /// 0x50 bytes, its pointer at +0 already points at the buffer at +0xC).
+    std::optional<u64> String64Element(u32 hash, std::size_t index) {
+        const auto r = Record(Type::String64Array, hash);
+        u64 count{}, data{};
+        if (!r || !Get(*r + 0x70, count) || !Get(*r + 0x78, data) || count > MaxArray || !data ||
+            index >= count)
+            return std::nullopt;
+        return data + index * 0x50 + 0xC;
+    }
     std::optional<std::vector<std::string>> GetString64Array(u32 hash) {
         const auto r = Record(Type::String64Array, hash);
         u64 count{}, data{};

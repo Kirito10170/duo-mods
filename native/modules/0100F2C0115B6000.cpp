@@ -372,6 +372,27 @@ enum CheatId : std::size_t { CheatDurability, CheatArrows, CheatRupees, CheatBat
 constexpr bool CheatReady[NumCheats]{false, true, true, true, false};
 constexpr s32 MaxArrows = 999, MaxRupees = 999'999;
 
+// ---- Item spawning ------------------------------------------------------------------------
+// The Spawn page's tabs: which pouch an item goes into and which actor names belong there. The
+// catalog is every actor with both a name and a description in the message archive (items
+// have both; enemies and objects have no description), filtered by prefix.
+struct SpawnTab {
+    const char* title;
+    const char* pouch;
+    bool gear;
+    std::array<std::string_view, 3> prefixes;
+};
+constexpr SpawnTab SpawnTabs[]{
+    {"Weapons", "Weapon", true, {"Weapon_Sword_", "Weapon_Lsword_", "Weapon_Spear_"}},
+    {"Bows", "Bow", true, {"Weapon_Bow_"}},
+    {"Shields", "Shield", true, {"Weapon_Shield_"}},
+    {"Materials", "Material", false, {"Item_", "Animal_Insect_"}},
+};
+// Cooked and roasted things go to the Food pouch with extra fields; they are not offered.
+constexpr std::string_view SpawnSkip[]{"Item_Cook_", "Item_Roast_", "Item_Chilled_", "Item_Boiled_"};
+constexpr s32 MaxStack = 999, SpawnLife = 40;
+constexpr std::size_t MaxSpawnItems = 420;
+
 std::string DurabilityText(s32 v) {
     if (v >= 2'000'000'000)
         return "MAX";
@@ -484,6 +505,11 @@ struct Module {
     int inv_selected{0};
     std::optional<std::pair<int, int>> inv_use; // {category, row} of a pressed Equip button
     std::array<bool, NumCheats> cheats{};       // the Cheats page toggles, all off at start
+    int spawn_tab{0}, spawn_selected{0};
+    std::optional<std::pair<int, int>> spawn_request; // {tab, row} of a pressed Add button
+    s32 spawn_amount{1};
+    std::string spawn_result;                   // what the last Add did, for the page
+    std::array<std::vector<std::string>, std::size(SpawnTabs)> spawn_catalog; // after names
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     std::chrono::steady_clock::time_point last_heartbeat{};
     int view_layer{-1}; // -1 = follow Link
@@ -614,6 +640,26 @@ struct Module {
                             cheats[static_cast<std::size_t>(arg)] ? "on" : "off");
             return EDEN_DSMOD_TRUE;
         }
+        if (action == "spawn_tab" && arg >= 0 && arg < static_cast<std::int64_t>(std::size(SpawnTabs))) {
+            std::scoped_lock lock{mutex};
+            if (spawn_tab != arg)
+                spawn_selected = 0;
+            spawn_tab = static_cast<int>(arg);
+            spawn_result.clear();
+            return EDEN_DSMOD_TRUE;
+        }
+        if (action == "spawn_choose" && arg >= 0 && arg < static_cast<std::int64_t>(MaxSpawnItems)) {
+            std::scoped_lock lock{mutex};
+            spawn_selected = static_cast<int>(arg);
+            spawn_result.clear();
+            return EDEN_DSMOD_TRUE;
+        }
+        if (action == "spawn_add" && arg >= 1 && arg <= MaxStack) {
+            std::scoped_lock lock{mutex};
+            spawn_request = std::pair{spawn_tab, spawn_selected};
+            spawn_amount = static_cast<s32>(arg);
+            return EDEN_DSMOD_TRUE;
+        }
         if (action == "map_layers") {
             std::scoped_lock lock{mutex};
             const int from = view_layer < 0 ? link_layer : view_layer;
@@ -653,6 +699,130 @@ struct Module {
         PublishOptions(h, gmd);
         PublishInventory(h, gmd);
         ApplyCheats(h, gmd);
+        PublishSpawn(h, gmd);
+    }
+
+    // The Spawn page: a catalog per tab, and Add puts the chosen item in the game's pouch the
+    // way a pickup does: more of a stack already held, else the name and amount in a free slot.
+    template <class G>
+    void PublishSpawn(const EdenDsmodHostApi& h, G& gmd) {
+        if (names_ready.load(std::memory_order_acquire) && spawn_catalog[0].empty()) {
+            for (const auto& [id, text] : names) {
+                if (text.name.empty() || text.caption.empty())
+                    continue;
+                if (std::any_of(std::begin(SpawnSkip), std::end(SpawnSkip),
+                                [&](std::string_view p) { return id.starts_with(p); }))
+                    continue;
+                for (std::size_t t = 0; t < std::size(SpawnTabs); ++t)
+                    if (std::any_of(SpawnTabs[t].prefixes.begin(), SpawnTabs[t].prefixes.end(),
+                                    [&](std::string_view p) { return !p.empty() && id.starts_with(p); }))
+                        spawn_catalog[t].push_back(id);
+            }
+            for (auto& list : spawn_catalog) {
+                std::sort(list.begin(), list.end());
+                if (list.size() > MaxSpawnItems)
+                    list.resize(MaxSpawnItems);
+            }
+            TotkNetLog::Log("spawn catalog: %zu weapons, %zu bows, %zu shields, %zu materials",
+                            spawn_catalog[0].size(), spawn_catalog[1].size(), spawn_catalog[2].size(),
+                            spawn_catalog[3].size());
+        }
+        int tab, selected;
+        s32 amount;
+        std::optional<std::pair<int, int>> request;
+        {
+            std::scoped_lock lock{mutex};
+            tab = spawn_tab;
+            selected = spawn_selected;
+            amount = spawn_amount;
+            request = std::exchange(spawn_request, std::nullopt);
+        }
+        const auto& list = spawn_catalog[static_cast<std::size_t>(tab)];
+        if (selected >= static_cast<int>(list.size()))
+            selected = list.empty() ? 0 : static_cast<int>(list.size()) - 1;
+        if (request && request->first == tab && request->second == selected && !list.empty()) {
+            const std::string result = Spawn(h, gmd, SpawnTabs[tab], list[static_cast<std::size_t>(selected)], amount);
+            std::scoped_lock lock{mutex};
+            spawn_result = result;
+        }
+        for (std::size_t t = 0; t < std::size(SpawnTabs); ++t)
+            h.publish_i64(h.userdata, ("totk.spawn.tab." + std::to_string(t)).c_str(),
+                          static_cast<int>(t) == tab ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.spawn.tab", tab);
+        h.publish_text(h.userdata, "totk.spawn.title", SpawnTabs[tab].title);
+        h.publish_i64(h.userdata, "totk.spawn.count", static_cast<s64>(list.size()));
+        h.publish_text(h.userdata, "totk.spawn.empty_text",
+                       list.empty() ? (names_ready.load() ? "Nothing found" : "Reading the game's item list...") : "");
+        for (std::size_t r = 0; r < list.size(); ++r) {
+            const std::string key = "totk.spawn.item." + std::to_string(r);
+            h.publish_text(h.userdata, (key + ".icon").c_str(), ("module:totk:icon/" + list[r]).c_str());
+            h.publish_i64(h.userdata, (key + ".selected").c_str(), static_cast<int>(r) == selected ? 1 : 0);
+        }
+        const bool valid = !list.empty();
+        h.publish_i64(h.userdata, "totk.spawn.sel.valid", valid ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.spawn.sel.stack", valid && !SpawnTabs[tab].gear ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.spawn.can_add", valid && h.write_memory ? 1 : 0);
+        if (!valid)
+            return;
+        const auto& id = list[static_cast<std::size_t>(selected)];
+        h.publish_text(h.userdata, "totk.spawn.sel.icon", ("module:totk:icon/" + id).c_str());
+        h.publish_text(h.userdata, "totk.spawn.sel.name", ItemText(id).c_str());
+        h.publish_text(h.userdata, "totk.spawn.sel.desc", ItemCaption(id).c_str());
+        std::string result;
+        {
+            std::scoped_lock lock{mutex};
+            result = spawn_result;
+        }
+        h.publish_text(h.userdata, "totk.spawn.result", result.c_str());
+    }
+
+    template <class G>
+    std::string Spawn(const EdenDsmodHostApi& h, G& gmd, const SpawnTab& tab, const std::string& id,
+                      s32 amount) {
+        if (!h.write_memory || id.size() >= 64)
+            return "Can't add items here";
+        const std::string base = std::string{"Pouch."} + tab.pouch;
+        const u32 name_key = Murmur3(base + ".Content.Name");
+        const u32 amount_key = Murmur3(base + (tab.gear ? ".Content.Life" : ".Content.StockNum"));
+        const auto names_now = gmd.GetString64Array(name_key);
+        const auto amounts = gmd.GetIntArray(amount_key);
+        if (!names_now || !amounts)
+            return "The pouch isn't ready";
+        const auto write_s32 = [&](std::size_t slot, s32 v) {
+            const auto at = gmd.IntArrayElement(amount_key, slot);
+            return at && h.write_memory(h.userdata, *at, &v, sizeof v) == EDEN_DSMOD_TRUE;
+        };
+        // A stack already held grows (up to 999).
+        if (!tab.gear)
+            for (std::size_t i = 0; i < names_now->size() && i < amounts->size(); ++i)
+                if ((*names_now)[i] == id) {
+                    const s32 now = std::max<s32>((*amounts)[i], 0);
+                    const s32 next = std::min(MaxStack, now + amount);
+                    const bool ok = write_s32(i, next);
+                    TotkNetLog::Log("spawn %s: stack slot %zu %d -> %d %s", id.c_str(), i, now, next,
+                                    ok ? "ok" : "FAILED");
+                    return ok ? "Added " + std::to_string(next - now) + " " + ItemText(id) : "Couldn't add it";
+                }
+        // Else the first free slot (no name), within the slots the player has unlocked.
+        std::size_t limit = names_now->size();
+        if (const auto valid = gmd.GetInt(Murmur3(base + ".ValidNum")); valid && *valid > 0)
+            limit = std::min(limit, static_cast<std::size_t>(*valid));
+        for (std::size_t i = 0; i < limit && i < amounts->size(); ++i) {
+            if (!(*names_now)[i].empty())
+                continue;
+            const auto at = gmd.String64Element(name_key, i);
+            if (!at)
+                break;
+            std::array<char, 64> text{};
+            std::memcpy(text.data(), id.data(), id.size());
+            // Amount first, so the game never sees the name with a free slot's -1.
+            const s32 value = tab.gear ? SpawnLife : std::min(MaxStack, amount);
+            const bool ok = write_s32(i, value) &&
+                            h.write_memory(h.userdata, *at, text.data(), text.size()) == EDEN_DSMOD_TRUE;
+            TotkNetLog::Log("spawn %s: new slot %zu (%d) %s", id.c_str(), i, value, ok ? "ok" : "FAILED");
+            return ok ? "Added " + ItemText(id) : "Couldn't add it";
+        }
+        return "No room in your " + std::string{tab.title} + " pouch";
     }
 
     // The Cheats page: publish each toggle, then hold what is on. Writes go to the GameData

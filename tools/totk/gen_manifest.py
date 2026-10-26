@@ -431,10 +431,68 @@ def cheats_page():
     # Rows the module cannot do yet on this build say so instead of pretending.
     w.append(bound(620, 680, "totk.cheat.note", 4, CREAM_DIM, wrap_width=1100, **G))
     w += command(24, 224, "Back", "go_options")
+    w += command(992, 224, "Add items", "go_spawn")
     return {"id": "cheats", "title": "Cheats", "widgets": w + unsupported_notice()}
 
 
-NAV = ["ready", "map", "inventory", "options", "cheats"]  # page ids
+SPAWN_TABS = [("Weapons", "IconWeapon_72x72^s"), ("Bows", "IconBow_72x72^s"),
+              ("Shields", "IconShield_72x72^s"), ("Materials", "IconMaterial_72x72^s")]
+SPAWN_GRID = {"repeat": GRID_MAX, "repeat_bind": "totk.spawn.count", "repeat_cols": 5,
+              "repeat_dx": 148, "repeat_row_dy": 160, "scroll": "spawn_grid"}
+
+
+def spawn_page():
+    """Item spawning, laid out like the Inventory: tabs, the game's items in a grid, the chosen
+    one on the right with Add buttons underneath."""
+    w = page_base(band=True)
+    w.append(footer_rule())
+    for i, (title, icon) in enumerate(SPAWN_TABS):
+        x = 40 + i * 112
+        on = f"totk.spawn.tab.{i}"
+        w += [image([x, 36, 80, 80], common(icon), tint="#60FFFCC6", hide_bind=on, hide_eq=1, **G),
+              image([x, 36, 80, 80], common(icon), tint=CREAM, need_bind=on),
+              text(x + 40 if i else 24, 6, title, 5, CREAM, align="center" if i else "left",
+                   need_bind=on),
+              tap([x - 16, 8, 112, 112], f"spawn_tab_{i}", **G)]
+    w += [text(1200, 56, "Add items", 6, CREAM, align="right"),
+          rect([24, 128, 1192, 2], RULE),
+          rect([24, 141, 140, 150], "#30000000", "#28FFFCC6", frame=1, **SPAWN_GRID, **G),
+          {"type": "image", "rect": [48, 162, 92, 92], "src_bind": "totk.spawn.item.{i}.icon",
+           **SPAWN_GRID, **G},
+          rect([27, 143, 134, 145], "#30FFFCC6", frame=0,
+               need_bind="totk.spawn.item.{i}.selected", **SPAWN_GRID),
+          rect([26, 143, 136, 147], CLEAR, "#8C0090FD", frame=2,
+               need_bind="totk.spawn.item.{i}.selected", **SPAWN_GRID)]
+    for dx, dy, rot in ((-9, 108, 0), (131, 108, 90), (131, 258, 180), (-9, 258, 270)):
+        w.append(image([dx + 24, dy, 67, 67], asset("cell-corner"), tint=WHITE, rotate=rot,
+                       pivot=[33.0, 33.0], need_bind="totk.spawn.item.{i}.selected",
+                       **SPAWN_GRID))
+    w += [tap([24, 141, 140, 150], "spawn_choose_{i}", **SPAWN_GRID, **G),
+          bound(400, 500, "totk.spawn.empty_text", 5, CREAM_DIM, **G)]
+    sel = {"need_bind": "totk.spawn.sel.valid"}
+    w += [rect([780, 140, 436, 796], PANE_DARK, **G),
+          rect([788, 140, 6, 796], ACCENT, **G),
+          {"type": "image", "rect": [874, 156, 240, 240], "src_bind": "totk.spawn.sel.icon", **sel},
+          bound(824, 410, "totk.spawn.sel.name", 6, CREAM, align="left", wrap_width=384,
+                max_lines=2, fit_text=True, text_min_scale=5, **sel),
+          rect([824, 540, 384, 2], RULE, **sel),
+          bound(824, 560, "totk.spawn.sel.desc", 4, CREAM, align="left", wrap_width=360,
+                max_lines=6, line_gap=7, **sel),
+          bound(824, 800, "totk.spawn.result", 4, BLUE, align="left", wrap_width=370, **sel),
+          text(824, 872, "Added items stay when the game saves.", 3, CREAM_DIM, align="left",
+               wrap_width=370, **sel)]
+    w += command(24, 224, "Back", "go_cheats")
+    can = {"need_bind": "totk.spawn.can_add"}
+    w += command(264, 224, "Add", "spawn_add_1", **can)
+    w += command(504, 228, "Add 10", "spawn_add_10", need_bind="totk.spawn.sel.stack")
+    page = {"id": "spawn", "title": "Add items", "widgets": w + unsupported_notice()}
+    page["scrolls"] = [{"id": "spawn_grid", "rect": [20, 136, 750, 796],
+                        "count_bind": "totk.spawn.count", "reset_bind": "totk.spawn.tab",
+                        "row_h": 160, "cols": 5, "bar": "#B4FFFCC6", "bar_w": 5}]
+    return page
+
+
+NAV = ["ready", "map", "inventory", "options", "cheats", "spawn"]  # page ids
 
 
 def main():
@@ -449,6 +507,12 @@ def main():
     for i in range(GRID_MAX):
         actions[f"inventory_choose_{i}"] = {"kind": "module", "action": "inventory_choose",
                                             "argument": i}
+    for i in range(len(SPAWN_TABS)):
+        actions[f"spawn_tab_{i}"] = {"kind": "module", "action": "spawn_tab", "argument": i}
+    for i in range(GRID_MAX):
+        actions[f"spawn_choose_{i}"] = {"kind": "module", "action": "spawn_choose", "argument": i}
+    for n in (1, 10):
+        actions[f"spawn_add_{n}"] = {"kind": "module", "action": "spawn_add", "argument": n}
     for i in range(len(CHEATS)):
         actions[f"cheat_toggle_{i}"] = {"kind": "module", "action": "cheat_toggle", "argument": i}
     manifest = {
@@ -472,7 +536,8 @@ def main():
                                      "clamp_view": True,
                                      "dynamic_markers": [TRAVEL_MARKERS]}},
                 "style": {"background": "#FF000D17"}},
-        "pages": [ready_page(), map_page(), inventory_page(), options_page(), cheats_page()],
+        "pages": [ready_page(), map_page(), inventory_page(), options_page(), cheats_page(),
+                  spawn_page()],
     }
     print(json.dumps(manifest, indent=1))
 
