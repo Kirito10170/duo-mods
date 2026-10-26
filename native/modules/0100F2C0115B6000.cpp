@@ -369,8 +369,8 @@ constexpr std::size_t MaxItems = 420;
 // and a write to it verified to stick.
 enum CheatId : std::size_t { CheatDurability, CheatArrows, CheatRupees, CheatBattery, CheatStamina,
                              NumCheats };
-constexpr bool CheatReady[NumCheats]{false, true, false, false, false};
-constexpr s32 MaxArrows = 999;
+constexpr bool CheatReady[NumCheats]{false, true, true, true, false};
+constexpr s32 MaxArrows = 999, MaxRupees = 999'999;
 
 std::string DurabilityText(s32 v) {
     if (v >= 2'000'000'000)
@@ -671,6 +671,23 @@ struct Module {
                        "Cheats marked Coming soon are still being mapped in the game's memory.");
         if (!h.write_memory)
             return;
+        const auto hold_int = [&](u32 hash, s32 want) {
+            if (const auto v = gmd.GetInt(hash); v && *v < want)
+                if (const auto at = gmd.ScalarAddress(totk::gmd::Type::Int, hash))
+                    h.write_memory(h.userdata, *at, &want, sizeof want);
+        };
+        if (on[CheatRupees])
+            hold_int(Murmur3("PlayerStatus.CurrentRupee"), MaxRupees);
+        if (on[CheatBattery]) {
+            const u32 energy = Murmur3("PlayerStatus.Energy");
+            const auto cur = gmd.GetFloat(energy);
+            const auto max = gmd.GetFloat(Murmur3("PlayerStatus.MaxEnergy"));
+            if (cur && max && std::isfinite(*max) && *max > 0 && *cur < *max)
+                if (const auto at = gmd.ScalarAddress(totk::gmd::Type::Float, energy)) {
+                    const float full = *max;
+                    h.write_memory(h.userdata, *at, &full, sizeof full);
+                }
+        }
         if (on[CheatArrows]) {
             const auto names = gmd.GetString64Array(Murmur3("Pouch.Arrow.Content.Name"));
             const auto stock = gmd.GetIntArray(Murmur3("Pouch.Arrow.Content.StockNum"));
@@ -849,6 +866,14 @@ struct Module {
                 h.publish_text(h.userdata, key, buf);
             }
         };
+        if (const auto rupees = gmd.GetInt(Murmur3("PlayerStatus.CurrentRupee")); rupees && *rupees >= 0) {
+            // "347,549", grouped like the game's own counter.
+            std::string digits = std::to_string(*rupees);
+            for (int at = static_cast<int>(digits.size()) - 3; at > 0; at -= 3)
+                digits.insert(static_cast<std::size_t>(at), ",");
+            h.publish_text(h.userdata, "totk.ready.rupees_text", digits.c_str());
+            h.publish_i64(h.userdata, "totk.ready.rupees.valid", 1);
+        }
         amount("totk.ready.stamina_text", "PlayerStatus.Stamina");
         amount("totk.ready.battery_text", "PlayerStatus.Energy");
         if (const auto c = gmd.GetFloat(Murmur3("PlayerStatus.Stamina")),

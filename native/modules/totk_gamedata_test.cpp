@@ -78,9 +78,12 @@ int main() {
     Put<u64>(names + 0x78, elems);
 
     Reader r{read, main_base};
+    s32 probe{};
     assert(r.Begin());
     assert(r.GetInt(Murmur3("PlayerStatus.Life")) == 120);
     assert(!r.GetInt(Murmur3("PlayerStatus.MaxLife")));
+    const auto life_at = r.ScalarAddress(Type::Int, Murmur3("PlayerStatus.Life"));
+    assert(life_at && read(*life_at, &probe, 4) && probe == 120);
     assert(r.GetFloat(Murmur3("PlayerStatus.Stamina")) == 2560.0f);
     const auto p = r.GetVec3(Murmur3("PlayerStatus.CurrentPos"));
     assert(p && p->x == -274.4f && p->z == -118.4f);

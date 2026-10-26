@@ -278,6 +278,11 @@ def ready_page():
           bound(108, 580, "totk.ready.stamina_text", 7, STAMINA_GREEN, upright=True,
                 outline=OUTLINE, outline_px=2, **G),
           text(108, 644, "wheels", 3, CREAM_DIM, **G)]
+    # Rupees under the pane, where BOTW keeps them.
+    rv = {"need_bind": "totk.ready.rupees.valid"}
+    w += [text(108, 742, "Rupees", 4, CREAM_DIM, **rv),
+          bound(108, 790, "totk.ready.rupees_text", 5, WHITE, fit_text=True, text_min_scale=4,
+                max_lines=1, wrap_width=184, **rv)]
     # Right pane: abilities, two to a row (BOTW's food and buffs pane).
     w += pane([1032, 422, 192, 450], edge="right", **G)
     w += [text(1126, 432, "Abilities", 5, CREAM, **G),

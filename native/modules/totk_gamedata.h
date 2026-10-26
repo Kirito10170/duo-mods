@@ -186,6 +186,16 @@ public:
             return std::nullopt;
         return data + index * sizeof(s32);
     }
+    /// Guest address of a scalar record's value (Int, UInt, Float: record+0x1C), for a
+    /// write_memory store. The game reads these records back, so a write sticks.
+    std::optional<u64> ScalarAddress(Type t, u32 hash) {
+        if (t != Type::Int && t != Type::UInt && t != Type::Float)
+            return std::nullopt;
+        const auto r = Record(t, hash);
+        if (!r)
+            return std::nullopt;
+        return *r + 0x1C;
+    }
     std::optional<std::vector<std::string>> GetString64Array(u32 hash) {
         const auto r = Record(Type::String64Array, hash);
         u64 count{}, data{};

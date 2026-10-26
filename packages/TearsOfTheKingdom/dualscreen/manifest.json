@@ -4098,6 +4098,45 @@
      "need_bind": "totk.supported"
     },
     {
+     "type": "label",
+     "rect": [
+      108,
+      742,
+      0,
+      0
+     ],
+     "text": "Rupees",
+     "text_scale": 4,
+     "color": "#9EFFFCC6",
+     "align": "center",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "need_bind": "totk.ready.rupees.valid"
+    },
+    {
+     "type": "label",
+     "rect": [
+      108,
+      790,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FFFFFFFF",
+     "align": "center",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "bind_text": "totk.ready.rupees_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 184,
+     "need_bind": "totk.ready.rupees.valid"
+    },
+    {
      "type": "rect",
      "rect": [
       1032,
