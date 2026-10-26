@@ -6,6 +6,7 @@
 //   totk-assets-tool <romfs> dump <key> <out>   decode a module:totk:<key> image to PAM (RGBA)
 //   totk-assets-tool <romfs> msbt <path> [member] MSBT labels and text (member: inside a SARC)
 //   totk-assets-tool <romfs> font <member> <out>  rasterise a Font.bfarc font to a PAM atlas
+//   totk-assets-tool <romfs> travel <path>...     travel points in Banc scene files
 // It exercises exactly the code the module ships. The emulator's ASTC decoder is not here, so
 // an ASTC texture is written as <out>.astc (astcenc container) and the PAM comes out grey;
 // `astcenc -dl <out>.astc <out>.png` decodes it for checking.
@@ -18,6 +19,7 @@
 
 #include "totk_assets.h"
 #include "totk_font.h"
+#include "totk_travel.h"
 
 using namespace TotkAssets;
 
@@ -91,6 +93,24 @@ int main(int argc, char** argv) {
             return 1;
         for (const auto& [label, text] : MsbtEntries(*bytes))
             std::printf("%s\t%s\n", label.c_str(), text.c_str());
+        return 0;
+    }
+    if (op == "travel") {
+        Dictionaries dicts;
+        if (const auto pack = read("/Pack/ZsDic.pack.zs"))
+            dicts.Load(*pack);
+        constexpr const char* Kinds[]{"shrine", "lightroot", "tower"};
+        for (int a = 3; a < argc; ++a) {
+            const auto raw = read(argv[a]);
+            const auto bytes = raw ? dicts.Decompress(*raw) : std::nullopt;
+            if (!bytes) {
+                std::fprintf(stderr, "unreadable: %s\n", argv[a]);
+                continue;
+            }
+            for (const auto& p : totk::travel::Scan(*bytes))
+                std::printf("%s\t%s\t%.1f\t%.1f\t%.1f\t%s\n", argv[a],
+                            Kinds[static_cast<int>(p.kind)], p.x, p.y, p.z, p.state_key.c_str());
+        }
         return 0;
     }
     if (op == "font" && argc >= 5) {

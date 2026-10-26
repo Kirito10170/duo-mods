@@ -58,6 +58,7 @@ jobs:
             -DEDEN_SOURCE_ROOT="$GITHUB_WORKSPACE/eden-duo" -DZSTD_SOURCE_ROOT="$GITHUB_WORKSPACE/zstd"
           cmake --build build/linux
           build/linux/totk-gamedata-test
+          build/linux/totk-travel-test
           strip build/linux/0100F2C0115B6000.so
 
       - name: Package
