@@ -39,6 +39,7 @@
 #include "totk_gamedata.h"
 #include "totk_netlog.h"
 #include "totk_travel.h"
+#include "totk_travel_mailbox.h"
 
 namespace {
 using namespace dsmod_sdk::int_types;
@@ -538,8 +539,85 @@ struct Module {
 
     void Configure(const EdenDsmodHostExtensions* ext) {
         if (ext && ext->version == EDEN_DSMOD_EXT_VERSION && ext->abi_hash == EDEN_DSMOD_EXT_HASH &&
-            ext->struct_size >= sizeof(*ext))
+            ext->struct_size >= sizeof(*ext)) {
             assets.SetAstcDecoder({ext->userdata, ext->decode_astc});
+            mailbox = ext;
+        }
+    }
+
+    // ---- Travel: the guest helper's mailbox (native/helper/totk/travel-hook.S) ----
+    const EdenDsmodHostExtensions* mailbox{};
+    u32 mailbox_heartbeat{0}, travel_seq{0};
+    bool helper_alive{false}, travel_pending{false};
+    std::chrono::steady_clock::time_point helper_seen{}, travel_sent{}, travel_landed{};
+    std::string travel_message;   // what the last Travel did, for the map panel
+    int travel_request{-1};       // world.points index the Travel button asked for
+
+    bool Load32(u32 offset, u32& v) const {
+        return mailbox && mailbox->load_u32 && mailbox->load_u32(mailbox->userdata, offset, &v) == EDEN_DSMOD_TRUE;
+    }
+    bool Store32(u32 offset, u32 v) const {
+        return mailbox && mailbox->store_u32 && mailbox->store_u32(mailbox->userdata, offset, v) == EDEN_DSMOD_TRUE;
+    }
+
+    // Once per sample: is the helper ticking, keep the epoch in step, collect an answer.
+    void PollHelper(const EdenDsmodHostApi& h) {
+        using namespace std::chrono;
+        const auto now = steady_clock::now();
+        u32 beat{};
+        if (Load32(totk::mailbox::Heartbeat, beat) && beat != mailbox_heartbeat) {
+            mailbox_heartbeat = beat;
+            helper_seen = now;
+        }
+        helper_alive = helper_seen.time_since_epoch().count() != 0 && now - helper_seen < seconds(2);
+        if (const s64 host_epoch = h.get_i64 ? h.get_i64(h.userdata, "__mailbox_epoch", 0) : 0; host_epoch > 0)
+            Store32(totk::mailbox::Epoch, static_cast<u32>(host_epoch));
+        else if (u32 e{}; Load32(totk::mailbox::Epoch, e) && e == 0)
+            Store32(totk::mailbox::Epoch, 1);
+        if (!travel_pending)
+            return;
+        u32 done{}, code{};
+        if (Load32(totk::mailbox::ResultSeq, done) && done == travel_seq && Load32(totk::mailbox::ResultCode, code)) {
+            travel_pending = false;
+            if (code == 0)
+                travel_landed = now; // the game is loading; no second request until it's done
+            TotkNetLog::Log("travel: answered %u", code);
+            travel_message = code == 0 ? "" : code == 1 ? "The game refused this destination"
+                                                                    : "Travel isn't available right now";
+        } else if (now - travel_sent > seconds(5)) {
+            travel_pending = false;
+            travel_message = "Travel isn't available right now";
+        }
+    }
+
+    // Stage "StartPos_<name>" for the helper to hand to the game's warp request.
+    bool SendTravel(const TravelPoint& p) {
+        using totk::travel::Kind;
+        const std::string name = std::string{p.kind == Kind::Shrine ? "StartPos_C" : "StartPos_"} + p.label;
+        if (!helper_alive || travel_pending || name.size() >= totk::mailbox::NameSize)
+            return false;
+        u32 epoch{}, seq{};
+        if (!Load32(totk::mailbox::Epoch, epoch) || epoch == 0 || !Load32(totk::mailbox::ResultSeq, seq))
+            return false;
+        std::array<u8, totk::mailbox::NameSize> text{};
+        std::memcpy(text.data(), name.data(), name.size());
+        bool ok = true;
+        for (u32 i = 0; i < text.size(); i += 4) {
+            u32 word;
+            std::memcpy(&word, text.data() + i, 4);
+            ok = Store32(totk::mailbox::Name + i, word) && ok;
+        }
+        ok = Store32(totk::mailbox::ReqOp, totk::mailbox::OpTravel) && ok;
+        ok = Store32(totk::mailbox::ReqEpoch, epoch) && ok;
+        travel_seq = seq + 1;
+        ok = ok && Store32(totk::mailbox::ReqSeq, travel_seq); // last: hands the request over
+        TotkNetLog::Log("travel: %s %s", name.c_str(), ok ? "staged" : "store FAILED");
+        if (ok) {
+            travel_pending = true;
+            travel_sent = std::chrono::steady_clock::now();
+            travel_message = "Traveling...";
+        }
+        return ok;
     }
 
     // Asset worker thread: touches only `assets` (internally locked) and the borrowed host.
@@ -679,6 +757,13 @@ struct Module {
             spawn_amount = static_cast<s32>(arg);
             return EDEN_DSMOD_TRUE;
         }
+        if (action == "travel_go") {
+            std::scoped_lock lock{mutex};
+            if (travel_selected < 0)
+                return EDEN_DSMOD_FALSE;
+            travel_request = travel_selected;
+            return EDEN_DSMOD_TRUE;
+        }
         if (action == "map_layers") {
             std::scoped_lock lock{mutex};
             const int from = view_layer < 0 ? link_layer : view_layer;
@@ -694,6 +779,7 @@ struct Module {
         };
         StartNames(h);
         StartWorld(h);
+        PollHelper(h);
         totk::gmd::Reader gmd{read, h.main_base};
         const bool live = gmd.Begin();
         h.publish_i64(h.userdata, "totk.ready", live ? 1 : 0);
@@ -1355,11 +1441,12 @@ struct Module {
     void PublishTravel(const EdenDsmodHostApi& h, G& gmd) {
         static const u32 Hidden = Murmur3("Hidden"), Open = Murmur3("Open"), Enter = Murmur3("Enter"),
                          Clear = Murmur3("Clear");
-        int layer, selected;
+        int layer, selected, request;
         {
             std::scoped_lock lock{mutex};
             layer = view_layer < 0 ? link_layer : view_layer;
             selected = travel_selected;
+            request = std::exchange(travel_request, -1);
         }
         std::vector<int> slots;
         std::string sel_name, sel_status;
@@ -1425,11 +1512,18 @@ struct Module {
         h.publish_i64(h.userdata, "totk.travel.sel.valid", sel_shown ? 1 : 0);
         h.publish_text(h.userdata, "totk.travel.sel.name", sel_name.c_str());
         h.publish_text(h.userdata, "totk.travel.sel.status", sel_status.c_str());
-        // The travel request itself needs the game's own warp call (a guest helper); until it
-        // lands the panel says so instead of offering a button that does nothing.
-        h.publish_i64(h.userdata, "totk.travel.sel.can_travel", 0);
-        h.publish_text(h.userdata, "totk.travel.sel.hint",
-                       sel_travel ? "Travel from here is coming in the next build" : "You can't travel here yet");
+        // A loading screen follows an accepted travel; the game ignores input until it's over.
+        const bool loading = travel_landed.time_since_epoch().count() != 0 &&
+                             std::chrono::steady_clock::now() - travel_landed < std::chrono::seconds(30);
+        if (request >= 0 && request == selected && sel_travel && !loading)
+            SendTravel(world.points[static_cast<std::size_t>(request)]);
+        const bool ready = helper_alive && !travel_pending && !loading;
+        h.publish_i64(h.userdata, "totk.travel.sel.can_travel", sel_travel && ready ? 1 : 0);
+        std::string hint = !sel_travel ? "You can't travel here yet"
+                           : travel_pending || loading ? (travel_message.empty() ? "Traveling..." : travel_message)
+                           : !helper_alive ? "Travel needs the game running with this mod loaded"
+                           : travel_message;
+        h.publish_text(h.userdata, "totk.travel.sel.hint", hint.c_str());
     }
 
     // The Ready page's dials: shrines completed, lightroots lit and towers activated, each of

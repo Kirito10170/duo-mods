@@ -1,0 +1,81 @@
+{
+  "title_id": "0100F2C0115B6000",
+  "build_id": "5CB42B1CF25469FB0635FD046453D843C18BC8AB000000000000000000000000",
+  "module": "main",
+  "layout": {
+    "segments": [
+      {
+        "location": 0,
+        "size": 45769200
+      },
+      {
+        "location": 45772800,
+        "size": 10154076
+      },
+      {
+        "location": 55930880,
+        "size": 4967776
+      }
+    ],
+    "bss_size": 758432
+  },
+  "mailbox_size": 4096,
+  "mailbox_epoch_offset": 4092,
+  "format": 2,
+  "patches": [
+    {
+      "offset": 3698480,
+      "expected": "50000094",
+      "replacement": "00000094",
+      "relocations": [
+        {
+          "offset": 0,
+          "kind": "aarch64_branch26",
+          "target": "code",
+          "addend": 0
+        }
+      ]
+    }
+  ],
+  "guest_code": {
+    "bytes": "fd7ba8a9fd030091e00701a9e20f02a9e41703a9e61f04a9f35305a9130000907302009189ca8a52896aa972690200b9690640b929050011690600b96922009134fddf88696240b99f02096b60050054691240b96af23f914afddf88600080526a0400343f010a6b21040054690e40b9400080523f050071a10300548000805209000090290140f9290300b429f540f9e90200b4292d40f9a90200b4298140f9690200b4e18301912a3000912a0000f90b2080522b0800b96c0204910d0080d28e696d384e692d38ae000034ad050091bffd03f163ffff545f692d38e00309aa000000941f0000f1e0179f1a606600b96982019134fd9f88e00741a9e20f42a9e41743a9e61f44a9f35345a9fd7bd8a800000014",
+    "relocations": [
+      {
+        "offset": 28,
+        "kind": "aarch64_adrp",
+        "target": "mailbox",
+        "addend": 0
+      },
+      {
+        "offset": 32,
+        "kind": "aarch64_add_lo12",
+        "target": "mailbox",
+        "addend": 0
+      },
+      {
+        "offset": 128,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61649456
+      },
+      {
+        "offset": 132,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61649456
+      },
+      {
+        "offset": 224,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 33338092
+      },
+      {
+        "offset": 272,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 3698800
+      }
+    ]
+  }
+}

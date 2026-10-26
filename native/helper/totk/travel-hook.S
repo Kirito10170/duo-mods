@@ -1,0 +1,110 @@
+// TOTK 1.4.2 travel bridge (format-2 load plan, see tools/totk/build_helper_plan.py).
+//
+// The plan patches the UI thread's per-frame `bl main+0x387070` at main+0x386F30 into a `bl`
+// to totk_ui_hook. Each frame the hook bumps the heartbeat and, when the module has staged a
+// new request, calls the game's own warp request with a start-position name, exactly as the
+// map screen's Travel button does, then tail-calls the original routine with the caller's
+// registers intact.
+//
+// Mailbox (offsets shared with native/modules/totk_travel_mailbox.h):
+//   0x000 u32 magic        written by the hook every frame ('TKTV')
+//   0x004 u32 heartbeat    +1 per frame
+//   0x008 u32 req_seq      the module bumps it (release) after filling the request
+//   0x00C u32 req_op       1 = travel
+//   0x010 u32 req_epoch    must equal the plan's epoch word at 0xFFC
+//   0x060 u32 result_seq   = req_seq once handled (release)
+//   0x064 u32 result_code  0 ok, 1 refused by the game, 2 bad op, 3 stale epoch, 4 no receiver
+//   0x100 char name[256]   "StartPos_Tower02", NUL-terminated
+//   0xFFC u32 epoch        the runtime's epoch word
+//
+// warp(x0 = receiver, x1 = &{u64 ptr, u32 cap, char buf[0x100] at +0xC}) returns non-zero
+// when it accepted the name. receiver = [[[[main+0x3ACB230]+0x1E8]+0x58]+0x100].
+
+.text
+.global totk_ui_hook
+totk_ui_hook:
+    stp x29, x30, [sp, #-0x180]!
+    mov x29, sp
+    stp x0, x1, [sp, #0x10]
+    stp x2, x3, [sp, #0x20]
+    stp x4, x5, [sp, #0x30]
+    stp x6, x7, [sp, #0x40]
+    stp x19, x20, [sp, #0x50]
+.global mailbox_adrp, mailbox_add
+mailbox_adrp:
+    adrp x19, bridge_mailbox
+mailbox_add:
+    add x19, x19, :lo12:bridge_mailbox
+    mov w9, #0x5654          // 'TV'
+    movk w9, #0x4b54, lsl #16 // 'TK'
+    str w9, [x19]
+    ldr w9, [x19, #4]
+    add w9, w9, #1
+    str w9, [x19, #4]
+
+    add x9, x19, #8
+    ldar w20, [x9]           // req_seq
+    ldr w9, [x19, #0x60]
+    cmp w20, w9
+    b.eq done                // nothing new
+
+    ldr w9, [x19, #0x10]
+    add x10, x19, #4092
+    ldar w10, [x10]
+    mov w0, #3
+    cbz w10, answer
+    cmp w9, w10
+    b.ne answer              // staged before a pause/reload: drop it
+
+    ldr w9, [x19, #0xC]
+    mov w0, #2
+    cmp w9, #1
+    b.ne answer
+
+    // receiver chain, every hop checked
+    mov w0, #4
+    adrp x9, warp_root
+    ldr x9, [x9, :lo12:warp_root]
+    cbz x9, answer
+    ldr x9, [x9, #0x1E8]
+    cbz x9, answer
+    ldr x9, [x9, #0x58]
+    cbz x9, answer
+    ldr x9, [x9, #0x100]
+    cbz x9, answer
+
+    // name struct on the stack: {ptr, cap, buf}
+    add x1, sp, #0x60
+    add x10, x1, #0xC
+    str x10, [x1]
+    mov w11, #0x100
+    str w11, [x1, #8]
+    add x12, x19, #0x100
+    mov x13, #0
+copy:
+    ldrb w14, [x12, x13]
+    strb w14, [x10, x13]
+    cbz w14, copied
+    add x13, x13, #1
+    cmp x13, #0xFF
+    b.lo copy
+    strb wzr, [x10, x13]
+copied:
+    mov x0, x9
+    bl native_warp
+    cmp x0, #0
+    cset w0, eq              // 0 accepted, 1 refused
+
+answer:
+    str w0, [x19, #0x64]
+    add x9, x19, #0x60
+    stlr w20, [x9]
+
+done:
+    ldp x0, x1, [sp, #0x10]
+    ldp x2, x3, [sp, #0x20]
+    ldp x4, x5, [sp, #0x30]
+    ldp x6, x7, [sp, #0x40]
+    ldp x19, x20, [sp, #0x50]
+    ldp x29, x30, [sp], #0x180
+    b native_ui_update
