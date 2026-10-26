@@ -958,12 +958,19 @@ void SampleCallback(void* p, const EdenDsmodHostApi* host) {
             return;
         auto* m = static_cast<Module*>(p);
         host->begin_output(host->userdata);
+        host->publish_i64(host->userdata, "totk.module", 1);
         host->publish_i64(host->userdata, "totk.supported", m->supported ? 1 : 0);
         host->publish_i64(host->userdata, "totk.unsupported", m->supported ? 0 : 1);
-        if (m->supported)
+        if (m->supported) {
             m->Sample(*host);
-        else
+        } else {
             host->publish_i64(host->userdata, "totk.ready", 0);
+            // Which build is running, so a mismatch report says what the game actually is.
+            char text[64] = "Running build ";
+            for (std::size_t i = 0; i < 8; ++i)
+                std::snprintf(text + 14 + i * 2, 3, "%02X", host->build_id[i]);
+            host->publish_text(host->userdata, "totk.build_text", text);
+        }
         host->end_output(host->userdata);
     } catch (...) {
         if (!reported.test_and_set() && host && host->log)

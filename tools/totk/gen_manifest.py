@@ -121,9 +121,20 @@ def bottom_bar(buttons, right=(), hint=None):
 
 
 def unsupported_notice():
-    return label([60, 420, 1120, 200],
-                 "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
-                 4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind=CONTENT_GATE)
+    """Two different failures: the module ran and saw another game build (it says which), or
+    the module never loaded at all (nothing published)."""
+    return [label([60, 380, 1120, 160],
+                  "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
+                  4, "#FFFFB74D", wrap_width=1120, align="center", need_bind="totk.unsupported"),
+            label([60, 560, 1120, 60], "", 3, "#B4E6ECF2", align="center",
+                  text_bind="totk.build_text", need_bind="totk.unsupported"),
+            label([60, 420, 1120, 200],
+                  "The companion's native module did not start. Check that Eden Duo is 1.3.2.2 or "
+                  "newer, then reinstall the mod.",
+                  4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind="totk.module"),
+            # The runtime's own reason when the module failed to load or stopped.
+            label([60, 640, 1120, 120], "", 3, "#B4E6ECF2", wrap_width=1120, align="center",
+                  text_bind="module_error_message", hide_bind="totk.module")]
 
 
 def gear_tile(r, slot):
@@ -211,7 +222,7 @@ def ready_page():
     # Ready's buttons sit centred under the minimap, like BOTW's.
     for item in w[-6:]:
         item["rect"] = [item["rect"][0] + 228, *item["rect"][1:]]
-    return {"id": "ready", "title": "Ready", "widgets": w + [unsupported_notice()]}
+    return {"id": "ready", "title": "Ready", "widgets": w + unsupported_notice()}
 
 
 def map_page():
@@ -235,7 +246,7 @@ def map_page():
                 text_bind="totk.travel.sel.hint", **sel)]
     w += bottom_bar([("Back", "go_ready")], [("Layers", "map_layers")],
                     hint="Pinch to zoom - Drag to pan")
-    return {"id": "map", "title": "Map", "widgets": w + [unsupported_notice()]}
+    return {"id": "map", "title": "Map", "widgets": w + unsupported_notice()}
 
 
 # Inventory tabs: title, the game's tab icon (Common layout archive).
@@ -295,7 +306,7 @@ def inventory_page():
                need_bind="totk.inv.sel.can_use"),
           label([600, BAR_Y, 360, BAR_H], "", 5, CREAM, align="center", text_center_h=BAR_H,
                 text_bind="totk.inv.sel.use_text", need_bind="totk.inv.sel.can_use")]
-    page = {"id": "inventory", "title": "Inventory", "widgets": w + [unsupported_notice()]}
+    page = {"id": "inventory", "title": "Inventory", "widgets": w + unsupported_notice()}
     page["scrolls"] = [{"id": "inv_grid", "rect": [20, 136, 750, 806],
                         "count_bind": "totk.inv.count", "reset_bind": "totk.inv.category",
                         "row_h": 160, "cols": 5, "bar": "#B4FFFCC6", "bar_w": 5}]
@@ -314,7 +325,7 @@ def options_page():
         w.append(label([800, y, 384, 64], "", 3, TITLE_BLUE, align="right", text_center_h=64,
                        text_bind=f"totk.option.{i}.text", need_bind=CONTENT_GATE))
     w += bottom_bar([("Back", "go_ready")])
-    return {"id": "options", "title": "Settings", "widgets": w + [unsupported_notice()]}
+    return {"id": "options", "title": "Settings", "widgets": w + unsupported_notice()}
 
 
 def main():
@@ -344,7 +355,7 @@ def main():
         "font": "module:totk:font",
         "font_atlas": "module:totk:font-atlas",
         "actions": actions,
-        "module_outputs": ["totk.supported", "totk.unsupported", "totk.ready"],
+        "module_outputs": ["totk.module", "totk.supported", "totk.unsupported", "totk.ready"],
         "map": {"areas": {"Hyrule": {"min": list(MAP_MIN), "max": list(MAP_MAX),
                                      "image": "file:assets/map-transparent.png",
                                      "clamp_view": True,
