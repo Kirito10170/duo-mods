@@ -163,6 +163,20 @@ public:
             return std::nullopt;
         return out;
     }
+    /// BoolArray as bits: element i = bit i % 64 of word i / 64.
+    std::optional<std::vector<bool>> GetBoolArray(u32 hash) {
+        const auto r = Record(Type::BoolArray, hash);
+        u64 count{}, data{};
+        if (!r || !Get(*r + 0x20, count) || !Get(*r + 0x28, data) || count > MaxArray || !data)
+            return std::nullopt;
+        std::vector<u64> words(static_cast<std::size_t>((count + 63) / 64));
+        if (!words.empty() && !read_(data, words.data(), words.size() * sizeof(u64)))
+            return std::nullopt;
+        std::vector<bool> out(static_cast<std::size_t>(count));
+        for (std::size_t i = 0; i < out.size(); ++i)
+            out[i] = (words[i / 64] >> (i % 64)) & 1;
+        return out;
+    }
     /// Guest address of element `index` of an IntArray, for a write_memory store.
     std::optional<u64> IntArrayElement(u32 hash, std::size_t index) {
         const auto r = Record(Type::IntArray, hash);

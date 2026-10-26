@@ -20,6 +20,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <mutex>
 #include <optional>
@@ -189,8 +190,8 @@ struct TravelPoint {
     totk::travel::Kind kind;
     int layer;
     float x, y, z;
-    u32 state; // GameData Enum key hash; 0 = none known (towers)
-    std::string label; // "Dungeon021", "CheckPoint086", "Tower"
+    u32 state; // GameData Enum key hash (shrines, lightroots); 0 for towers
+    std::string label; // "Dungeon021", "CheckPoint086", "Tower01" ("Tower" when unmatched)
 };
 
 struct World {
@@ -205,6 +206,7 @@ World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& st
     if (const auto pack = read("/Pack/ZsDic.pack.zs"))
         dicts.Load(*pack);
     std::unordered_map<std::string, bool> seen;
+    std::vector<totk::travel::TowerTag> tags;
     const auto scene = [&](const std::string& path, int layer) {
         if (stop.load(std::memory_order_relaxed))
             return;
@@ -212,7 +214,7 @@ World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& st
         const auto bytes = raw ? dicts.Decompress(*raw) : std::nullopt;
         if (!bytes)
             return;
-        for (auto& p : totk::travel::Scan(*bytes)) {
+        for (auto& p : totk::travel::Scan(*bytes, &tags)) {
             using totk::travel::Kind;
             std::string label = p.kind == Kind::Tower ? "Tower" : p.state_key.substr(p.state_key.find('.') + 1);
             // Shrine entrances and towers can be placed in more than one scene.
@@ -241,6 +243,17 @@ World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& st
         scene("/Banc/MainField/Sky/" + std::string{name} + "_Static.bcett.byml.zs", Sky);
     for (const auto name : ShrineScenes)
         scene("/Banc/MainField/" + std::string{name} + "_Static.bcett.byml.zs", Surface);
+    // Name each tower after the cannon beside it (within ~8 units in the 1.4.2 scenes).
+    for (auto& p : world.points) {
+        if (p.kind != totk::travel::Kind::Tower)
+            continue;
+        float best = 50.0f * 50.0f;
+        for (const auto& t : tags)
+            if (const float d = (t.x - p.x) * (t.x - p.x) + (t.z - p.z) * (t.z - p.z); d < best) {
+                best = d;
+                p.label = t.tower;
+            }
+    }
     return world;
 }
 
@@ -830,6 +843,7 @@ struct Module {
         std::string sel_name, sel_status;
         bool sel_shown = false, sel_travel = false;
         if (world_ready.load(std::memory_order_acquire)) {
+            const auto towers = gmd.GetBoolArray(0x8C826FCFu);
             for (std::size_t i = 0; i < world.points.size() && slots.size() < MaxTravel; ++i) {
                 const auto& p = world.points[i];
                 if (p.layer != layer)
@@ -844,6 +858,14 @@ struct Module {
                     status = !state ? "" : *state == Clear ? "Completed" : travel ? "Visited" : "Not yet entered";
                     if (const auto sub = ItemCaption(p.label); !sub.empty())
                         status = sub + "  -  " + status;
+                } else if (p.kind == Kind::Tower) {
+                    // BoolArray 8C826FCF: bit n-1 = TowerNN activated (all 15 set on a save
+                    // with every tower up; the order is the label order).
+                    const int n = p.label.size() == 7 ? std::atoi(p.label.c_str() + 5) : 0;
+                    shown = n >= 1 && towers && static_cast<std::size_t>(n) <= towers->size() &&
+                            (*towers)[static_cast<std::size_t>(n - 1)];
+                    travel = shown;
+                    status = "Activated";
                 } else if (p.kind == Kind::Lightroot) {
                     shown = state && *state == Open;
                     travel = shown;
@@ -888,10 +910,10 @@ struct Module {
     // archive is in a plain one.
     std::string TravelName(const TravelPoint& p) const {
         using totk::travel::Kind;
-        if (p.kind == Kind::Tower)
-            return "Skyview Tower";
         if (const auto name = ItemText(p.label); name != p.label)
             return name;
+        if (p.kind == Kind::Tower)
+            return "Skyview Tower";
         const std::string_view digits = std::string_view{p.label}.substr(
             std::min<std::size_t>(p.label.size(), p.kind == Kind::Shrine ? 7 : 10));
         return (p.kind == Kind::Shrine ? "Shrine " : "Lightroot ") + std::string{digits};

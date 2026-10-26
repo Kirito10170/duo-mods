@@ -22,6 +22,13 @@ struct Point {
     std::string state_key; // "DungeonState.Dungeon021", "ArrivalPointState.CheckPoint086"; towers: ""
 };
 
+/// A Skyview tower's launch cannon: it names its tower ("Tower01") and stands next to the
+/// tower's warp point, which itself carries no index.
+struct TowerTag {
+    std::string tower;
+    float x{}, z{};
+};
+
 /// Every actor of a scene with a position: fn(gyaml, x, y, z, actor node).
 template <class Fn>
 void ForEachActor(std::span<const std::uint8_t> scene, Fn&& fn) {
@@ -37,9 +44,12 @@ void ForEachActor(std::span<const std::uint8_t> scene, Fn&& fn) {
     }
 }
 
-inline std::vector<Point> Scan(std::span<const std::uint8_t> scene) {
+inline std::vector<Point> Scan(std::span<const std::uint8_t> scene, std::vector<TowerTag>* tags = nullptr) {
     std::vector<Point> out;
     ForEachActor(scene, [&](std::string_view gyaml, float x, float y, float z, const byml::Node& actor) {
+        if (tags && gyaml == "FldObj_Cannon_A_01")
+            if (const auto t = actor["Dynamic"]["TowerNo"].String())
+                tags->push_back({std::string{*t}, x, z});
         Point p{Kind::Shrine, x, y, z, {}};
         if (gyaml == "DgnObj_ZonauShrineEntrance_A_01") {
             if (const auto s = actor["Dynamic"]["DungeonIndexStr"].String())

@@ -66,6 +66,11 @@ int main() {
     Put<s32>(data + 4, -1);
     Put<u64>(arr + 0x20, 2);
     Put<u64>(arr + 0x28, data);
+    const u64 towers = Table(Type::BoolArray, 0x8C826FCFu);
+    const u64 bits = Alloc(8);
+    Put<u64>(bits, 0x5);
+    Put<u64>(towers + 0x20, 15);
+    Put<u64>(towers + 0x28, bits);
     const u64 names = Table(Type::String64Array, Murmur3("Pouch.Weapon.Content.Name"));
     const u64 elems = Alloc(2 * 0x50);
     std::memcpy(mem.data() + (elems + 0xC - Base), "Weapon_Sword_052", 17);
@@ -85,5 +90,7 @@ int main() {
     assert(!r.IntArrayElement(Murmur3("Pouch.Weapon.EquipIndex"), 2));
     const auto n = r.GetString64Array(Murmur3("Pouch.Weapon.Content.Name"));
     assert(n && n->size() == 2 && (*n)[0] == "Weapon_Sword_052" && (*n)[1].empty());
+    const auto t = r.GetBoolArray(0x8C826FCFu);
+    assert(t && t->size() == 15 && (*t)[0] && !(*t)[1] && (*t)[2] && !(*t)[14]);
     std::puts("totk_gamedata_test: ok");
 }
