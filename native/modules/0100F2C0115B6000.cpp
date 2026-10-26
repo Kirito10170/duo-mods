@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -515,6 +516,40 @@ struct Module {
                     break;
         } else {
             image = assets.Load(romfs, logical);
+            // A map tile exists only for the flag combinations the game ships; the module asks for
+            // every region revealed (all T). When that one is missing, take the combination with
+            // the most T letters that does exist.
+            const auto flags_at = logical.rfind('_');
+            if (!image && logical.starts_with("map/") && flags_at != std::string_view::npos &&
+                flags_at + 1 < logical.size() &&
+                logical.find_first_not_of("TF", flags_at + 1) == std::string_view::npos) {
+                // The per-cell flag counts may be off too, so other lengths come after.
+                const std::string base{logical.substr(0, flags_at + 1)};
+                const std::size_t want = logical.size() - flags_at - 1;
+                std::vector<std::size_t> lengths{want};
+                for (std::size_t n = 1; n <= 4; ++n)
+                    if (n != want)
+                        lengths.push_back(n);
+                for (const std::size_t n : lengths) {
+                    std::vector<unsigned> masks(1u << n);
+                    for (unsigned m = 0; m < masks.size(); ++m)
+                        masks[m] = m;
+                    std::stable_sort(masks.begin(), masks.end(), [](unsigned a, unsigned b) {
+                        return std::popcount(a) > std::popcount(b);
+                    });
+                    for (const unsigned m : masks) {
+                        std::string key = base;
+                        for (std::size_t i = 0; i < n; ++i)
+                            key += (m >> (n - 1 - i)) & 1 ? 'T' : 'F';
+                        if (key != logical && (image = assets.Load(romfs, key))) {
+                            TotkNetLog::Log("tile %s -> %s", std::string{logical}.c_str(), key.c_str());
+                            break;
+                        }
+                    }
+                    if (image)
+                        break;
+                }
+            }
         }
         if (!image) {
             TotkNetLog::Log("image FAILED: %s", key);
@@ -918,6 +953,10 @@ struct Module {
                 h.publish_f64(h.userdata, (key + ".x").c_str(), p.x);
                 h.publish_f64(h.userdata, (key + ".y").c_str(), -p.z);
                 h.publish_text(h.userdata, (key + ".icon").c_str(), TravelIcons[static_cast<int>(p.kind)]);
+                // The icons are white masks the game colours: shrine amber, lightroot green, tower blue.
+                constexpr s64 Tints[]{0xFFF2A93B, 0xFF9BE36B, 0xFF5CC8F0};
+                h.publish_i64(h.userdata, (key + ".tint").c_str(), Tints[static_cast<int>(p.kind)]);
+                h.publish_i64(h.userdata, (key + ".dim").c_str(), travel ? 0 : 1);
                 if (static_cast<int>(i) == selected) {
                     sel_shown = true;
                     sel_travel = travel;

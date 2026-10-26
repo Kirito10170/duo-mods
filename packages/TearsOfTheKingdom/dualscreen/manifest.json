@@ -2219,8 +2219,10 @@
       "kind": "totk.travel.{i}.kind",
       "hide_when_kind": 0,
       "icon_src_bind": "totk.travel.{i}.icon",
-      "size": 52,
-      "selected_size": 68
+      "tint_bind": "totk.travel.{i}.tint",
+      "dim_bind": "totk.travel.{i}.dim",
+      "size": 40,
+      "selected_size": 60
      }
     ]
    }
@@ -3224,7 +3226,7 @@
      "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 56,
-     "text_bind": "totk.map.layer_name",
+     "bind_text": "totk.map.layer_name",
      "need_bind": "totk.supported"
     },
     {
@@ -3266,7 +3268,7 @@
      "text_center_h": 50,
      "outline": "#C8000A19",
      "outline_px": 2,
-     "text_bind": "totk.ready.shield.durability_text",
+     "bind_text": "totk.ready.shield.durability_text",
      "need_bind": "totk.ready.shield.valid"
     },
     {
@@ -3321,7 +3323,7 @@
      "text_center_h": 50,
      "outline": "#C8000A19",
      "outline_px": 2,
-     "text_bind": "totk.ready.bow.durability_text",
+     "bind_text": "totk.ready.bow.durability_text",
      "need_bind": "totk.ready.bow.valid"
     },
     {
@@ -3376,7 +3378,7 @@
      "text_center_h": 50,
      "outline": "#C8000A19",
      "outline_px": 2,
-     "text_bind": "totk.ready.weapon.durability_text",
+     "bind_text": "totk.ready.weapon.durability_text",
      "need_bind": "totk.ready.weapon.valid"
     },
     {
@@ -3441,7 +3443,7 @@
      "color": "#FFFFFFFF",
      "align": "center",
      "text_center_h": 90,
-     "text_bind": "totk.ready.hearts",
+     "bind_text": "totk.ready.hearts",
      "need_bind": "totk.supported"
     },
     {
@@ -3458,7 +3460,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.ready.hearts_of",
+     "bind_text": "totk.ready.hearts_of",
      "need_bind": "totk.supported"
     },
     {
@@ -3525,7 +3527,7 @@
      "color": "#FFFFFFFF",
      "align": "center",
      "text_center_h": 90,
-     "text_bind": "totk.ready.battery_text",
+     "bind_text": "totk.ready.battery_text",
      "need_bind": "totk.supported"
     },
     {
@@ -3572,7 +3574,7 @@
      "color": "#FF6CE07A",
      "align": "center",
      "text_center_h": 80,
-     "text_bind": "totk.ready.stamina_text",
+     "bind_text": "totk.ready.stamina_text",
      "need_bind": "totk.supported"
     },
     {
@@ -3645,7 +3647,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.ready.ability.{i}.name",
+     "bind_text": "totk.ready.ability.{i}.name",
      "repeat": 8,
      "repeat_bind": "totk.ready.ability.count",
      "repeat_cols": 2,
@@ -3771,7 +3773,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.build_text",
+     "bind_text": "totk.build_text",
      "need_bind": "totk.unsupported"
     },
     {
@@ -3807,7 +3809,7 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "text_bind": "module_error_message",
+     "bind_text": "module_error_message",
      "hide_bind": "totk.module",
      "hide_eq": 1
     }
@@ -4967,7 +4969,7 @@
      "text_center_h": 72,
      "outline": "#C8000A19",
      "outline_px": 3,
-     "text_bind": "totk.map.layer_name",
+     "bind_text": "totk.map.layer_name",
      "need_bind": "totk.supported"
     },
     {
@@ -5008,7 +5010,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "text_center_h": 60,
-     "text_bind": "totk.travel.sel.name",
+     "bind_text": "totk.travel.sel.name",
      "need_bind": "totk.travel.sel.valid"
     },
     {
@@ -5025,7 +5027,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "text_center_h": 36,
-     "text_bind": "totk.travel.sel.status",
+     "bind_text": "totk.travel.sel.status",
      "need_bind": "totk.travel.sel.valid"
     },
     {
@@ -5042,7 +5044,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "text_center_h": 36,
-     "text_bind": "totk.travel.sel.hint",
+     "bind_text": "totk.travel.sel.hint",
      "need_bind": "totk.travel.sel.valid"
     },
     {
@@ -5152,7 +5154,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.build_text",
+     "bind_text": "totk.build_text",
      "need_bind": "totk.unsupported"
     },
     {
@@ -5188,7 +5190,7 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "text_bind": "module_error_message",
+     "bind_text": "module_error_message",
      "hide_bind": "totk.module",
      "hide_eq": 1
     }
@@ -5515,7 +5517,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 70,
-     "text_bind": "totk.inv.title",
+     "bind_text": "totk.inv.title",
      "need_bind": "totk.supported"
     },
     {
@@ -5597,7 +5599,7 @@
      "align": "right",
      "outline": "#C8000A19",
      "outline_px": 2,
-     "text_bind": "totk.inv.item.{i}.qty",
+     "bind_text": "totk.inv.item.{i}.qty",
      "repeat": 420,
      "repeat_bind": "totk.inv.count",
      "repeat_cols": 5,
@@ -5659,7 +5661,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.inv.empty_text",
+     "bind_text": "totk.inv.empty_text",
      "need_bind": "totk.supported"
     },
     {
@@ -5712,7 +5714,7 @@
      "slant_deg": 9.0,
      "wrap_width": 384,
      "max_lines": 2,
-     "text_bind": "totk.inv.sel.name",
+     "bind_text": "totk.inv.sel.name",
      "need_bind": "totk.inv.sel.valid"
     },
     {
@@ -5728,7 +5730,7 @@
      "color": "#FF5FC8F0",
      "italic": true,
      "slant_deg": 9.0,
-     "text_bind": "totk.inv.sel.stat",
+     "bind_text": "totk.inv.sel.stat",
      "need_bind": "totk.inv.sel.valid"
     },
     {
@@ -5758,7 +5760,7 @@
      "slant_deg": 9.0,
      "wrap_width": 384,
      "max_lines": 9,
-     "text_bind": "totk.inv.sel.desc",
+     "bind_text": "totk.inv.sel.desc",
      "need_bind": "totk.inv.sel.valid"
     },
     {
@@ -5819,7 +5821,7 @@
      "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
-     "text_bind": "totk.inv.sel.use_text",
+     "bind_text": "totk.inv.sel.use_text",
      "need_bind": "totk.inv.sel.can_use"
     },
     {
@@ -5853,7 +5855,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.build_text",
+     "bind_text": "totk.build_text",
      "need_bind": "totk.unsupported"
     },
     {
@@ -5889,7 +5891,7 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "text_bind": "module_error_message",
+     "bind_text": "module_error_message",
      "hide_bind": "totk.module",
      "hide_eq": 1
     }
@@ -6008,7 +6010,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.0.text",
+     "bind_text": "totk.option.0.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6055,7 +6057,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.1.text",
+     "bind_text": "totk.option.1.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6102,7 +6104,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.2.text",
+     "bind_text": "totk.option.2.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6149,7 +6151,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.3.text",
+     "bind_text": "totk.option.3.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6196,7 +6198,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.4.text",
+     "bind_text": "totk.option.4.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6243,7 +6245,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.5.text",
+     "bind_text": "totk.option.5.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6290,7 +6292,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.6.text",
+     "bind_text": "totk.option.6.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6337,7 +6339,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.7.text",
+     "bind_text": "totk.option.7.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6384,7 +6386,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.8.text",
+     "bind_text": "totk.option.8.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6431,7 +6433,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.9.text",
+     "bind_text": "totk.option.9.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6478,7 +6480,7 @@
      "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
-     "text_bind": "totk.option.10.text",
+     "bind_text": "totk.option.10.text",
      "need_bind": "totk.supported"
     },
     {
@@ -6541,7 +6543,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.build_text",
+     "bind_text": "totk.build_text",
      "need_bind": "totk.unsupported"
     },
     {
@@ -6577,7 +6579,7 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "text_bind": "module_error_message",
+     "bind_text": "module_error_message",
      "hide_bind": "totk.module",
      "hide_eq": 1
     }

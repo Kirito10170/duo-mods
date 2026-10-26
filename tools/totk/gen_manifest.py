@@ -61,7 +61,8 @@ def map_overlays(base, detail=None):
 # Shrines, lightroots and towers, one slot per point on the layer on show (kind 0 = empty slot).
 TRAVEL_MARKERS = {"group": "travel", "count": 400, "x": "totk.travel.{i}.x",
                   "y": "totk.travel.{i}.y", "kind": "totk.travel.{i}.kind", "hide_when_kind": 0,
-                  "icon_src_bind": "totk.travel.{i}.icon", "size": 52, "selected_size": 68}
+                  "icon_src_bind": "totk.travel.{i}.icon", "tint_bind": "totk.travel.{i}.tint",
+                  "dim_bind": "totk.travel.{i}.dim", "size": 40, "selected_size": 60}
 
 
 def map_widget(r, wid, **kw):
@@ -131,14 +132,14 @@ def unsupported_notice():
                   "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
                   4, "#FFFFB74D", wrap_width=1120, align="center", need_bind="totk.unsupported"),
             label([60, 560, 1120, 60], "", 3, "#B4E6ECF2", align="center",
-                  text_bind="totk.build_text", need_bind="totk.unsupported"),
+                  bind_text="totk.build_text", need_bind="totk.unsupported"),
             label([60, 420, 1120, 200],
                   "The companion's native module did not start. Check that Eden Duo is 1.3.2.2 or "
                   "newer, then reinstall the mod.",
                   4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind="totk.module", hide_eq=1),
             # The runtime's own reason when the module failed to load or stopped.
             label([60, 640, 1120, 120], "", 3, "#B4E6ECF2", wrap_width=1120, align="center",
-                  text_bind="module_error_message", hide_bind="totk.module", hide_eq=1)]
+                  bind_text="module_error_message", hide_bind="totk.module", hide_eq=1)]
 
 
 def gear_tile(r, slot):
@@ -150,7 +151,7 @@ def gear_tile(r, slot):
                 "src_bind": f"totk.ready.{slot}.icon", **g})
     out.append(label([x, y + h - 56, w, 50], "", 5, "#FFFFFFFF", upright=True, align="center",
                      text_center_h=50, outline="#C8000A19", outline_px=2,
-                     text_bind=f"totk.ready.{slot}.durability_text", **g))
+                     bind_text=f"totk.ready.{slot}.durability_text", **g))
     out.append(rect(r, CLEAR, frame=0, on_tap="go_inventory"))
     return out
 
@@ -188,7 +189,7 @@ def ready_page():
               "src_names": [f"file:assets/stamina-{i:02d}.png" for i in range(51)],
               "tint": STAMINA_GREEN, **g})
     w.append(label([mx, my + mh + 18, mw, 56], "", 4, TITLE_BLUE, align="center",
-                   text_center_h=56, text_bind="totk.map.layer_name", **g))
+                   text_center_h=56, bind_text="totk.map.layer_name", **g))
     # Corners: shield and bow on top, battery and weapon at the bottom (BOTW's places).
     w += gear_tile([18, 18, 180, 190], "shield")
     w += gear_tile([1042, 18, 180, 190], "bow")
@@ -197,21 +198,21 @@ def ready_page():
     w += side_panel([18, 232, 180, 300])
     w.append(image([72, 252, 72, 72], common("HeartW_00^s"), tint=HEART_RED, **g))
     w.append(label([24, 330, 168, 90], "", 8, "#FFFFFFFF", upright=True, align="center",
-                   text_center_h=90, text_bind="totk.ready.hearts", **g))
+                   text_center_h=90, bind_text="totk.ready.hearts", **g))
     w.append(label([30, 430, 160, 40], "", 3, CREAM_DIM, align="center",
-                   text_bind="totk.ready.hearts_of", **g))
+                   bind_text="totk.ready.hearts_of", **g))
     w.append({"type": "bar", "rect": [36, 490, 144, 10], "bind": "totk.ready.life_pct",
               "max": 100, "bg": "#40FFFCC6", "color": HEART_RED, "frame": 0, **g})
     # Left bottom: Zonai battery and stamina.
     w += side_panel([18, 552, 180, 380])
     w.append(image([79, 568, 58, 58], common("PouchIconRTEnergy_58x58^s"), tint=TITLE_BLUE, **g))
     w.append(label([24, 630, 168, 90], "", 7, "#FFFFFFFF", upright=True, align="center",
-                   text_center_h=90, text_bind="totk.ready.battery_text", **g))
+                   text_center_h=90, bind_text="totk.ready.battery_text", **g))
     w.append({"type": "bar", "rect": [36, 730, 144, 10], "bind": "totk.ready.battery_pct",
               "max": 100, "bg": "#40FFFCC6", "color": TITLE_BLUE, "frame": 0, **g})
     w.append(label([30, 770, 160, 40], "Stamina", 3, CREAM_DIM, align="center", **g))
     w.append(label([24, 820, 168, 80], "", 6, STAMINA_GREEN, upright=True, align="center",
-                   text_center_h=80, text_bind="totk.ready.stamina_text", **g))
+                   text_center_h=80, bind_text="totk.ready.stamina_text", **g))
     # Right: abilities, two to a row, icon over name.
     w += side_panel([1032, 232, 190, 490], accent_left=False)
     w.append(label([1040, 244, 170, 36], "Abilities", 3, CREAM_DIM, align="center", **g))
@@ -219,7 +220,7 @@ def ready_page():
               "repeat": 8, "repeat_bind": "totk.ready.ability.count", "repeat_cols": 2,
               "repeat_dx": 86, "repeat_row_dy": 106, **g})
     w.append(label([1046, 368, 76, 24], "", 2, CREAM, align="center",
-                   text_bind="totk.ready.ability.{i}.name", repeat=8,
+                   bind_text="totk.ready.ability.{i}.name", repeat=8,
                    repeat_bind="totk.ready.ability.count", repeat_cols=2, repeat_dx=86,
                    repeat_row_dy=106, **g))
     w += bottom_bar([("Inventory", "go_inventory"), ("Map", "go_map"), ("Settings", "go_options")])
@@ -238,16 +239,16 @@ def map_page():
                     empty_tap_deselects=True),
          image([0, 0, W, 160], "file:assets/fade-down.png", tint="#C8000000", **g),
          label([0, 24, W, 72], "", 6, TITLE_BLUE, align="center", text_center_h=72,
-               outline="#C8000A19", outline_px=3, text_bind="totk.map.layer_name", **g)]
+               outline="#C8000A19", outline_px=3, bind_text="totk.map.layer_name", **g)]
     # The tapped shrine, lightroot or tower.
     sel = {"need_bind": "totk.travel.sel.valid"}
     w += [{**x, **sel} for x in side_panel([24, 790, 700, 148])]
     w += [label([52, 802, 650, 60], "", 5, CREAM, text_center_h=60,
-                text_bind="totk.travel.sel.name", **sel),
+                bind_text="totk.travel.sel.name", **sel),
           label([52, 858, 650, 36], "", 3, TITLE_BLUE, text_center_h=36,
-                text_bind="totk.travel.sel.status", **sel),
+                bind_text="totk.travel.sel.status", **sel),
           label([52, 896, 650, 36], "", 3, "#B4E6ECF2", text_center_h=36,
-                text_bind="totk.travel.sel.hint", **sel)]
+                bind_text="totk.travel.sel.hint", **sel)]
     w += bottom_bar([("Back", "go_ready")], [("Layers", "map_layers")],
                     hint="Pinch to zoom - Drag to pan")
     return {"id": "map", "title": "Map", "widgets": w + unsupported_notice()}
@@ -276,7 +277,7 @@ def inventory_page():
                        need_bind=f"totk.inv.tab.{i}"))
         w.append(rect([x, 8, 104, 112], CLEAR, frame=0, on_tap=f"inventory_category_{i}", **g))
     w.append(label([760, 30, 456, 70], "", 5, CREAM, align="right", text_center_h=70,
-                   text_bind="totk.inv.title", **g))
+                   bind_text="totk.inv.title", **g))
     w.append(rect([24, 128, 1192, 2], RULE))
     # Grid cells, equipped tint, icons, counts, selection.
     w.append(rect([24, 141, 140, 150], TILE_BG, TILE_FRAME, frame=1, **GRID, **g))
@@ -285,31 +286,31 @@ def inventory_page():
     w.append({"type": "image", "rect": [36, 150, 116, 116], "src_bind": "totk.inv.item.{i}.icon",
               **GRID, **g})
     w.append(label([34, 254, 120, 34], "", 4, "#FFFFFFFF", upright=True, align="right",
-                   outline="#C8000A19", outline_px=2, text_bind="totk.inv.item.{i}.qty",
+                   outline="#C8000A19", outline_px=2, bind_text="totk.inv.item.{i}.qty",
                    **GRID, **g))
     w.append(rect([26, 143, 136, 147], CLEAR, "#FF0090FD", frame=3,
                   need_bind="totk.inv.item.{i}.selected", **GRID))
     w.append(rect([24, 141, 140, 150], CLEAR, frame=0, on_tap="inventory_choose_{i}", **GRID, **g))
     w.append(label([24, 500, 740, 60], "", 4, CREAM_DIM, align="center",
-                   text_bind="totk.inv.empty_text", **g))
+                   bind_text="totk.inv.empty_text", **g))
     # Detail panel.
     w.append(rect([780, 141, 436, 800], PANEL_BG, **g))
     w.append(rect([782, 141, 6, 800], ACCENT, **g))
     w.append({"type": "image", "rect": [868, 160, 260, 260], "src_bind": "totk.inv.sel.icon",
               "need_bind": "totk.inv.sel.valid"})
     w.append(label([816, 432, 384, 90], "", 5, CREAM, wrap_width=384, max_lines=2,
-                   text_bind="totk.inv.sel.name", need_bind="totk.inv.sel.valid"))
-    w.append(label([816, 526, 384, 44], "", 4, TITLE_BLUE, text_bind="totk.inv.sel.stat",
+                   bind_text="totk.inv.sel.name", need_bind="totk.inv.sel.valid"))
+    w.append(label([816, 526, 384, 44], "", 4, TITLE_BLUE, bind_text="totk.inv.sel.stat",
                    need_bind="totk.inv.sel.valid"))
     w.append(rect([816, 580, 384, 2], RULE, need_bind="totk.inv.sel.valid"))
     w.append(label([816, 600, 384, 330], "", 3, CREAM, wrap_width=384, max_lines=9,
-                   text_bind="totk.inv.sel.desc", need_bind="totk.inv.sel.valid"))
+                   bind_text="totk.inv.sel.desc", need_bind="totk.inv.sel.valid"))
     w += bottom_bar([("Back", "go_ready")])
     # The selected item's action (Equip / Eat / ...), when the module offers one.
     w += [rect([600, BAR_Y, 360, BAR_H], BUTTON_BG, BUTTON_FRAME, frame=3, on_tap="inventory_use",
                need_bind="totk.inv.sel.can_use"),
           label([600, BAR_Y, 360, BAR_H], "", 5, CREAM, align="center", text_center_h=BAR_H,
-                text_bind="totk.inv.sel.use_text", need_bind="totk.inv.sel.can_use")]
+                bind_text="totk.inv.sel.use_text", need_bind="totk.inv.sel.can_use")]
     page = {"id": "inventory", "title": "Inventory", "widgets": w + unsupported_notice()}
     page["scrolls"] = [{"id": "inv_grid", "rect": [20, 136, 750, 806],
                         "count_bind": "totk.inv.count", "reset_bind": "totk.inv.category",
@@ -327,7 +328,7 @@ def options_page():
         w.append(label([56, y, 760, 64], name, 3, CREAM, text_center_h=64,
                        need_bind=CONTENT_GATE))
         w.append(label([800, y, 384, 64], "", 3, TITLE_BLUE, align="right", text_center_h=64,
-                       text_bind=f"totk.option.{i}.text", need_bind=CONTENT_GATE))
+                       bind_text=f"totk.option.{i}.text", need_bind=CONTENT_GATE))
     w += bottom_bar([("Back", "go_ready")])
     return {"id": "options", "title": "Settings", "widgets": w + unsupported_notice()}
 
