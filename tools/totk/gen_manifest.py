@@ -105,8 +105,8 @@ def bottom_bar(buttons, right=(), hint=None):
         w += button([x, BAR_Y, 222, BAR_H], text, action)
         x += 240
     if hint:
-        w.append(label([x, BAR_Y, W - 24 - 240 * len(right) - x, BAR_H], hint, 3, CREAM_DIM,
-                       align="center", text_center_h=BAR_H))
+        w.append(label([x, BAR_Y, W - 24 - 240 * len(right) - x, BAR_H], hint, 3, CREAM,
+                       align="center", text_center_h=BAR_H, outline="#C8000A19", outline_px=2))
     x = W - 24
     for text, action in reversed(list(right)):
         x -= 222

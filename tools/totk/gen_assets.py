@@ -31,7 +31,12 @@ def main(out_dir):
     def outside(d, s):
         d.rectangle([0, 0, s, s], fill=255)
         d.ellipse([0, 0, s - 1, s - 1], fill=0)
-    smooth(400, outside).save(out / "circle-outside.png", optimize=True)
+    mask = smooth(400, outside)
+    # Keep the square's own edge fully opaque (resampling softens the outermost pixels).
+    for i in range(400):
+        for x, y in ((i, 0), (i, 399), (0, i), (399, i)):
+            mask.putpixel((x, y), (255, 255, 255, 255))
+    mask.save(out / "circle-outside.png", optimize=True)
 
     def ring(width):
         def draw(d, s):

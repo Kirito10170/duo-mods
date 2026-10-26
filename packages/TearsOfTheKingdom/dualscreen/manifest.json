@@ -2878,11 +2878,13 @@
      ],
      "text": "Pinch to zoom - Drag to pan",
      "text_scale": 3,
-     "color": "#9EE6ECF2",
+     "color": "#FFFFFCC6",
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 112
+     "text_center_h": 112,
+     "outline": "#C8000A19",
+     "outline_px": 2
     },
     {
      "type": "rect",
