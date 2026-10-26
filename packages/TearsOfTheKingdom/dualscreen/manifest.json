@@ -1,0 +1,398 @@
+{
+ "format": 1,
+ "title_id": "0100F2C0115B6000",
+ "name": "Tears of the Kingdom companion",
+ "min_runtime": 22,
+ "_note": "Skeleton: pages and navigation only. build_match is published by the host; values come from the native module once located.",
+ "requires_module": true,
+ "canvas_w": 1240,
+ "canvas_h": 1080,
+ "background": "#FF0B1212",
+ "actions": {
+  "go_map": {
+   "kind": "page",
+   "page": "map",
+   "transition": "fade",
+   "duration_ms": 150
+  },
+  "go_inventory": {
+   "kind": "page",
+   "page": "inventory",
+   "transition": "fade",
+   "duration_ms": 150
+  },
+  "go_options": {
+   "kind": "page",
+   "page": "options",
+   "transition": "fade",
+   "duration_ms": 150
+  }
+ },
+ "module_outputs": [
+  "totk.supported",
+  "totk.unsupported",
+  "totk.ready"
+ ],
+ "pages": [
+  {
+   "id": "map",
+   "title": "Map",
+   "widgets": [
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      0,
+      1240,
+      120
+     ],
+     "bg": "#FF101A1A"
+    },
+    {
+     "type": "button",
+     "rect": [
+      12,
+      16,
+      389,
+      88
+     ],
+     "text": "Map",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF2E5C55",
+     "color": "#FFF2E7C8",
+     "on_tap": "go_map"
+    },
+    {
+     "type": "button",
+     "rect": [
+      425,
+      16,
+      389,
+      88
+     ],
+     "text": "Inventory",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF1C2B2A",
+     "color": "#FF9FB3AE",
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "button",
+     "rect": [
+      838,
+      16,
+      389,
+      88
+     ],
+     "text": "Settings",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF1C2B2A",
+     "color": "#FF9FB3AE",
+     "on_tap": "go_options"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      200,
+      1120,
+      80
+     ],
+     "text": "Map",
+     "text_scale": 6,
+     "color": "#FFF2E7C8",
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      320,
+      1120,
+      60
+     ],
+     "text": "Surface, Sky and Depths with Link's live position.",
+     "text_scale": 3,
+     "color": "#FFB8C7C2",
+     "wrap_width": 1120,
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      390,
+      1120,
+      60
+     ],
+     "text": "In progress: being mapped from the running game.",
+     "text_scale": 3,
+     "color": "#FFB8C7C2",
+     "wrap_width": 1120,
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      420,
+      1120,
+      200
+     ],
+     "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
+     "text_scale": 4,
+     "color": "#FFFFB74D",
+     "wrap_width": 1120,
+     "align": "center",
+     "hide_bind": "build_match"
+    }
+   ]
+  },
+  {
+   "id": "inventory",
+   "title": "Inventory",
+   "widgets": [
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      0,
+      1240,
+      120
+     ],
+     "bg": "#FF101A1A"
+    },
+    {
+     "type": "button",
+     "rect": [
+      12,
+      16,
+      389,
+      88
+     ],
+     "text": "Map",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF1C2B2A",
+     "color": "#FF9FB3AE",
+     "on_tap": "go_map"
+    },
+    {
+     "type": "button",
+     "rect": [
+      425,
+      16,
+      389,
+      88
+     ],
+     "text": "Inventory",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF2E5C55",
+     "color": "#FFF2E7C8",
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "button",
+     "rect": [
+      838,
+      16,
+      389,
+      88
+     ],
+     "text": "Settings",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF1C2B2A",
+     "color": "#FF9FB3AE",
+     "on_tap": "go_options"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      200,
+      1120,
+      80
+     ],
+     "text": "Inventory",
+     "text_scale": 6,
+     "color": "#FFF2E7C8",
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      320,
+      1120,
+      60
+     ],
+     "text": "Weapons, bows, shields, materials, food and key items.",
+     "text_scale": 3,
+     "color": "#FFB8C7C2",
+     "wrap_width": 1120,
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      390,
+      1120,
+      60
+     ],
+     "text": "In progress: being mapped from the running game.",
+     "text_scale": 3,
+     "color": "#FFB8C7C2",
+     "wrap_width": 1120,
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      420,
+      1120,
+      200
+     ],
+     "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
+     "text_scale": 4,
+     "color": "#FFFFB74D",
+     "wrap_width": 1120,
+     "align": "center",
+     "hide_bind": "build_match"
+    }
+   ]
+  },
+  {
+   "id": "options",
+   "title": "Settings",
+   "widgets": [
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      0,
+      1240,
+      120
+     ],
+     "bg": "#FF101A1A"
+    },
+    {
+     "type": "button",
+     "rect": [
+      12,
+      16,
+      389,
+      88
+     ],
+     "text": "Map",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF1C2B2A",
+     "color": "#FF9FB3AE",
+     "on_tap": "go_map"
+    },
+    {
+     "type": "button",
+     "rect": [
+      425,
+      16,
+      389,
+      88
+     ],
+     "text": "Inventory",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF1C2B2A",
+     "color": "#FF9FB3AE",
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "button",
+     "rect": [
+      838,
+      16,
+      389,
+      88
+     ],
+     "text": "Settings",
+     "align": "center",
+     "text_scale": 4,
+     "pill": true,
+     "bg": "#FF2E5C55",
+     "color": "#FFF2E7C8",
+     "on_tap": "go_options"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      200,
+      1120,
+      80
+     ],
+     "text": "Settings",
+     "text_scale": 6,
+     "color": "#FFF2E7C8",
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      320,
+      1120,
+      60
+     ],
+     "text": "The game's own options, such as camera and HUD.",
+     "text_scale": 3,
+     "color": "#FFB8C7C2",
+     "wrap_width": 1120,
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      390,
+      1120,
+      60
+     ],
+     "text": "In progress: being mapped from the running game.",
+     "text_scale": 3,
+     "color": "#FFB8C7C2",
+     "wrap_width": 1120,
+     "need_bind": "build_match"
+    },
+    {
+     "type": "label",
+     "rect": [
+      60,
+      420,
+      1120,
+      200
+     ],
+     "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
+     "text_scale": 4,
+     "color": "#FFFFB74D",
+     "wrap_width": 1120,
+     "align": "center",
+     "hide_bind": "build_match"
+    }
+   ]
+  }
+ ]
+}
