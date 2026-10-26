@@ -30,7 +30,6 @@ BUTTON_FRAME = "#FF4A4630"
 CLEAR = "#00000000"
 
 NAV = [("ready", "Ready"), ("map", "Map"), ("inventory", "Inventory"), ("options", "Settings")]  # page ids
-CATEGORIES = ["Weapons", "Bows", "Shields", "Armor", "Materials", "Food", "Key Items"]
 # The game's System > Options list (amiibo, a toggle with no value, is left out).
 OPTIONS = ["Invert Vertical Camera", "Invert Horizontal Camera", "Camera Sensitivity",
            "Aim with Motion Controls", "Invert Vertical Ability Controls",
@@ -222,31 +221,68 @@ def map_page():
     return {"id": "map", "title": "Map", "widgets": w + [unsupported_notice()]}
 
 
+# Inventory tabs: title, the game's tab icon (Common layout archive).
+TABS = [("Weapons", "IconWeapon_72x72^s"), ("Bows and Arrows", "IconBow_72x72^s"),
+        ("Shields", "IconShield_72x72^s"), ("Armor", "IconEquipment_72x72^s"),
+        ("Materials", "IconMaterial_72x72^s"), ("Food", "IconCuisine_72x72^s"),
+        ("Key Items", "IconTreasure_72x72^s")]
+GRID_MAX = 420  # cells published per category at most
+GRID = {"repeat": GRID_MAX, "repeat_bind": "totk.inv.count", "repeat_cols": 5, "repeat_dx": 148,
+        "repeat_row_dy": 160, "scroll": "inv_grid"}
+
+
 def inventory_page():
-    w = [rect([0, 0, W, H], BG), rect([0, 0, W, 124], HEADER)]
-    cell = 112
-    for i, name in enumerate(CATEGORIES):
-        x = 24 + i * cell
-        w.append(rect([x, 8, cell, cell], CLEAR, frame=0, on_tap=f"inventory_category_{i}",
-                      need_bind=CONTENT_GATE))
-        w.append(label([x, 8, cell, cell], name, 2, CREAM_DIM, align="center",
-                       text_center_h=cell, need_bind=CONTENT_GATE))
-    w.append(label([800, 20, 416, 80], "Weapons", 5, CREAM, align="right", text_center_h=80,
-                   need_bind=CONTENT_GATE))
+    """BOTW's Inventory: tab icons on top, a scrolling 5-wide grid of the game's item icons,
+    and the selected item's picture, name and description on the right."""
+    g = {"need_bind": CONTENT_GATE}
+    w = [rect([0, 0, W, H], BG), rect([0, 0, W, 128], HEADER)]
+    for i, (_, icon) in enumerate(TABS):
+        x = 28 + i * 104
+        w.append(image([x + 16, 28, 72, 72], common(icon), tint="#78E6ECF2",
+                       hide_bind=f"totk.inv.tab.{i}", **g))
+        w.append(image([x + 10, 22, 84, 84], common(icon), tint="#FFFFFFFF",
+                       need_bind=f"totk.inv.tab.{i}"))
+        w.append(rect([x, 8, 104, 112], CLEAR, frame=0, on_tap=f"inventory_category_{i}", **g))
+    w.append(label([760, 30, 456, 70], "", 5, CREAM, align="right", text_center_h=70,
+                   text_bind="totk.inv.title", **g))
     w.append(rect([24, 128, 1192, 2], RULE))
-    # 5 x 5 item grid, same pitch as the BOTW companion
-    w.append(rect([24, 141, 140, 150], TILE_BG, TILE_FRAME, frame=1, repeat=25, repeat_cols=5,
-                  repeat_dx=148, repeat_row_dy=160, need_bind=CONTENT_GATE))
-    # detail panel with the blue accent line
-    w.append(rect([780, 141, 436, 800], "#FF050708", need_bind=CONTENT_GATE))
-    w.append(rect([788, 141, 6, 800], ACCENT, need_bind=CONTENT_GATE))
-    w.append(label([824, 520, 380, 60], "Inventory in progress", 4, CREAM,
-                   need_bind=CONTENT_GATE))
-    w.append(rect([824, 600, 384, 2], RULE, need_bind=CONTENT_GATE))
-    w.append(label([824, 620, 380, 200], "Items appear here once the reader is wired up.", 3,
-                   CREAM_DIM, wrap_width=380, need_bind=CONTENT_GATE))
-    w += bottom_bar([("Back", "go_ready")], [("Sort", "inventory_sort")])
-    return {"id": "inventory", "title": "Inventory", "widgets": w + [unsupported_notice()]}
+    # Grid cells, equipped tint, icons, counts, selection.
+    w.append(rect([24, 141, 140, 150], TILE_BG, TILE_FRAME, frame=1, **GRID, **g))
+    w.append(rect([25, 142, 138, 148], "#FF0B3A66", need_bind="totk.inv.item.{i}.equipped",
+                  **GRID))
+    w.append({"type": "image", "rect": [36, 150, 116, 116], "src_bind": "totk.inv.item.{i}.icon",
+              **GRID, **g})
+    w.append(label([34, 254, 120, 34], "", 4, "#FFFFFFFF", upright=True, align="right",
+                   outline="#C8000A19", outline_px=2, text_bind="totk.inv.item.{i}.qty",
+                   **GRID, **g))
+    w.append(rect([26, 143, 136, 147], CLEAR, "#FF0090FD", frame=3,
+                  need_bind="totk.inv.item.{i}.selected", **GRID))
+    w.append(rect([24, 141, 140, 150], CLEAR, frame=0, on_tap="inventory_choose_{i}", **GRID, **g))
+    w.append(label([24, 500, 740, 60], "", 4, CREAM_DIM, align="center",
+                   text_bind="totk.inv.empty_text", **g))
+    # Detail panel.
+    w.append(rect([780, 141, 436, 800], PANEL_BG, **g))
+    w.append(rect([782, 141, 6, 800], ACCENT, **g))
+    w.append({"type": "image", "rect": [868, 160, 260, 260], "src_bind": "totk.inv.sel.icon",
+              "need_bind": "totk.inv.sel.valid"})
+    w.append(label([816, 432, 384, 90], "", 5, CREAM, wrap_width=384, max_lines=2,
+                   text_bind="totk.inv.sel.name", need_bind="totk.inv.sel.valid"))
+    w.append(label([816, 526, 384, 44], "", 4, TITLE_BLUE, text_bind="totk.inv.sel.stat",
+                   need_bind="totk.inv.sel.valid"))
+    w.append(rect([816, 580, 384, 2], RULE, need_bind="totk.inv.sel.valid"))
+    w.append(label([816, 600, 384, 330], "", 3, CREAM, wrap_width=384, max_lines=9,
+                   text_bind="totk.inv.sel.desc", need_bind="totk.inv.sel.valid"))
+    w += bottom_bar([("Back", "go_ready")])
+    # The selected item's action (Equip / Eat / ...), when the module offers one.
+    w += [rect([600, BAR_Y, 360, BAR_H], BUTTON_BG, BUTTON_FRAME, frame=3, on_tap="inventory_use",
+               need_bind="totk.inv.sel.can_use"),
+          label([600, BAR_Y, 360, BAR_H], "", 5, CREAM, align="center", text_center_h=BAR_H,
+                text_bind="totk.inv.sel.use_text", need_bind="totk.inv.sel.can_use")]
+    page = {"id": "inventory", "title": "Inventory", "widgets": w + [unsupported_notice()]}
+    page["scrolls"] = [{"id": "inv_grid", "rect": [20, 136, 750, 806],
+                        "count_bind": "totk.inv.count", "reset_bind": "totk.inv.category",
+                        "row_h": 160, "cols": 5, "bar": "#B4FFFCC6", "bar_w": 5}]
+    return page
 
 
 def options_page():
@@ -267,9 +303,14 @@ def options_page():
 def main():
     actions = {f"go_{pid}": {"kind": "page", "page": pid, "transition": "fade", "duration_ms": 150}
                for pid, _ in NAV}
-    # Handled by the module once the readers exist; until then it declines them.
-    for name in ["map_layers", "inventory_sort"] + [f"inventory_category_{i}" for i in range(len(CATEGORIES))]:
+    for name in ["map_layers", "inventory_sort", "inventory_use"]:
         actions[name] = {"kind": "module", "action": name, "argument": 0}
+    for i in range(len(TABS)):
+        actions[f"inventory_category_{i}"] = {"kind": "module", "action": "inventory_category",
+                                              "argument": i}
+    for i in range(GRID_MAX):
+        actions[f"inventory_choose_{i}"] = {"kind": "module", "action": "inventory_choose",
+                                            "argument": i}
     manifest = {
         "format": 1,
         "title_id": "0100F2C0115B6000",

@@ -45,40 +45,2145 @@
    "action": "inventory_sort",
    "argument": 0
   },
+  "inventory_use": {
+   "kind": "module",
+   "action": "inventory_use",
+   "argument": 0
+  },
   "inventory_category_0": {
    "kind": "module",
-   "action": "inventory_category_0",
+   "action": "inventory_category",
    "argument": 0
   },
   "inventory_category_1": {
    "kind": "module",
-   "action": "inventory_category_1",
-   "argument": 0
+   "action": "inventory_category",
+   "argument": 1
   },
   "inventory_category_2": {
    "kind": "module",
-   "action": "inventory_category_2",
-   "argument": 0
+   "action": "inventory_category",
+   "argument": 2
   },
   "inventory_category_3": {
    "kind": "module",
-   "action": "inventory_category_3",
-   "argument": 0
+   "action": "inventory_category",
+   "argument": 3
   },
   "inventory_category_4": {
    "kind": "module",
-   "action": "inventory_category_4",
-   "argument": 0
+   "action": "inventory_category",
+   "argument": 4
   },
   "inventory_category_5": {
    "kind": "module",
-   "action": "inventory_category_5",
-   "argument": 0
+   "action": "inventory_category",
+   "argument": 5
   },
   "inventory_category_6": {
    "kind": "module",
-   "action": "inventory_category_6",
+   "action": "inventory_category",
+   "argument": 6
+  },
+  "inventory_choose_0": {
+   "kind": "module",
+   "action": "inventory_choose",
    "argument": 0
+  },
+  "inventory_choose_1": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 1
+  },
+  "inventory_choose_2": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 2
+  },
+  "inventory_choose_3": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 3
+  },
+  "inventory_choose_4": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 4
+  },
+  "inventory_choose_5": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 5
+  },
+  "inventory_choose_6": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 6
+  },
+  "inventory_choose_7": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 7
+  },
+  "inventory_choose_8": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 8
+  },
+  "inventory_choose_9": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 9
+  },
+  "inventory_choose_10": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 10
+  },
+  "inventory_choose_11": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 11
+  },
+  "inventory_choose_12": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 12
+  },
+  "inventory_choose_13": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 13
+  },
+  "inventory_choose_14": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 14
+  },
+  "inventory_choose_15": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 15
+  },
+  "inventory_choose_16": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 16
+  },
+  "inventory_choose_17": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 17
+  },
+  "inventory_choose_18": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 18
+  },
+  "inventory_choose_19": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 19
+  },
+  "inventory_choose_20": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 20
+  },
+  "inventory_choose_21": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 21
+  },
+  "inventory_choose_22": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 22
+  },
+  "inventory_choose_23": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 23
+  },
+  "inventory_choose_24": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 24
+  },
+  "inventory_choose_25": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 25
+  },
+  "inventory_choose_26": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 26
+  },
+  "inventory_choose_27": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 27
+  },
+  "inventory_choose_28": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 28
+  },
+  "inventory_choose_29": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 29
+  },
+  "inventory_choose_30": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 30
+  },
+  "inventory_choose_31": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 31
+  },
+  "inventory_choose_32": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 32
+  },
+  "inventory_choose_33": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 33
+  },
+  "inventory_choose_34": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 34
+  },
+  "inventory_choose_35": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 35
+  },
+  "inventory_choose_36": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 36
+  },
+  "inventory_choose_37": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 37
+  },
+  "inventory_choose_38": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 38
+  },
+  "inventory_choose_39": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 39
+  },
+  "inventory_choose_40": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 40
+  },
+  "inventory_choose_41": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 41
+  },
+  "inventory_choose_42": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 42
+  },
+  "inventory_choose_43": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 43
+  },
+  "inventory_choose_44": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 44
+  },
+  "inventory_choose_45": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 45
+  },
+  "inventory_choose_46": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 46
+  },
+  "inventory_choose_47": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 47
+  },
+  "inventory_choose_48": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 48
+  },
+  "inventory_choose_49": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 49
+  },
+  "inventory_choose_50": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 50
+  },
+  "inventory_choose_51": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 51
+  },
+  "inventory_choose_52": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 52
+  },
+  "inventory_choose_53": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 53
+  },
+  "inventory_choose_54": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 54
+  },
+  "inventory_choose_55": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 55
+  },
+  "inventory_choose_56": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 56
+  },
+  "inventory_choose_57": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 57
+  },
+  "inventory_choose_58": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 58
+  },
+  "inventory_choose_59": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 59
+  },
+  "inventory_choose_60": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 60
+  },
+  "inventory_choose_61": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 61
+  },
+  "inventory_choose_62": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 62
+  },
+  "inventory_choose_63": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 63
+  },
+  "inventory_choose_64": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 64
+  },
+  "inventory_choose_65": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 65
+  },
+  "inventory_choose_66": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 66
+  },
+  "inventory_choose_67": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 67
+  },
+  "inventory_choose_68": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 68
+  },
+  "inventory_choose_69": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 69
+  },
+  "inventory_choose_70": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 70
+  },
+  "inventory_choose_71": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 71
+  },
+  "inventory_choose_72": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 72
+  },
+  "inventory_choose_73": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 73
+  },
+  "inventory_choose_74": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 74
+  },
+  "inventory_choose_75": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 75
+  },
+  "inventory_choose_76": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 76
+  },
+  "inventory_choose_77": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 77
+  },
+  "inventory_choose_78": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 78
+  },
+  "inventory_choose_79": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 79
+  },
+  "inventory_choose_80": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 80
+  },
+  "inventory_choose_81": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 81
+  },
+  "inventory_choose_82": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 82
+  },
+  "inventory_choose_83": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 83
+  },
+  "inventory_choose_84": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 84
+  },
+  "inventory_choose_85": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 85
+  },
+  "inventory_choose_86": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 86
+  },
+  "inventory_choose_87": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 87
+  },
+  "inventory_choose_88": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 88
+  },
+  "inventory_choose_89": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 89
+  },
+  "inventory_choose_90": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 90
+  },
+  "inventory_choose_91": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 91
+  },
+  "inventory_choose_92": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 92
+  },
+  "inventory_choose_93": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 93
+  },
+  "inventory_choose_94": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 94
+  },
+  "inventory_choose_95": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 95
+  },
+  "inventory_choose_96": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 96
+  },
+  "inventory_choose_97": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 97
+  },
+  "inventory_choose_98": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 98
+  },
+  "inventory_choose_99": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 99
+  },
+  "inventory_choose_100": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 100
+  },
+  "inventory_choose_101": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 101
+  },
+  "inventory_choose_102": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 102
+  },
+  "inventory_choose_103": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 103
+  },
+  "inventory_choose_104": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 104
+  },
+  "inventory_choose_105": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 105
+  },
+  "inventory_choose_106": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 106
+  },
+  "inventory_choose_107": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 107
+  },
+  "inventory_choose_108": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 108
+  },
+  "inventory_choose_109": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 109
+  },
+  "inventory_choose_110": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 110
+  },
+  "inventory_choose_111": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 111
+  },
+  "inventory_choose_112": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 112
+  },
+  "inventory_choose_113": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 113
+  },
+  "inventory_choose_114": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 114
+  },
+  "inventory_choose_115": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 115
+  },
+  "inventory_choose_116": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 116
+  },
+  "inventory_choose_117": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 117
+  },
+  "inventory_choose_118": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 118
+  },
+  "inventory_choose_119": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 119
+  },
+  "inventory_choose_120": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 120
+  },
+  "inventory_choose_121": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 121
+  },
+  "inventory_choose_122": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 122
+  },
+  "inventory_choose_123": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 123
+  },
+  "inventory_choose_124": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 124
+  },
+  "inventory_choose_125": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 125
+  },
+  "inventory_choose_126": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 126
+  },
+  "inventory_choose_127": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 127
+  },
+  "inventory_choose_128": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 128
+  },
+  "inventory_choose_129": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 129
+  },
+  "inventory_choose_130": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 130
+  },
+  "inventory_choose_131": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 131
+  },
+  "inventory_choose_132": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 132
+  },
+  "inventory_choose_133": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 133
+  },
+  "inventory_choose_134": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 134
+  },
+  "inventory_choose_135": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 135
+  },
+  "inventory_choose_136": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 136
+  },
+  "inventory_choose_137": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 137
+  },
+  "inventory_choose_138": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 138
+  },
+  "inventory_choose_139": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 139
+  },
+  "inventory_choose_140": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 140
+  },
+  "inventory_choose_141": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 141
+  },
+  "inventory_choose_142": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 142
+  },
+  "inventory_choose_143": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 143
+  },
+  "inventory_choose_144": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 144
+  },
+  "inventory_choose_145": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 145
+  },
+  "inventory_choose_146": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 146
+  },
+  "inventory_choose_147": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 147
+  },
+  "inventory_choose_148": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 148
+  },
+  "inventory_choose_149": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 149
+  },
+  "inventory_choose_150": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 150
+  },
+  "inventory_choose_151": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 151
+  },
+  "inventory_choose_152": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 152
+  },
+  "inventory_choose_153": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 153
+  },
+  "inventory_choose_154": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 154
+  },
+  "inventory_choose_155": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 155
+  },
+  "inventory_choose_156": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 156
+  },
+  "inventory_choose_157": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 157
+  },
+  "inventory_choose_158": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 158
+  },
+  "inventory_choose_159": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 159
+  },
+  "inventory_choose_160": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 160
+  },
+  "inventory_choose_161": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 161
+  },
+  "inventory_choose_162": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 162
+  },
+  "inventory_choose_163": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 163
+  },
+  "inventory_choose_164": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 164
+  },
+  "inventory_choose_165": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 165
+  },
+  "inventory_choose_166": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 166
+  },
+  "inventory_choose_167": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 167
+  },
+  "inventory_choose_168": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 168
+  },
+  "inventory_choose_169": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 169
+  },
+  "inventory_choose_170": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 170
+  },
+  "inventory_choose_171": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 171
+  },
+  "inventory_choose_172": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 172
+  },
+  "inventory_choose_173": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 173
+  },
+  "inventory_choose_174": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 174
+  },
+  "inventory_choose_175": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 175
+  },
+  "inventory_choose_176": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 176
+  },
+  "inventory_choose_177": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 177
+  },
+  "inventory_choose_178": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 178
+  },
+  "inventory_choose_179": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 179
+  },
+  "inventory_choose_180": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 180
+  },
+  "inventory_choose_181": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 181
+  },
+  "inventory_choose_182": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 182
+  },
+  "inventory_choose_183": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 183
+  },
+  "inventory_choose_184": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 184
+  },
+  "inventory_choose_185": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 185
+  },
+  "inventory_choose_186": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 186
+  },
+  "inventory_choose_187": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 187
+  },
+  "inventory_choose_188": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 188
+  },
+  "inventory_choose_189": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 189
+  },
+  "inventory_choose_190": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 190
+  },
+  "inventory_choose_191": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 191
+  },
+  "inventory_choose_192": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 192
+  },
+  "inventory_choose_193": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 193
+  },
+  "inventory_choose_194": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 194
+  },
+  "inventory_choose_195": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 195
+  },
+  "inventory_choose_196": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 196
+  },
+  "inventory_choose_197": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 197
+  },
+  "inventory_choose_198": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 198
+  },
+  "inventory_choose_199": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 199
+  },
+  "inventory_choose_200": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 200
+  },
+  "inventory_choose_201": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 201
+  },
+  "inventory_choose_202": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 202
+  },
+  "inventory_choose_203": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 203
+  },
+  "inventory_choose_204": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 204
+  },
+  "inventory_choose_205": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 205
+  },
+  "inventory_choose_206": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 206
+  },
+  "inventory_choose_207": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 207
+  },
+  "inventory_choose_208": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 208
+  },
+  "inventory_choose_209": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 209
+  },
+  "inventory_choose_210": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 210
+  },
+  "inventory_choose_211": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 211
+  },
+  "inventory_choose_212": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 212
+  },
+  "inventory_choose_213": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 213
+  },
+  "inventory_choose_214": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 214
+  },
+  "inventory_choose_215": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 215
+  },
+  "inventory_choose_216": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 216
+  },
+  "inventory_choose_217": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 217
+  },
+  "inventory_choose_218": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 218
+  },
+  "inventory_choose_219": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 219
+  },
+  "inventory_choose_220": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 220
+  },
+  "inventory_choose_221": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 221
+  },
+  "inventory_choose_222": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 222
+  },
+  "inventory_choose_223": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 223
+  },
+  "inventory_choose_224": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 224
+  },
+  "inventory_choose_225": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 225
+  },
+  "inventory_choose_226": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 226
+  },
+  "inventory_choose_227": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 227
+  },
+  "inventory_choose_228": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 228
+  },
+  "inventory_choose_229": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 229
+  },
+  "inventory_choose_230": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 230
+  },
+  "inventory_choose_231": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 231
+  },
+  "inventory_choose_232": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 232
+  },
+  "inventory_choose_233": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 233
+  },
+  "inventory_choose_234": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 234
+  },
+  "inventory_choose_235": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 235
+  },
+  "inventory_choose_236": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 236
+  },
+  "inventory_choose_237": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 237
+  },
+  "inventory_choose_238": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 238
+  },
+  "inventory_choose_239": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 239
+  },
+  "inventory_choose_240": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 240
+  },
+  "inventory_choose_241": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 241
+  },
+  "inventory_choose_242": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 242
+  },
+  "inventory_choose_243": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 243
+  },
+  "inventory_choose_244": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 244
+  },
+  "inventory_choose_245": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 245
+  },
+  "inventory_choose_246": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 246
+  },
+  "inventory_choose_247": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 247
+  },
+  "inventory_choose_248": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 248
+  },
+  "inventory_choose_249": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 249
+  },
+  "inventory_choose_250": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 250
+  },
+  "inventory_choose_251": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 251
+  },
+  "inventory_choose_252": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 252
+  },
+  "inventory_choose_253": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 253
+  },
+  "inventory_choose_254": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 254
+  },
+  "inventory_choose_255": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 255
+  },
+  "inventory_choose_256": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 256
+  },
+  "inventory_choose_257": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 257
+  },
+  "inventory_choose_258": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 258
+  },
+  "inventory_choose_259": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 259
+  },
+  "inventory_choose_260": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 260
+  },
+  "inventory_choose_261": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 261
+  },
+  "inventory_choose_262": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 262
+  },
+  "inventory_choose_263": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 263
+  },
+  "inventory_choose_264": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 264
+  },
+  "inventory_choose_265": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 265
+  },
+  "inventory_choose_266": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 266
+  },
+  "inventory_choose_267": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 267
+  },
+  "inventory_choose_268": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 268
+  },
+  "inventory_choose_269": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 269
+  },
+  "inventory_choose_270": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 270
+  },
+  "inventory_choose_271": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 271
+  },
+  "inventory_choose_272": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 272
+  },
+  "inventory_choose_273": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 273
+  },
+  "inventory_choose_274": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 274
+  },
+  "inventory_choose_275": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 275
+  },
+  "inventory_choose_276": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 276
+  },
+  "inventory_choose_277": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 277
+  },
+  "inventory_choose_278": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 278
+  },
+  "inventory_choose_279": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 279
+  },
+  "inventory_choose_280": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 280
+  },
+  "inventory_choose_281": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 281
+  },
+  "inventory_choose_282": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 282
+  },
+  "inventory_choose_283": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 283
+  },
+  "inventory_choose_284": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 284
+  },
+  "inventory_choose_285": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 285
+  },
+  "inventory_choose_286": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 286
+  },
+  "inventory_choose_287": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 287
+  },
+  "inventory_choose_288": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 288
+  },
+  "inventory_choose_289": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 289
+  },
+  "inventory_choose_290": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 290
+  },
+  "inventory_choose_291": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 291
+  },
+  "inventory_choose_292": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 292
+  },
+  "inventory_choose_293": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 293
+  },
+  "inventory_choose_294": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 294
+  },
+  "inventory_choose_295": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 295
+  },
+  "inventory_choose_296": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 296
+  },
+  "inventory_choose_297": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 297
+  },
+  "inventory_choose_298": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 298
+  },
+  "inventory_choose_299": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 299
+  },
+  "inventory_choose_300": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 300
+  },
+  "inventory_choose_301": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 301
+  },
+  "inventory_choose_302": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 302
+  },
+  "inventory_choose_303": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 303
+  },
+  "inventory_choose_304": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 304
+  },
+  "inventory_choose_305": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 305
+  },
+  "inventory_choose_306": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 306
+  },
+  "inventory_choose_307": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 307
+  },
+  "inventory_choose_308": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 308
+  },
+  "inventory_choose_309": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 309
+  },
+  "inventory_choose_310": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 310
+  },
+  "inventory_choose_311": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 311
+  },
+  "inventory_choose_312": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 312
+  },
+  "inventory_choose_313": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 313
+  },
+  "inventory_choose_314": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 314
+  },
+  "inventory_choose_315": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 315
+  },
+  "inventory_choose_316": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 316
+  },
+  "inventory_choose_317": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 317
+  },
+  "inventory_choose_318": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 318
+  },
+  "inventory_choose_319": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 319
+  },
+  "inventory_choose_320": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 320
+  },
+  "inventory_choose_321": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 321
+  },
+  "inventory_choose_322": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 322
+  },
+  "inventory_choose_323": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 323
+  },
+  "inventory_choose_324": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 324
+  },
+  "inventory_choose_325": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 325
+  },
+  "inventory_choose_326": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 326
+  },
+  "inventory_choose_327": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 327
+  },
+  "inventory_choose_328": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 328
+  },
+  "inventory_choose_329": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 329
+  },
+  "inventory_choose_330": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 330
+  },
+  "inventory_choose_331": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 331
+  },
+  "inventory_choose_332": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 332
+  },
+  "inventory_choose_333": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 333
+  },
+  "inventory_choose_334": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 334
+  },
+  "inventory_choose_335": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 335
+  },
+  "inventory_choose_336": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 336
+  },
+  "inventory_choose_337": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 337
+  },
+  "inventory_choose_338": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 338
+  },
+  "inventory_choose_339": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 339
+  },
+  "inventory_choose_340": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 340
+  },
+  "inventory_choose_341": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 341
+  },
+  "inventory_choose_342": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 342
+  },
+  "inventory_choose_343": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 343
+  },
+  "inventory_choose_344": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 344
+  },
+  "inventory_choose_345": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 345
+  },
+  "inventory_choose_346": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 346
+  },
+  "inventory_choose_347": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 347
+  },
+  "inventory_choose_348": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 348
+  },
+  "inventory_choose_349": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 349
+  },
+  "inventory_choose_350": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 350
+  },
+  "inventory_choose_351": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 351
+  },
+  "inventory_choose_352": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 352
+  },
+  "inventory_choose_353": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 353
+  },
+  "inventory_choose_354": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 354
+  },
+  "inventory_choose_355": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 355
+  },
+  "inventory_choose_356": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 356
+  },
+  "inventory_choose_357": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 357
+  },
+  "inventory_choose_358": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 358
+  },
+  "inventory_choose_359": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 359
+  },
+  "inventory_choose_360": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 360
+  },
+  "inventory_choose_361": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 361
+  },
+  "inventory_choose_362": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 362
+  },
+  "inventory_choose_363": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 363
+  },
+  "inventory_choose_364": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 364
+  },
+  "inventory_choose_365": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 365
+  },
+  "inventory_choose_366": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 366
+  },
+  "inventory_choose_367": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 367
+  },
+  "inventory_choose_368": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 368
+  },
+  "inventory_choose_369": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 369
+  },
+  "inventory_choose_370": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 370
+  },
+  "inventory_choose_371": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 371
+  },
+  "inventory_choose_372": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 372
+  },
+  "inventory_choose_373": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 373
+  },
+  "inventory_choose_374": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 374
+  },
+  "inventory_choose_375": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 375
+  },
+  "inventory_choose_376": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 376
+  },
+  "inventory_choose_377": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 377
+  },
+  "inventory_choose_378": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 378
+  },
+  "inventory_choose_379": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 379
+  },
+  "inventory_choose_380": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 380
+  },
+  "inventory_choose_381": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 381
+  },
+  "inventory_choose_382": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 382
+  },
+  "inventory_choose_383": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 383
+  },
+  "inventory_choose_384": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 384
+  },
+  "inventory_choose_385": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 385
+  },
+  "inventory_choose_386": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 386
+  },
+  "inventory_choose_387": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 387
+  },
+  "inventory_choose_388": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 388
+  },
+  "inventory_choose_389": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 389
+  },
+  "inventory_choose_390": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 390
+  },
+  "inventory_choose_391": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 391
+  },
+  "inventory_choose_392": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 392
+  },
+  "inventory_choose_393": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 393
+  },
+  "inventory_choose_394": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 394
+  },
+  "inventory_choose_395": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 395
+  },
+  "inventory_choose_396": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 396
+  },
+  "inventory_choose_397": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 397
+  },
+  "inventory_choose_398": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 398
+  },
+  "inventory_choose_399": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 399
+  },
+  "inventory_choose_400": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 400
+  },
+  "inventory_choose_401": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 401
+  },
+  "inventory_choose_402": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 402
+  },
+  "inventory_choose_403": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 403
+  },
+  "inventory_choose_404": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 404
+  },
+  "inventory_choose_405": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 405
+  },
+  "inventory_choose_406": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 406
+  },
+  "inventory_choose_407": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 407
+  },
+  "inventory_choose_408": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 408
+  },
+  "inventory_choose_409": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 409
+  },
+  "inventory_choose_410": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 410
+  },
+  "inventory_choose_411": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 411
+  },
+  "inventory_choose_412": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 412
+  },
+  "inventory_choose_413": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 413
+  },
+  "inventory_choose_414": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 414
+  },
+  "inventory_choose_415": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 415
+  },
+  "inventory_choose_416": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 416
+  },
+  "inventory_choose_417": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 417
+  },
+  "inventory_choose_418": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 418
+  },
+  "inventory_choose_419": {
+   "kind": "module",
+   "action": "inventory_choose",
+   "argument": 419
   }
  },
  "module_outputs": [
@@ -2902,17 +5007,42 @@
       0,
       0,
       1240,
-      124
+      128
      ],
      "bg": "#E6141A1C",
      "color": "#00000000"
     },
     {
+     "type": "image",
+     "rect": [
+      44,
+      28,
+      72,
+      72
+     ],
+     "src": "module:totk:common/IconWeapon_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.0",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      38,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconWeapon_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.0"
+    },
+    {
      "type": "rect",
      "rect": [
-      24,
+      28,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -2922,28 +5052,36 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      80,
-      8,
-      112,
-      112
+      148,
+      28,
+      72,
+      72
      ],
-     "text": "Weapons",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
+     "src": "module:totk:common/IconBow_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.1",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      142,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconBow_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.1"
     },
     {
      "type": "rect",
      "rect": [
-      136,
+      132,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -2953,28 +5091,36 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      192,
-      8,
-      112,
-      112
+      252,
+      28,
+      72,
+      72
      ],
-     "text": "Bows",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
+     "src": "module:totk:common/IconShield_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.2",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      246,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconShield_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.2"
     },
     {
      "type": "rect",
      "rect": [
-      248,
+      236,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -2984,28 +5130,36 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      304,
-      8,
-      112,
-      112
+      356,
+      28,
+      72,
+      72
      ],
-     "text": "Shields",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
+     "src": "module:totk:common/IconEquipment_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.3",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      350,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconEquipment_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.3"
     },
     {
      "type": "rect",
      "rect": [
-      360,
+      340,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -3015,28 +5169,36 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      416,
-      8,
-      112,
-      112
+      460,
+      28,
+      72,
+      72
      ],
-     "text": "Armor",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
+     "src": "module:totk:common/IconMaterial_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.4",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      454,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconMaterial_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.4"
     },
     {
      "type": "rect",
      "rect": [
-      472,
+      444,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -3046,28 +5208,36 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      528,
-      8,
-      112,
-      112
+      564,
+      28,
+      72,
+      72
      ],
-     "text": "Materials",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
+     "src": "module:totk:common/IconCuisine_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.5",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      558,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconCuisine_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.5"
     },
     {
      "type": "rect",
      "rect": [
-      584,
+      548,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -3077,28 +5247,36 @@
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "image",
      "rect": [
-      640,
-      8,
-      112,
-      112
+      668,
+      28,
+      72,
+      72
      ],
-     "text": "Food",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
+     "src": "module:totk:common/IconTreasure_72x72^s",
+     "tint": "#78E6ECF2",
+     "hide_bind": "totk.inv.tab.6",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      662,
+      22,
+      84,
+      84
+     ],
+     "src": "module:totk:common/IconTreasure_72x72^s",
+     "tint": "#FFFFFFFF",
+     "need_bind": "totk.inv.tab.6"
     },
     {
      "type": "rect",
      "rect": [
-      696,
+      652,
       8,
-      112,
+      104,
       112
      ],
      "bg": "#00000000",
@@ -3110,35 +5288,19 @@
     {
      "type": "label",
      "rect": [
-      752,
-      8,
-      112,
-      112
-     ],
-     "text": "Key Items",
-     "text_scale": 2,
-     "color": "#9EE6ECF2",
-     "italic": true,
-     "slant_deg": 9.0,
-     "align": "center",
-     "text_center_h": 112,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
       1216,
-      20,
-      416,
-      80
+      30,
+      456,
+      70
      ],
-     "text": "Weapons",
+     "text": "",
      "text_scale": 5,
      "color": "#FFFFFCC6",
      "italic": true,
      "slant_deg": 9.0,
      "align": "right",
-     "text_center_h": 80,
+     "text_center_h": 70,
+     "text_bind": "totk.inv.title",
      "need_bind": "totk.supported"
     },
     {
@@ -3163,10 +5325,126 @@
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
      "frame": 1,
-     "repeat": 25,
+     "repeat": 420,
+     "repeat_bind": "totk.inv.count",
      "repeat_cols": 5,
      "repeat_dx": 148,
      "repeat_row_dy": 160,
+     "scroll": "inv_grid",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      25,
+      142,
+      138,
+      148
+     ],
+     "bg": "#FF0B3A66",
+     "color": "#00000000",
+     "need_bind": "totk.inv.item.{i}.equipped",
+     "repeat": 420,
+     "repeat_bind": "totk.inv.count",
+     "repeat_cols": 5,
+     "repeat_dx": 148,
+     "repeat_row_dy": 160,
+     "scroll": "inv_grid"
+    },
+    {
+     "type": "image",
+     "rect": [
+      36,
+      150,
+      116,
+      116
+     ],
+     "src_bind": "totk.inv.item.{i}.icon",
+     "repeat": 420,
+     "repeat_bind": "totk.inv.count",
+     "repeat_cols": 5,
+     "repeat_dx": 148,
+     "repeat_row_dy": 160,
+     "scroll": "inv_grid",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      154,
+      254,
+      120,
+      34
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FFFFFFFF",
+     "align": "right",
+     "outline": "#C8000A19",
+     "outline_px": 2,
+     "text_bind": "totk.inv.item.{i}.qty",
+     "repeat": 420,
+     "repeat_bind": "totk.inv.count",
+     "repeat_cols": 5,
+     "repeat_dx": 148,
+     "repeat_row_dy": 160,
+     "scroll": "inv_grid",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      26,
+      143,
+      136,
+      147
+     ],
+     "bg": "#00000000",
+     "color": "#FF0090FD",
+     "frame": 3,
+     "need_bind": "totk.inv.item.{i}.selected",
+     "repeat": 420,
+     "repeat_bind": "totk.inv.count",
+     "repeat_cols": 5,
+     "repeat_dx": 148,
+     "repeat_row_dy": 160,
+     "scroll": "inv_grid"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      141,
+      140,
+      150
+     ],
+     "bg": "#00000000",
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "inventory_choose_{i}",
+     "repeat": 420,
+     "repeat_bind": "totk.inv.count",
+     "repeat_cols": 5,
+     "repeat_dx": 148,
+     "repeat_row_dy": 160,
+     "scroll": "inv_grid",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      394,
+      500,
+      740,
+      60
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "text_bind": "totk.inv.empty_text",
      "need_bind": "totk.supported"
     },
     {
@@ -3184,7 +5462,7 @@
     {
      "type": "rect",
      "rect": [
-      788,
+      782,
       141,
       6,
       800
@@ -3194,47 +5472,79 @@
      "need_bind": "totk.supported"
     },
     {
+     "type": "image",
+     "rect": [
+      868,
+      160,
+      260,
+      260
+     ],
+     "src_bind": "totk.inv.sel.icon",
+     "need_bind": "totk.inv.sel.valid"
+    },
+    {
      "type": "label",
      "rect": [
-      824,
-      520,
-      380,
-      60
+      816,
+      432,
+      384,
+      90
      ],
-     "text": "Inventory in progress",
-     "text_scale": 4,
+     "text": "",
+     "text_scale": 5,
      "color": "#FFFFFCC6",
      "italic": true,
      "slant_deg": 9.0,
-     "need_bind": "totk.supported"
+     "wrap_width": 384,
+     "max_lines": 2,
+     "text_bind": "totk.inv.sel.name",
+     "need_bind": "totk.inv.sel.valid"
+    },
+    {
+     "type": "label",
+     "rect": [
+      816,
+      526,
+      384,
+      44
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_bind": "totk.inv.sel.stat",
+     "need_bind": "totk.inv.sel.valid"
     },
     {
      "type": "rect",
      "rect": [
-      824,
-      600,
+      816,
+      580,
       384,
       2
      ],
      "bg": "#50FFFCC6",
      "color": "#00000000",
-     "need_bind": "totk.supported"
+     "need_bind": "totk.inv.sel.valid"
     },
     {
      "type": "label",
      "rect": [
-      824,
-      620,
-      380,
-      200
+      816,
+      600,
+      384,
+      330
      ],
-     "text": "Items appear here once the reader is wired up.",
+     "text": "",
      "text_scale": 3,
-     "color": "#9EE6ECF2",
+     "color": "#FFFFFCC6",
      "italic": true,
      "slant_deg": 9.0,
-     "wrap_width": 380,
-     "need_bind": "totk.supported"
+     "wrap_width": 384,
+     "max_lines": 9,
+     "text_bind": "totk.inv.sel.desc",
+     "need_bind": "totk.inv.sel.valid"
     },
     {
      "type": "rect",
@@ -3268,31 +5578,34 @@
     {
      "type": "rect",
      "rect": [
-      994,
+      600,
       952,
-      222,
+      360,
       112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
      "frame": 3,
-     "on_tap": "inventory_sort"
+     "on_tap": "inventory_use",
+     "need_bind": "totk.inv.sel.can_use"
     },
     {
      "type": "label",
      "rect": [
-      1105,
+      780,
       952,
-      222,
+      360,
       112
      ],
-     "text": "Sort",
+     "text": "",
      "text_scale": 5,
      "color": "#FFFFFCC6",
      "italic": true,
      "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 112
+     "text_center_h": 112,
+     "text_bind": "totk.inv.sel.use_text",
+     "need_bind": "totk.inv.sel.can_use"
     },
     {
      "type": "label",
@@ -3310,6 +5623,23 @@
      "wrap_width": 1120,
      "align": "center",
      "hide_bind": "totk.supported"
+    }
+   ],
+   "scrolls": [
+    {
+     "id": "inv_grid",
+     "rect": [
+      20,
+      136,
+      750,
+      806
+     ],
+     "count_bind": "totk.inv.count",
+     "reset_bind": "totk.inv.category",
+     "row_h": 160,
+     "cols": 5,
+     "bar": "#B4FFFCC6",
+     "bar_w": 5
     }
    ]
   },

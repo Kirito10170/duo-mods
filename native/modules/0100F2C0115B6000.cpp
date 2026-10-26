@@ -172,6 +172,27 @@ const OptionRow Options[]{
     {0, {}}, // voice language: Enum A2DCDC9D, value names not mapped yet
 };
 
+// ---- Inventory --------------------------------------------------------------------------------
+// One tab per pouch, in the manifest's tab order. Stackable pouches show a count, gear shows
+// durability (Content.Life; save editors' "unbreakable" values read as MAX).
+struct Category {
+    const char* title;
+    const char* pouch;
+    bool gear;
+};
+constexpr Category Categories[]{
+    {"Weapons", "Weapon", true},      {"Bows and Arrows", "Bow", true}, {"Shields", "Shield", true},
+    {"Armor", "Armor", false},        {"Materials", "Material", false}, {"Food", "Food", false},
+    {"Key Items", "KeyItem", false},
+};
+constexpr std::size_t MaxItems = 420;
+
+std::string DurabilityText(s32 v) {
+    if (v >= 2'000'000'000)
+        return "MAX";
+    return v >= 0 ? std::to_string(v) : std::string{};
+}
+
 // The game's menu font (Rodin bold), rasterised for labels at this cap height.
 constexpr std::string_view BodyFont = "scft/ninP_RodinNTLG-B_DH_003_subset.bfotf";
 constexpr std::uint32_t FontCap = 40;
@@ -198,7 +219,7 @@ struct Module {
     // Item display names, loaded once off the sample thread from the player's message archive.
     std::thread names_thread;
     std::atomic<bool> names_ready{false};
-    std::unordered_map<std::string, std::string> names;
+    std::unordered_map<std::string, TotkAssets::ActorText> names;
 
     ~Module() {
         if (names_thread.joinable())
@@ -221,10 +242,20 @@ struct Module {
     // Internal ids (Weapon_Sword_052) until the names are in.
     std::string ItemText(const std::string& id) const {
         if (names_ready.load(std::memory_order_acquire))
-            if (const auto it = names.find(id); it != names.end())
-                return it->second;
+            if (const auto it = names.find(id); it != names.end() && !it->second.name.empty())
+                return it->second.name;
         return id;
     }
+    std::string ItemCaption(const std::string& id) const {
+        if (names_ready.load(std::memory_order_acquire))
+            if (const auto it = names.find(id); it != names.end())
+                return it->second.caption;
+        return {};
+    }
+
+    // ---- Inventory page state (guarded by `mutex`) ----
+    int inv_category{0};
+    int inv_selected{0};
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     int view_layer{-1}; // -1 = follow Link
     int link_layer{Surface};
@@ -277,7 +308,20 @@ struct Module {
         return EDEN_DSMOD_TRUE;
     }
 
-    EdenDsmodBool OnAction(std::string_view action) {
+    EdenDsmodBool OnAction(std::string_view action, std::int64_t arg) {
+        if (action == "inventory_category" && arg >= 0 &&
+            arg < static_cast<std::int64_t>(std::size(Categories))) {
+            std::scoped_lock lock{mutex};
+            if (inv_category != arg)
+                inv_selected = 0;
+            inv_category = static_cast<int>(arg);
+            return EDEN_DSMOD_TRUE;
+        }
+        if (action == "inventory_choose" && arg >= 0 && arg < static_cast<std::int64_t>(MaxItems)) {
+            std::scoped_lock lock{mutex};
+            inv_selected = static_cast<int>(arg);
+            return EDEN_DSMOD_TRUE;
+        }
         if (action == "map_layers") {
             std::scoped_lock lock{mutex};
             const int from = view_layer < 0 ? link_layer : view_layer;
@@ -303,6 +347,88 @@ struct Module {
         PublishGear(h, gmd);
         PublishMap(h, gmd);
         PublishOptions(h, gmd);
+        PublishInventory(h, gmd);
+    }
+
+    // Equipped slots of a pouch: EquipIndex is an int array (armor has one per body part).
+    template <class G>
+    std::vector<int> EquippedSlots(G& gmd, const std::string& base) {
+        std::vector<int> out;
+        if (const auto e = gmd.GetIntArray(Murmur3(base + ".EquipIndex")))
+            for (const s32 v : *e)
+                if (v >= 0)
+                    out.push_back(v);
+        if (out.empty())
+            if (const auto e = gmd.GetInt(Murmur3(base + ".EquipIndex")); e && *e >= 0)
+                out.push_back(*e);
+        return out;
+    }
+
+    template <class G>
+    void PublishInventory(const EdenDsmodHostApi& h, G& gmd) {
+        int category, selected;
+        {
+            std::scoped_lock lock{mutex};
+            category = inv_category;
+            selected = inv_selected;
+        }
+        const auto& cat = Categories[category];
+        for (std::size_t t = 0; t < std::size(Categories); ++t)
+            h.publish_i64(h.userdata, ("totk.inv.tab." + std::to_string(t)).c_str(),
+                          static_cast<int>(t) == category ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.inv.category", category);
+        h.publish_text(h.userdata, "totk.inv.title", cat.title);
+        const std::string base = std::string{"Pouch."} + cat.pouch;
+        const auto names = gmd.GetString64Array(Murmur3(base + ".Content.Name"));
+        std::optional<std::vector<s32>> counts = gmd.GetIntArray(Murmur3(base + ".Content.Life"));
+        const auto equipped = EquippedSlots(gmd, base);
+        // Pouch slots in order, skipping empty ones; `slot` keeps the game's index.
+        struct Row {
+            std::size_t slot;
+            const std::string* id;
+        };
+        std::vector<Row> rows;
+        if (names)
+            for (std::size_t i = 0; i < names->size() && rows.size() < MaxItems; ++i)
+                if (!(*names)[i].empty())
+                    rows.push_back({i, &(*names)[i]});
+        h.publish_i64(h.userdata, "totk.inv.count", static_cast<s64>(rows.size()));
+        h.publish_text(h.userdata, "totk.inv.empty_text", rows.empty() ? "Nothing here yet" : "");
+        if (selected >= static_cast<int>(rows.size()))
+            selected = rows.empty() ? 0 : static_cast<int>(rows.size()) - 1;
+        for (std::size_t r = 0; r < rows.size(); ++r) {
+            const auto& row = rows[r];
+            const std::string key = "totk.inv.item." + std::to_string(r);
+            h.publish_text(h.userdata, (key + ".icon").c_str(),
+                           ("module:totk:icon/" + *row.id).c_str());
+            std::string qty;
+            if (counts && row.slot < counts->size()) {
+                const s32 v = (*counts)[row.slot];
+                qty = cat.gear ? DurabilityText(v) : (v > 1 ? "x" + std::to_string(v) : "");
+            }
+            h.publish_text(h.userdata, (key + ".qty").c_str(), qty.c_str());
+            const bool on = std::find(equipped.begin(), equipped.end(),
+                                      static_cast<int>(row.slot)) != equipped.end();
+            h.publish_i64(h.userdata, (key + ".equipped").c_str(), on ? 1 : 0);
+            h.publish_i64(h.userdata, (key + ".selected").c_str(),
+                          static_cast<int>(r) == selected ? 1 : 0);
+        }
+        const bool sel_valid = !rows.empty();
+        h.publish_i64(h.userdata, "totk.inv.sel.valid", sel_valid ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.inv.sel.can_use", 0); // equip/eat: not wired yet
+        if (!sel_valid)
+            return;
+        const auto& row = rows[static_cast<std::size_t>(selected)];
+        h.publish_text(h.userdata, "totk.inv.sel.icon", ("module:totk:icon/" + *row.id).c_str());
+        h.publish_text(h.userdata, "totk.inv.sel.name", ItemText(*row.id).c_str());
+        h.publish_text(h.userdata, "totk.inv.sel.desc", ItemCaption(*row.id).c_str());
+        std::string stat;
+        if (counts && row.slot < counts->size()) {
+            const s32 v = (*counts)[row.slot];
+            stat = cat.gear ? "Durability " + DurabilityText(v)
+                            : (v > 0 ? "Owned " + std::to_string(v) : "");
+        }
+        h.publish_text(h.userdata, "totk.inv.sel.stat", stat.c_str());
     }
 
     template <class G>
@@ -517,10 +643,10 @@ void ConfigureCallback(void* p, const EdenDsmodHostExtensions* ext) {
     }
 }
 
-EdenDsmodBool ActionCallback(void* p, const char* action, std::int64_t) {
+EdenDsmodBool ActionCallback(void* p, const char* action, std::int64_t arg) {
     try {
         if (p && action)
-            return static_cast<Module*>(p)->OnAction(action);
+            return static_cast<Module*>(p)->OnAction(action, arg);
     } catch (...) {
     }
     return EDEN_DSMOD_FALSE;

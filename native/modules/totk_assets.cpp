@@ -593,14 +593,14 @@ std::vector<std::pair<std::string, std::string>> MsbtEntries(std::span<const u8>
     return out;
 }
 
-std::unordered_map<std::string, std::string> LoadActorNames(const RomfsReader& read,
-                                                            std::string_view lang) {
-    std::unordered_map<std::string, std::string> names;
+std::unordered_map<std::string, ActorText> LoadActorNames(const RomfsReader& read,
+                                                          std::string_view lang) {
+    std::unordered_map<std::string, ActorText> names;
     Dictionaries dicts;
     if (const auto pack = read("/Pack/ZsDic.pack.zs"))
         dicts.Load(*pack);
     // The update renumbers the message archive; take the newest one present.
-    for (const char* version : {"140", "142", "141", "130", "121", "120", "112", "110", "100"}) {
+    for (const char* version : {"142", "141", "140", "130", "121", "120", "112", "110", "100"}) {
         const auto raw = read("/Mals/" + std::string{lang} + ".Product." + version + ".sarc.zs");
         if (!raw)
             continue;
@@ -611,9 +611,13 @@ std::unordered_map<std::string, std::string> LoadActorNames(const RomfsReader& r
             if (!member.starts_with("ActorMsg/") || !member.ends_with(".msbt"))
                 return false;
             for (auto& [label, text] : MsbtEntries(bytes)) {
-                constexpr std::string_view suffix{"_Name"};
-                if (label.size() > suffix.size() && label.ends_with(suffix) && !text.empty())
-                    names.emplace(label.substr(0, label.size() - suffix.size()), std::move(text));
+                constexpr std::string_view name{"_Name"}, caption{"_Caption"};
+                if (text.empty())
+                    continue;
+                if (label.size() > name.size() && label.ends_with(name))
+                    names[label.substr(0, label.size() - name.size())].name = std::move(text);
+                else if (label.size() > caption.size() && label.ends_with(caption))
+                    names[label.substr(0, label.size() - caption.size())].caption = std::move(text);
             }
             return false;
         });

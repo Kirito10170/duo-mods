@@ -58,10 +58,13 @@ std::optional<std::vector<std::uint8_t>> SarcMember(std::span<const std::uint8_t
 std::vector<std::string> SarcNames(std::span<const std::uint8_t> sarc);
 /// MSBT label -> text (UTF-8, inline control tags dropped).
 std::vector<std::pair<std::string, std::string>> MsbtEntries(std::span<const std::uint8_t> msbt);
-/// Display names of actors (items, weapons, materials) from /Mals/<lang>.Product.*.sarc.zs:
-/// every ActorMsg/*.msbt label "<Actor>_Name", keyed by actor name.
-std::unordered_map<std::string, std::string> LoadActorNames(const RomfsReader& read,
-                                                            std::string_view lang);
+/// Display text of actors (items, weapons, materials) from /Mals/<lang>.Product.*.sarc.zs:
+/// every ActorMsg/*.msbt "<Actor>_Name" and "<Actor>_Caption", keyed by actor name.
+struct ActorText {
+    std::string name, caption;
+};
+std::unordered_map<std::string, ActorText> LoadActorNames(const RomfsReader& read,
+                                                          std::string_view lang);
 /// Texture names in a BNTX.
 std::vector<std::string> BntxNames(std::span<const std::uint8_t> bntx);
 /// Decode one BNTX texture (by name; empty name = the first texture) to RGBA8.
