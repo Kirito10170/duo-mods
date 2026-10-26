@@ -462,7 +462,8 @@ std::optional<std::pair<std::string, std::string>> Decoder::Resolve(std::string_
     const auto rest = key.substr(slash + 1);
     if (kind == "map") {
         // <L>_<CC>-<RR>_<ZZ>[_<flags>]: layer letter, two-digit column and row, two-digit zoom
-        if (rest.size() < 11 || !SafeName(rest) ||
+        // (Depths tiles have no flags, so the shortest key is 10 characters)
+        if (rest.size() < 10 || !SafeName(rest) ||
             (rest[0] != 'G' && rest[0] != 'S' && rest[0] != 'U') || rest[1] != '_' ||
             rest[4] != '-' || rest[7] != '_')
             return std::nullopt;
