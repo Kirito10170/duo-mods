@@ -4,6 +4,7 @@
 // Host-side helper for the TOTK companion's asset decoder, run against a romfs dump:
 //   totk-assets-tool <romfs> list <path>        SARC members, or BNTX texture names
 //   totk-assets-tool <romfs> dump <key> <out>   decode a module:totk:<key> image to PAM (RGBA)
+//   totk-assets-tool <romfs> msbt <path> [member] MSBT labels and text (member: inside a SARC)
 // It exercises exactly the code the module ships. The emulator's ASTC decoder is not here, so
 // an ASTC texture is written as <out>.astc (astcenc container) and the PAM comes out grey;
 // `astcenc -dl <out>.astc <out>.png` decodes it for checking.
@@ -72,6 +73,22 @@ int main(int argc, char** argv) {
         }
         for (const auto& t : BntxNames(*bytes))
             std::printf("tex %s\n", t.c_str());
+        return 0;
+    }
+    if (op == "msbt") {
+        Dictionaries dicts;
+        if (const auto pack = read("/Pack/ZsDic.pack.zs"))
+            dicts.Load(*pack);
+        const auto raw = read(argv[3]);
+        if (!raw)
+            return 1;
+        auto bytes = dicts.Decompress(*raw);
+        if (bytes && argc >= 5)
+            bytes = SarcMember(*bytes, argv[4]);
+        if (!bytes)
+            return 1;
+        for (const auto& [label, text] : MsbtEntries(*bytes))
+            std::printf("%s\t%s\n", label.c_str(), text.c_str());
         return 0;
     }
     if (op == "dump" && argc >= 5) {

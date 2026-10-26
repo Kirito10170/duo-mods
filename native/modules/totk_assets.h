@@ -9,6 +9,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 #include "core/mods/dsmod_module_extensions.h"
@@ -55,6 +56,12 @@ std::optional<std::vector<std::uint8_t>> Zstd(std::span<const std::uint8_t> in);
 std::optional<std::vector<std::uint8_t>> SarcMember(std::span<const std::uint8_t> sarc,
                                                     std::string_view name);
 std::vector<std::string> SarcNames(std::span<const std::uint8_t> sarc);
+/// MSBT label -> text (UTF-8, inline control tags dropped).
+std::vector<std::pair<std::string, std::string>> MsbtEntries(std::span<const std::uint8_t> msbt);
+/// Display names of actors (items, weapons, materials) from /Mals/<lang>.Product.*.sarc.zs:
+/// every ActorMsg/*.msbt label "<Actor>_Name", keyed by actor name.
+std::unordered_map<std::string, std::string> LoadActorNames(const RomfsReader& read,
+                                                            std::string_view lang);
 /// Texture names in a BNTX.
 std::vector<std::string> BntxNames(std::span<const std::uint8_t> bntx);
 /// Decode one BNTX texture (by name; empty name = the first texture) to RGBA8.

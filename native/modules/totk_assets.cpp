@@ -490,6 +490,132 @@ std::optional<std::pair<std::string, std::string>> Decoder::Resolve(std::string_
     return std::nullopt;
 }
 
+namespace {
+void AppendUtf8(std::string& out, u32 c) {
+    if (c < 0x80) {
+        out += static_cast<char>(c);
+    } else if (c < 0x800) {
+        out += static_cast<char>(0xC0 | c >> 6);
+        out += static_cast<char>(0x80 | (c & 0x3F));
+    } else if (c < 0x10000) {
+        out += static_cast<char>(0xE0 | c >> 12);
+        out += static_cast<char>(0x80 | (c >> 6 & 0x3F));
+        out += static_cast<char>(0x80 | (c & 0x3F));
+    } else {
+        out += static_cast<char>(0xF0 | c >> 18);
+        out += static_cast<char>(0x80 | (c >> 12 & 0x3F));
+        out += static_cast<char>(0x80 | (c >> 6 & 0x3F));
+        out += static_cast<char>(0x80 | (c & 0x3F));
+    }
+}
+
+// One TXT2 string (UTF-16LE, NUL-terminated) to UTF-8, dropping inline control tags.
+std::string Txt2String(std::span<const u8> t, u64 at, u64 end) {
+    std::string out;
+    while (at + 2 <= end) {
+        u32 c = U16(t, at);
+        at += 2;
+        if (c == 0)
+            break;
+        if (c == 0x0E) { // tag: group, type, parameter size, parameters
+            const u16 size = U16(t, at + 4);
+            at += 6 + size;
+            continue;
+        }
+        if (c == 0x0F) { // closing tag: group, type
+            at += 4;
+            continue;
+        }
+        if (c >= 0xD800 && c < 0xDC00 && at + 2 <= end) {
+            const u32 lo = U16(t, at);
+            if (lo >= 0xDC00 && lo < 0xE000) {
+                c = 0x10000 + ((c - 0xD800) << 10) + (lo - 0xDC00);
+                at += 2;
+            }
+        }
+        AppendUtf8(out, c);
+    }
+    return out;
+}
+} // namespace
+
+std::vector<std::pair<std::string, std::string>> MsbtEntries(std::span<const u8> m) {
+    std::vector<std::pair<std::string, std::string>> out;
+    if (m.size() < 0x20 || !Magic(m, "MsgStdBn") || U16(m, 8) != 0xFEFF || m[0xC] != 1)
+        return out; // little-endian UTF-16 only (what TOTK ships)
+    const u16 sections = U16(m, 0xE);
+    std::span<const u8> lbl, txt;
+    u64 at = 0x20;
+    for (u16 i = 0; i < sections && Fits(m, at, 16); ++i) {
+        const u32 size = U32(m, at + 4);
+        if (!Fits(m, at + 16, size))
+            break;
+        const auto data = m.subspan(at + 16, size);
+        if (Magic(m.subspan(at), "LBL1"))
+            lbl = data;
+        else if (Magic(m.subspan(at), "TXT2"))
+            txt = data;
+        at = (at + 16 + size + 15) / 16 * 16;
+    }
+    if (lbl.size() < 4 || txt.size() < 4)
+        return out;
+    const u32 strings = U32(txt, 0);
+    if (!Fits(txt, 4, u64{strings} * 4))
+        return out;
+    const u32 slots = U32(lbl, 0);
+    if (!Fits(lbl, 4, u64{slots} * 8))
+        return out;
+    for (u32 s = 0; s < slots; ++s) {
+        const u32 count = U32(lbl, 4 + s * 8);
+        u64 o = U32(lbl, 8 + s * 8);
+        for (u32 n = 0; n < count && Fits(lbl, o, 1); ++n) {
+            const u8 len = lbl[o];
+            if (!Fits(lbl, o + 1, len + 4u))
+                break;
+            std::string label(reinterpret_cast<const char*>(lbl.data() + o + 1), len);
+            const u32 index = U32(lbl, o + 1 + len);
+            o += 1 + len + 4;
+            if (index >= strings)
+                continue;
+            const u64 begin = U32(txt, 4 + index * 4);
+            const u64 end = index + 1 < strings ? U32(txt, 4 + (index + 1) * 4) : txt.size();
+            if (begin >= txt.size() || end > txt.size() || begin > end)
+                continue;
+            out.emplace_back(std::move(label), Txt2String(txt, begin, end));
+        }
+    }
+    return out;
+}
+
+std::unordered_map<std::string, std::string> LoadActorNames(const RomfsReader& read,
+                                                            std::string_view lang) {
+    std::unordered_map<std::string, std::string> names;
+    Dictionaries dicts;
+    if (const auto pack = read("/Pack/ZsDic.pack.zs"))
+        dicts.Load(*pack);
+    // The update renumbers the message archive; take the newest one present.
+    for (const char* version : {"140", "142", "141", "130", "121", "120", "112", "110", "100"}) {
+        const auto raw = read("/Mals/" + std::string{lang} + ".Product." + version + ".sarc.zs");
+        if (!raw)
+            continue;
+        const auto sarc = dicts.Decompress(*raw);
+        if (!sarc)
+            continue;
+        SarcWalk(*sarc, [&](std::string_view member, std::span<const u8> bytes) {
+            if (!member.starts_with("ActorMsg/") || !member.ends_with(".msbt"))
+                return false;
+            for (auto& [label, text] : MsbtEntries(bytes)) {
+                constexpr std::string_view suffix{"_Name"};
+                if (label.size() > suffix.size() && label.ends_with(suffix) && !text.empty())
+                    names.emplace(label.substr(0, label.size() - suffix.size()), std::move(text));
+            }
+            return false;
+        });
+        break;
+    }
+    return names;
+}
+
 struct Decoder::Impl {
     explicit Impl(std::size_t b) : budget(b) {}
     std::size_t budget, used{};

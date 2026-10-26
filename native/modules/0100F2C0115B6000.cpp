@@ -22,6 +22,8 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <thread>
+#include <unordered_map>
 #include <span>
 #include <string>
 #include <string_view>
@@ -128,10 +130,6 @@ std::string AbilityText(const std::vector<std::string>& ids) {
     return out;
 }
 
-// Item names are internal ids (Weapon_Sword_052) until the game's message files are decoded.
-std::string ItemText(std::string_view id) {
-    return std::string{id};
-}
 
 // ---- Settings page --------------------------------------------------------------------------
 // option.sav entries, in the game's System > Options order (amiibo left out). Hash 0 = not yet
@@ -158,6 +156,36 @@ struct Module {
     bool supported{};
     u64 main_base{};
     TotkAssets::Decoder assets;
+    // Item display names, loaded once off the sample thread from the player's message archive.
+    std::thread names_thread;
+    std::atomic<bool> names_ready{false};
+    std::unordered_map<std::string, std::string> names;
+
+    ~Module() {
+        if (names_thread.joinable())
+            names_thread.join();
+    }
+
+    void StartNames(const EdenDsmodHostApi& h) {
+        if (names_thread.joinable() || !h.read_romfs)
+            return;
+        names_thread = std::thread([this, romfs = MakeRomfsReader(h)] {
+            try {
+                names = TotkAssets::LoadActorNames(romfs, "USen");
+            } catch (...) {
+                names.clear();
+            }
+            names_ready.store(true, std::memory_order_release);
+        });
+    }
+
+    // Internal ids (Weapon_Sword_052) until the names are in.
+    std::string ItemText(const std::string& id) const {
+        if (names_ready.load(std::memory_order_acquire))
+            if (const auto it = names.find(id); it != names.end())
+                return it->second;
+        return id;
+    }
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     int view_layer{-1}; // -1 = follow Link
     int link_layer{Surface};
@@ -211,6 +239,7 @@ struct Module {
         auto read = [&h](u64 at, void* out, std::size_t size) {
             return h.read_memory && h.read_memory(h.userdata, at, out, size) == EDEN_DSMOD_TRUE;
         };
+        StartNames(h);
         totk::gmd::Reader gmd{read, h.main_base};
         const bool live = gmd.Begin();
         h.publish_i64(h.userdata, "totk.ready", live ? 1 : 0);
