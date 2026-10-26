@@ -58,6 +58,12 @@ def map_overlays(base, detail=None):
     return out
 
 
+# Shrines, lightroots and towers, one slot per point on the layer on show (kind 0 = empty slot).
+TRAVEL_MARKERS = {"group": "travel", "count": 400, "x": "totk.travel.{i}.x",
+                  "y": "totk.travel.{i}.y", "kind": "totk.travel.{i}.kind", "hide_when_kind": 0,
+                  "icon_src_bind": "totk.travel.{i}.icon", "size": 52, "selected_size": 68}
+
+
 def map_widget(r, wid, **kw):
     return {"type": "map", "id": wid, "area": "Hyrule", "rect": r, "area_label": False,
             "marker_x_bind": "totk.map.x", "marker_y_bind": "totk.map.y",
@@ -212,10 +218,21 @@ def map_page():
     g = {"need_bind": CONTENT_GATE}
     w = [rect([0, 0, W, H], "#FF000D17"),
          map_widget([0, 0, W, H], "world_map", pan_zoom=True, max_zoom=16,
-                    marker_size=[72, 72], overlays=map_overlays("far", "near")),
+                    marker_size=[72, 72], overlays=map_overlays("far", "near"),
+                    on_marker_tap="travel_select", marker_tap_groups=["travel"], marker_hit_px=40,
+                    empty_tap_deselects=True),
          image([0, 0, W, 160], "file:assets/fade-down.png", tint="#C8000000", **g),
          label([0, 24, W, 72], "", 6, TITLE_BLUE, align="center", text_center_h=72,
                outline="#C8000A19", outline_px=3, text_bind="totk.map.layer_name", **g)]
+    # The tapped shrine, lightroot or tower.
+    sel = {"need_bind": "totk.travel.sel.valid"}
+    w += [{**x, **sel} for x in side_panel([24, 790, 700, 148])]
+    w += [label([52, 802, 650, 60], "", 5, CREAM, text_center_h=60,
+                text_bind="totk.travel.sel.name", **sel),
+          label([52, 858, 650, 36], "", 3, TITLE_BLUE, text_center_h=36,
+                text_bind="totk.travel.sel.status", **sel),
+          label([52, 896, 650, 36], "", 3, "#B4E6ECF2", text_center_h=36,
+                text_bind="totk.travel.sel.hint", **sel)]
     w += bottom_bar([("Back", "go_ready")], [("Layers", "map_layers")],
                     hint="Pinch to zoom - Drag to pan")
     return {"id": "map", "title": "Map", "widgets": w + [unsupported_notice()]}
@@ -303,6 +320,7 @@ def options_page():
 def main():
     actions = {f"go_{pid}": {"kind": "page", "page": pid, "transition": "fade", "duration_ms": 150}
                for pid, _ in NAV}
+    actions["travel_select"] = {"kind": "module", "action": "travel_select", "argument": "$payload"}
     for name in ["map_layers", "inventory_sort", "inventory_use"]:
         actions[name] = {"kind": "module", "action": name, "argument": 0}
     for i in range(len(TABS)):
@@ -329,7 +347,8 @@ def main():
         "module_outputs": ["totk.supported", "totk.unsupported", "totk.ready"],
         "map": {"areas": {"Hyrule": {"min": list(MAP_MIN), "max": list(MAP_MAX),
                                      "image": "file:assets/map-transparent.png",
-                                     "clamp_view": True}},
+                                     "clamp_view": True,
+                                     "dynamic_markers": [TRAVEL_MARKERS]}},
                 "style": {"background": "#FF000D17"}},
         "pages": [ready_page(), map_page(), inventory_page(), options_page()],
     }

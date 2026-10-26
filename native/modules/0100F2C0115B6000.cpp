@@ -34,6 +34,7 @@
 #include "totk_assets.h"
 #include "totk_font.h"
 #include "totk_gamedata.h"
+#include "totk_travel.h"
 
 namespace {
 using namespace dsmod_sdk::int_types;
@@ -85,7 +86,11 @@ static_assert(FlagCounts[0].size() == Cells && FlagCounts[1].size() == Cells);
 constexpr const char* NearZoom = "01";
 constexpr const char* FarZoom = "03";
 // Provisional layer split by height until the game's own layer state is located.
-constexpr float SkyAbove = 1100.0f, DepthsBelow = -150.0f;
+// Layer of a position. No GameData flag says which layer Link is on, so: below the Depths cut is
+// the Depths; above SkyAlways is the Sky; between SkyNear and SkyAlways it is the Sky only over a
+// sky island (any actor of a Sky scene within a SkyGrid cell or its neighbours).
+constexpr float DepthsBelow = -150.0f, SkyNear = 500.0f, SkyAlways = 1500.0f;
+constexpr int SkyGrid = 100, SkyCols = 12000 / SkyGrid, SkyRows = 10000 / SkyGrid;
 
 std::string TileKey(int layer, int cell, const char* zoom) {
     char buf[64];
@@ -105,8 +110,138 @@ std::string TileKey(int layer, int cell, const char* zoom) {
     return buf;
 }
 
-int LayerAt(float y) {
-    return y > SkyAbove ? Sky : y < DepthsBelow ? Depths : Surface;
+std::optional<std::size_t> SkyCell(float x, float z) {
+    const int c = static_cast<int>(std::floor((x + 6000.0f) / SkyGrid));
+    const int r = static_cast<int>(std::floor((z + 5000.0f) / SkyGrid));
+    if (c < 0 || c >= SkyCols || r < 0 || r >= SkyRows)
+        return std::nullopt;
+    return static_cast<std::size_t>(r * SkyCols + c);
+}
+
+int LayerAt(float x, float y, float z, const std::vector<u8>& sky) {
+    if (y < DepthsBelow)
+        return Depths;
+    if (y > SkyAlways)
+        return Sky;
+    if (y > SkyNear)
+        if (const auto cell = SkyCell(x, z); cell && *cell < sky.size() && sky[*cell])
+            return Sky;
+    return Surface;
+}
+
+// ---- Travel points ----------------------------------------------------------------------------
+// Read once from the player's scene files: Surface and Depths scenes are an A-J x 1-8 grid; the
+// Sky scenes have one file per island group, so they are listed by name.
+constexpr std::string_view SkyScenes[]{
+    "Eldin_SkyIsland01", "Eldin_SkyIsland02", "Eldin_SkyIsland03", "Eldin_SkyIsland05",
+    "Eldin_SkyIsland07", "Eldin_SkyIsland08_OutputAsSky", "Map_Fld_Zora_TrickArt_Set_A_01",
+    "Map_SKy_Firone_SmallZonauRuins_Island_B_00", "Map_SKy_Firone_SmallZonauRuins_Island_D_00",
+    "Pln_Fld_Rito_SkyField_Start_01", "Pln_Fld_Zora_SkyField_Before_DungeonWay",
+    "SetEnemyBases_Drake_Mix_SkyIsland_PlacementSet_A-2",
+    "SetEnemyBases_Drake_Mix_SkyIsland_PlacementSet_A-7",
+    "SetEnemyBases_Drake_Mix_SkyIsland_PlacementSet_J-8", "Set_SkyIsland_Akkare_I-3_Sky",
+    "Set_SkyIsland_Akkare_J-1_Sky", "Set_SkyIsland_Akkare_J-2_Sky", "Set_SkyIsland_Akkare_J-3_Sky",
+    "Set_SkyIsland_CentralHyrule_D-6_Sky", "Set_SkyIsland_CentralHyrule_E-5_Sky_East",
+    "Set_SkyIsland_CentralHyrule_E-5_Sky_West", "Set_SkyIsland_CentralHyrule_F-5_Sky_East",
+    "Set_SkyIsland_CentralHyrule_F-5_Sky_West", "Set_SkyIsland_CentralHyrule_G-4_Sky",
+    "Set_SkyIsland_Eldin_G-3_Sky", "Set_SkyIsland_Eldin_I-1_Sky",
+    "Set_SkyIsland_Firone_F-7_Sky_Crystal", "Set_SkyIsland_Firone_F-7_Sky",
+    "Set_SkyIsland_Firone_H-7_Sky_North", "Set_SkyIsland_Firone_H-7_Sky",
+    "Set_SkyIsland_Gerudo_C-7_Sky", "Set_SkyIsland_Hateru_H-8_Sky", "Set_SkyIsland_Hebra_D-1_Sky",
+    "Set_SkyIsland_HyruleForest_F-2_Sky", "Set_SkyIsland_HyruleForest_F-2_South",
+    "Set_SkyIsland_HyruleHill_C-3_Sky", "Set_SkyIsland_HyruleHill_C-5_Sky",
+    "Set_SkyIsland_HyruleLake_E-7_Sky", "Set_SkyIsland_Kakariko_G-6_Sky",
+    "Set_SkyIsland_Lanayru_G-5_Sky", "Set_SkyIsland_Lanayru_I-6_Sky",
+    "Set_SkyIsland_Lanayru_J-5_Sky", "Set_SkyIsland_Tabanta_B-2", "Set_SkyIsland_Tabanta_B-3_Sky",
+    "Set_SkyIsland_Tabanta_B-4_Sky", "Set_SkyIsland_Zora_H-4_Sky", "Set_SkyIsland_Zora_H-5_Sky",
+    "Set_SkyIsland_gerudo_A-6_Sky", "SkyIsland0069", "SkyIsland0070", "SkyIsland0071",
+    "SkyIsland_Monument_01", "SkyIsland_Monument_02", "SkyIsland_Monument_03",
+    "SkyIsland_Monument_04", "SkyIsland_Monument_06", "SkyIsland_Monument_07",
+    "SkyIsland_Monument_08", "SkyIsland_Monument_09", "SkyIsland_Monument_10",
+    "SkyIsland_Monument_11", "SkyIsland_Monument_12", "SkyIsland_Monument_13", "StartIslandMerge2",
+};
+// Shrines whose entrance sits in a cave, well or Hyrule Castle scene (Surface layer).
+constexpr std::string_view ShrineScenes[]{
+    "LargeDungeon/LargeDungeonHyruleCastle", "Castle/Set_HyruleCastle_IslandGround_A",
+    "Cave/Cave_CentralHyrule_0009_GroupSet_000", "Cave/Cave_Eldin_0023_GroupSet_000",
+    "Cave/Cave_Eldin_0031_GroupSet_000", "Cave/Cave_Eldin_0033_GroupSet_000",
+    "Cave/Cave_Firone_0009_GroupSet_000", "Cave/Cave_Firone_0023_GroupSet_000",
+    "Cave/Cave_FirstPlateau_0001_GroupSet_000", "Cave/Cave_GerudoDesert_0039_GruopSet_000",
+    "Cave/Cave_GerudoDesert_0050_GroupSet_000", "Cave/Cave_HateruEast_0000_GroupSet_000",
+    "Cave/Cave_HateruEast_0013_GroupSet_000", "Cave/Cave_Hebra_0013",
+    "Cave/Cave_Hebra_0022_GroupSet_000", "Cave/Cave_Hebra_0037_GroupSet_000",
+    "Cave/Cave_Hebra_0039_GroupSet_000", "Cave/Cave_HyruleForest_0008_GroupSet_000",
+    "Cave/Cave_HyruleRidge_0003", "Cave/Cave_LanayruMountain_0004_GroupSet_000",
+    "Cave/Cave_LanayruMountain_0008_GroupSet_000", "Cave/Cave_LanayruMountain_0010_GroupSet_000",
+    "Cave/Cave_LanayruMountain_0022_GroupSet_000", "Cave/Cave_LanayruMountain_GroupSet_000",
+    "Cave/Cave_Lanayru_0006_Group_Set_001", "Cave/Cave_Lanayru_0024_GroupSet_000",
+    "Cave/Cave_Lanayru_0036_GroupSet_000", "Cave/Cave_Lanayru_0048_GroupSet_000",
+    "Cave/Cave_Tabantha_0003_GroupSet_000", "Cave/Well_0006_GroupSet_000",
+    "Cave/Well_0023_GroupSet_000",
+};
+constexpr std::size_t MaxTravel = 400;
+// Marker pictures from the Common layout archive, by travel::Kind.
+constexpr const char* TravelIcons[]{"module:totk:common/MapIconDungeon_L_Icon^s",
+                                    "module:totk:common/MapIconCheckPoint_L_Icon^s",
+                                    "module:totk:common/MapIconTower_L_Icon^s"};
+
+struct TravelPoint {
+    totk::travel::Kind kind;
+    int layer;
+    float x, y, z;
+    u32 state; // GameData Enum key hash; 0 = none known (towers)
+    std::string label; // "Dungeon021", "CheckPoint086", "Tower"
+};
+
+struct World {
+    std::vector<TravelPoint> points;
+    std::vector<u8> sky; // SkyCols x SkyRows, 1 = sky island nearby
+};
+
+World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& stop) {
+    World world;
+    world.sky.assign(static_cast<std::size_t>(SkyCols * SkyRows), 0);
+    TotkAssets::Dictionaries dicts;
+    if (const auto pack = read("/Pack/ZsDic.pack.zs"))
+        dicts.Load(*pack);
+    std::unordered_map<std::string, bool> seen;
+    const auto scene = [&](const std::string& path, int layer) {
+        if (stop.load(std::memory_order_relaxed))
+            return;
+        const auto raw = read(path);
+        const auto bytes = raw ? dicts.Decompress(*raw) : std::nullopt;
+        if (!bytes)
+            return;
+        for (auto& p : totk::travel::Scan(*bytes)) {
+            using totk::travel::Kind;
+            std::string label = p.kind == Kind::Tower ? "Tower" : p.state_key.substr(p.state_key.find('.') + 1);
+            // Shrine entrances and towers can be placed in more than one scene.
+            char where[48];
+            std::snprintf(where, sizeof where, "%s@%.0f,%.0f", label.c_str(), p.x, p.z);
+            if (!seen.emplace(p.state_key.empty() ? where : p.state_key, true).second)
+                continue;
+            world.points.push_back({p.kind, p.kind == Kind::Lightroot ? Depths : layer, p.x, p.y, p.z,
+                                    p.state_key.empty() ? 0 : Murmur3(p.state_key), std::move(label)});
+        }
+        if (layer == Sky)
+            totk::travel::ForEachActor(*bytes, [&](std::string_view, float x, float, float z, const auto&) {
+                for (int dz = -1; dz <= 1; ++dz)
+                    for (int dx = -1; dx <= 1; ++dx)
+                        if (const auto cell = SkyCell(x + dx * SkyGrid, z + dz * SkyGrid))
+                            world.sky[*cell] = 1;
+            });
+    };
+    for (const auto& [field, layer] : {std::pair{"MainField", Surface}, std::pair{"MinusField", Depths}})
+        for (char col = 'A'; col <= 'J'; ++col)
+            for (int row = 1; row <= 8; ++row)
+                scene(std::string{"/Banc/"} + field + "/" + col + "-" + std::to_string(row) +
+                          "_Static.bcett.byml.zs",
+                      layer);
+    for (const auto name : SkyScenes)
+        scene("/Banc/MainField/Sky/" + std::string{name} + "_Static.bcett.byml.zs", Sky);
+    for (const auto name : ShrineScenes)
+        scene("/Banc/MainField/" + std::string{name} + "_Static.bcett.byml.zs", Surface);
+    return world;
 }
 
 // ---- Ready page -----------------------------------------------------------------------------
@@ -240,9 +375,30 @@ struct Module {
     std::atomic<bool> names_ready{false};
     std::unordered_map<std::string, TotkAssets::ActorText> names;
 
+    // Travel points and the sky-island grid, scanned once off the sample thread.
+    std::thread world_thread;
+    std::atomic<bool> world_ready{false}, stopping{false};
+    World world;
+
     ~Module() {
+        stopping.store(true);
         if (names_thread.joinable())
             names_thread.join();
+        if (world_thread.joinable())
+            world_thread.join();
+    }
+
+    void StartWorld(const EdenDsmodHostApi& h) {
+        if (world_thread.joinable() || !h.read_romfs)
+            return;
+        world_thread = std::thread([this, romfs = MakeRomfsReader(h)] {
+            try {
+                world = LoadWorld(romfs, stopping);
+            } catch (...) {
+                world = {};
+            }
+            world_ready.store(true, std::memory_order_release);
+        });
     }
 
     void StartNames(const EdenDsmodHostApi& h) {
@@ -278,6 +434,8 @@ struct Module {
     std::optional<std::pair<int, int>> inv_use; // {category, row} of a pressed Equip button
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     int view_layer{-1}; // -1 = follow Link
+    std::vector<int> travel_slots; // map marker slot -> world.points index
+    int travel_selected{-1};       // world.points index
     int link_layer{Surface};
 
     void Configure(const EdenDsmodHostExtensions* ext) {
@@ -347,6 +505,13 @@ struct Module {
             inv_use = std::pair{inv_category, inv_selected};
             return EDEN_DSMOD_TRUE;
         }
+        if (action == "travel_select") {
+            std::scoped_lock lock{mutex};
+            const bool known = arg >= 0 && static_cast<std::size_t>(arg) < travel_slots.size();
+            const int point = known ? travel_slots[static_cast<std::size_t>(arg)] : -1;
+            travel_selected = travel_selected == point ? -1 : point;
+            return EDEN_DSMOD_TRUE;
+        }
         if (action == "map_layers") {
             std::scoped_lock lock{mutex};
             const int from = view_layer < 0 ? link_layer : view_layer;
@@ -361,6 +526,7 @@ struct Module {
             return h.read_memory && h.read_memory(h.userdata, at, out, size) == EDEN_DSMOD_TRUE;
         };
         StartNames(h);
+        StartWorld(h);
         totk::gmd::Reader gmd{read, h.main_base};
         const bool live = gmd.Begin();
         h.publish_i64(h.userdata, "totk.ready", live ? 1 : 0);
@@ -371,6 +537,7 @@ struct Module {
         PublishVitals(h, gmd);
         PublishGear(h, gmd);
         PublishMap(h, gmd);
+        PublishTravel(h, gmd);
         PublishOptions(h, gmd);
         PublishInventory(h, gmd);
     }
@@ -616,7 +783,9 @@ struct Module {
         int layer;
         {
             std::scoped_lock lock{mutex};
-            const int now = LayerAt(pos->y);
+            static const std::vector<u8> no_sky;
+            const auto& sky = world_ready.load(std::memory_order_acquire) ? world.sky : no_sky;
+            const int now = LayerAt(pos->x, pos->y, pos->z, sky);
             if (now != link_layer)
                 view_layer = -1; // Link changed layer: follow him again
             link_layer = now;
@@ -643,6 +812,82 @@ struct Module {
             h.publish_text(h.userdata, TileBind("near", i).c_str(), near_tiles[i].c_str());
             h.publish_text(h.userdata, TileBind("far", i).c_str(), far_tiles[i].c_str());
         }
+    }
+
+    // Shrine, lightroot and tower markers of the layer on show. A shrine shows once found
+    // (DungeonState past Hidden) and a lightroot once lit; towers have no known state key yet.
+    template <class G>
+    void PublishTravel(const EdenDsmodHostApi& h, G& gmd) {
+        static const u32 Hidden = Murmur3("Hidden"), Open = Murmur3("Open"), Enter = Murmur3("Enter"),
+                         Clear = Murmur3("Clear");
+        int layer, selected;
+        {
+            std::scoped_lock lock{mutex};
+            layer = view_layer < 0 ? link_layer : view_layer;
+            selected = travel_selected;
+        }
+        std::vector<int> slots;
+        std::string sel_name, sel_status;
+        bool sel_shown = false, sel_travel = false;
+        if (world_ready.load(std::memory_order_acquire)) {
+            for (std::size_t i = 0; i < world.points.size() && slots.size() < MaxTravel; ++i) {
+                const auto& p = world.points[i];
+                if (p.layer != layer)
+                    continue;
+                using totk::travel::Kind;
+                const auto state = p.state ? gmd.GetEnum(p.state) : std::nullopt;
+                bool shown = true, travel = false;
+                std::string status;
+                if (p.kind == Kind::Shrine) {
+                    shown = state && *state != Hidden;
+                    travel = state && (*state == Open || *state == Enter || *state == Clear);
+                    status = !state ? "" : *state == Clear ? "Completed" : travel ? "Visited" : "Not yet entered";
+                } else if (p.kind == Kind::Lightroot) {
+                    shown = state && *state == Open;
+                    travel = shown;
+                    status = "Lit";
+                }
+                if (!shown)
+                    continue;
+                const std::size_t slot = slots.size();
+                slots.push_back(static_cast<int>(i));
+                const std::string key = "totk.travel." + std::to_string(slot);
+                h.publish_i64(h.userdata, (key + ".kind").c_str(), 1 + static_cast<int>(p.kind));
+                h.publish_f64(h.userdata, (key + ".x").c_str(), p.x);
+                h.publish_f64(h.userdata, (key + ".y").c_str(), -p.z);
+                h.publish_text(h.userdata, (key + ".icon").c_str(), TravelIcons[static_cast<int>(p.kind)]);
+                if (static_cast<int>(i) == selected) {
+                    sel_shown = true;
+                    sel_travel = travel;
+                    sel_status = status;
+                    sel_name = TravelName(p);
+                }
+            }
+        }
+        for (std::size_t slot = slots.size(); slot < MaxTravel; ++slot)
+            h.publish_i64(h.userdata, ("totk.travel." + std::to_string(slot) + ".kind").c_str(), 0);
+        {
+            std::scoped_lock lock{mutex};
+            travel_slots = std::move(slots);
+            if (!sel_shown)
+                travel_selected = -1;
+        }
+        h.publish_i64(h.userdata, "totk.travel.sel.valid", sel_shown ? 1 : 0);
+        h.publish_text(h.userdata, "totk.travel.sel.name", sel_name.c_str());
+        h.publish_text(h.userdata, "totk.travel.sel.status", sel_status.c_str());
+        // The travel request itself needs the game's own warp call (a guest helper); until it
+        // lands the panel says so instead of offering a button that does nothing.
+        h.publish_i64(h.userdata, "totk.travel.sel.can_travel", 0);
+        h.publish_text(h.userdata, "totk.travel.sel.hint",
+                       sel_travel ? "Travel from here is coming in the next build" : "You can't travel here yet");
+    }
+
+    static std::string TravelName(const TravelPoint& p) {
+        using totk::travel::Kind;
+        if (p.kind == Kind::Tower)
+            return "Skyview Tower";
+        const std::string_view digits = std::string_view{p.label}.substr(std::min<std::size_t>(p.label.size(), p.kind == Kind::Shrine ? 7 : 10));
+        return (p.kind == Kind::Shrine ? "Shrine " : "Lightroot ") + std::string{digits};
     }
 
     static const std::string& TileBind(std::string_view zoom, int i) {

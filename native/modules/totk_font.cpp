@@ -25,7 +25,10 @@ std::uint32_t Le32(const std::uint8_t* p) {
 std::optional<std::vector<std::uint8_t>> Deobfuscate(std::span<const std::uint8_t> in) {
     if (in.size() < 12)
         return std::nullopt;
-    const std::uint32_t size = Le32(in.data() + 4) ^ Key;
+    // Word 0 is the BFOTF magic 0x18029A7F; word 1, the payload size, is big-endian once unmasked.
+    if ((Le32(in.data()) ^ Key) != 0x18029A7Fu)
+        return std::nullopt;
+    const std::uint32_t size = __builtin_bswap32(Le32(in.data() + 4) ^ Key);
     if (size < 4 || size > MaxFontBytes || size > in.size() - 8)
         return std::nullopt;
     std::vector<std::uint8_t> out(size);

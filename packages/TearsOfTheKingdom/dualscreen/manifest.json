@@ -35,6 +35,11 @@
    "transition": "fade",
    "duration_ms": 150
   },
+  "travel_select": {
+   "kind": "module",
+   "action": "travel_select",
+   "argument": "$payload"
+  },
   "map_layers": {
    "kind": "module",
    "action": "map_layers",
@@ -2203,7 +2208,20 @@
      5000
     ],
     "image": "file:assets/map-transparent.png",
-    "clamp_view": true
+    "clamp_view": true,
+    "dynamic_markers": [
+     {
+      "group": "travel",
+      "count": 400,
+      "x": "totk.travel.{i}.x",
+      "y": "totk.travel.{i}.y",
+      "kind": "totk.travel.{i}.kind",
+      "hide_when_kind": 0,
+      "icon_src_bind": "totk.travel.{i}.icon",
+      "size": 52,
+      "selected_size": 68
+     }
+    ]
    }
   },
   "style": {
@@ -4857,7 +4875,13 @@
        "src_detail_bind": "totk.map.tile.near.119",
        "detail_threshold": 210
       }
-     ]
+     ],
+     "on_marker_tap": "travel_select",
+     "marker_tap_groups": [
+      "travel"
+     ],
+     "marker_hit_px": 40,
+     "empty_tap_deselects": true
     },
     {
      "type": "image",
@@ -4890,6 +4914,81 @@
      "outline_px": 3,
      "text_bind": "totk.map.layer_name",
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      790,
+      700,
+      148
+     ],
+     "bg": "#FF050708",
+     "color": "#00000000",
+     "need_bind": "totk.travel.sel.valid"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      790,
+      6,
+      148
+     ],
+     "bg": "#FF0090FD",
+     "color": "#00000000",
+     "need_bind": "totk.travel.sel.valid"
+    },
+    {
+     "type": "label",
+     "rect": [
+      52,
+      802,
+      650,
+      60
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_center_h": 60,
+     "text_bind": "totk.travel.sel.name",
+     "need_bind": "totk.travel.sel.valid"
+    },
+    {
+     "type": "label",
+     "rect": [
+      52,
+      858,
+      650,
+      36
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_center_h": 36,
+     "text_bind": "totk.travel.sel.status",
+     "need_bind": "totk.travel.sel.valid"
+    },
+    {
+     "type": "label",
+     "rect": [
+      52,
+      896,
+      650,
+      36
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#B4E6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_center_h": 36,
+     "text_bind": "totk.travel.sel.hint",
+     "need_bind": "totk.travel.sel.valid"
     },
     {
      "type": "rect",
