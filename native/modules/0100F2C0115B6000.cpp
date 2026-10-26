@@ -5,8 +5,8 @@
 // Every other build loads too, but only publishes the "update required" state (no reads).
 //
 // Skeleton stage: the readers (player position and layer, inventory pouch, game options) are
-// still being located on the running game, so the module only gates the build and publishes
-// the page state the manifest needs. Readers land as totk_*.h next to this file.
+// still being located on the running game, so the module gates the build, publishes the page
+// state the manifest needs and serves romfs images (totk_assets.*). Readers land as totk_*.h.
 //
 // Android is the target: nothing here may rely on guest calls (NCE has none), so changes to
 // game state go through write_memory or button presses only.
@@ -18,6 +18,8 @@
 #include <atomic>
 #include <cstring>
 #include <string_view>
+
+#include "totk_assets.h"
 
 namespace {
 using namespace dsmod_sdk::int_types;
@@ -31,15 +33,54 @@ EdenDsmodBool SupportsBuild(const char* build_id) {
     return build_id && std::strlen(build_id) >= 16 ? EDEN_DSMOD_TRUE : EDEN_DSMOD_FALSE;
 }
 
+// host->read_romfs as a whole-file reader (the base game plus update, as the game sees it).
+TotkAssets::RomfsReader MakeRomfsReader(const EdenDsmodHostApi& h) {
+    return [read_romfs = h.read_romfs,
+            userdata = h.userdata](const std::string& path) -> std::optional<std::vector<u8>> {
+        if (!read_romfs)
+            return std::nullopt;
+        const auto size = read_romfs(userdata, path.c_str(), 0, nullptr, 0);
+        if (!size || size > 64 * 1024 * 1024)
+            return std::nullopt;
+        std::vector<u8> out(size);
+        if (read_romfs(userdata, path.c_str(), 0, out.data(), size) != size)
+            return std::nullopt;
+        return out;
+    };
+}
+
 struct Module {
     bool supported{};
+    TotkAssets::Decoder assets;
+
+    void Configure(const EdenDsmodHostExtensions* ext) {
+        if (ext && ext->version == EDEN_DSMOD_EXT_VERSION && ext->abi_hash == EDEN_DSMOD_EXT_HASH &&
+            ext->struct_size >= sizeof(*ext))
+            assets.SetAstcDecoder({ext->userdata, ext->decode_astc});
+    }
+
+    // Asset worker thread: touches only `assets` (internally locked) and the borrowed host.
+    EdenDsmodBool LoadImage(const EdenDsmodHostApi* host, const char* key, void* receiver,
+                            EdenDsmodImageSink sink) {
+        constexpr std::string_view prefix{"module:totk:"};
+        if (!host || !host->read_romfs || !key || !sink)
+            return EDEN_DSMOD_FALSE;
+        const std::string_view k{key};
+        if (!k.starts_with(prefix))
+            return EDEN_DSMOD_FALSE;
+        const auto image = assets.Load(MakeRomfsReader(*host), k.substr(prefix.size()));
+        if (!image)
+            return EDEN_DSMOD_FALSE;
+        sink(receiver, image->width, image->height, image->rgba.data(), image->rgba.size());
+        return EDEN_DSMOD_TRUE;
+    }
 };
 
 void* Create(const EdenDsmodHostApi* host, const char*) {
     try {
         if (!dsmod_sdk::HostAbiMatches(host) || host->title_id != TitleId)
             return nullptr;
-        auto* m = new Module{};
+        auto* m = new Module();
         m->supported = std::memcmp(host->build_id, BuildId, sizeof BuildId) == 0;
         return m;
     } catch (...) {
@@ -70,7 +111,13 @@ void SampleCallback(void* p, const EdenDsmodHostApi* host) {
 }
 
 void TickCallback(void*, const EdenDsmodHostApi*) {}
-void ConfigureCallback(void*, const EdenDsmodHostExtensions*) {}
+void ConfigureCallback(void* p, const EdenDsmodHostExtensions* ext) {
+    try {
+        if (p)
+            static_cast<Module*>(p)->Configure(ext);
+    } catch (...) {
+    }
+}
 
 EdenDsmodBool ActionCallback(void* p, const char* action, std::int64_t) {
     if (!p || !action)
@@ -78,9 +125,15 @@ EdenDsmodBool ActionCallback(void* p, const char* action, std::int64_t) {
     return EDEN_DSMOD_FALSE; // no module actions yet
 }
 
-EdenDsmodBool LoadImageCallback(void*, const EdenDsmodHostApi*, const char*, void*,
-                                EdenDsmodImageSink) {
-    return EDEN_DSMOD_FALSE; // map tiles and icons come later, decoded from the player's romfs
+// Map tiles and icons are decoded from the player's own romfs; nothing from the game is shipped.
+EdenDsmodBool LoadImageCallback(void* p, const EdenDsmodHostApi* host, const char* key,
+                                void* receiver, EdenDsmodImageSink sink) {
+    try {
+        if (p)
+            return static_cast<Module*>(p)->LoadImage(host, key, receiver, sink);
+    } catch (...) {
+    }
+    return EDEN_DSMOD_FALSE;
 }
 
 const EdenDsmodModuleApi ModuleApi{EDEN_DSMOD_MODULE_ABI_VERSION,

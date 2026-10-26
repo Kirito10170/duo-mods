@@ -14,13 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Header-only module SDK from Eden Duo 1.3.2.2.
+      # Header-only module SDK and the BCn decoder from Eden Duo 1.3.2.2.
       - uses: actions/checkout@v4
         with:
           repository: igawa6/eden-duo
           ref: 5fa93ed4de1a3f0838f01ef999eaa4a6582055ef
           path: eden-duo
-          sparse-checkout: src/core/mods
+          sparse-checkout: |
+            src/core/mods
+            externals/bc_decoder
+
+      # zstd v1.5.7 (decompression sources only are compiled) for TOTK's romfs.
+      - uses: actions/checkout@v4
+        with:
+          repository: facebook/zstd
+          ref: v1.5.7
+          path: zstd
+          sparse-checkout: lib
 
       - uses: nttld/setup-ndk@v1
         id: ndk
@@ -36,7 +46,7 @@ jobs:
           cmake -S native -B build/android -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-29 -DANDROID_STL=c++_static \
-            -DEDEN_SOURCE_ROOT="$GITHUB_WORKSPACE/eden-duo"
+            -DEDEN_SOURCE_ROOT="$GITHUB_WORKSPACE/eden-duo" -DZSTD_SOURCE_ROOT="$GITHUB_WORKSPACE/zstd"
           cmake --build build/android
           ${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip \
             build/android/0100F2C0115B6000.so
@@ -44,7 +54,8 @@ jobs:
       - name: Build desktop module (linux-x86_64)
         run: |
           cmake -S native -B build/linux -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CXX_COMPILER=clang++ -DEDEN_SOURCE_ROOT="$GITHUB_WORKSPACE/eden-duo"
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DEDEN_SOURCE_ROOT="$GITHUB_WORKSPACE/eden-duo" -DZSTD_SOURCE_ROOT="$GITHUB_WORKSPACE/zstd"
           cmake --build build/linux
           strip build/linux/0100F2C0115B6000.so
 

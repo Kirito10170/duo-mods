@@ -30,13 +30,15 @@ Packages ship no game art, text or code. Everything shown is read from the playe
 
 ## Building
 
-CI builds every push; download the `.dsmod.zip` from the workflow run's artifacts. Locally:
+CI builds every push; download the `.dsmod.zip` from the workflow run's artifacts. Locally you
+need an [Eden Duo](https://github.com/igawa6/eden-duo) checkout (module SDK headers and
+`externals/bc_decoder`) and [zstd](https://github.com/facebook/zstd) v1.5.7 sources:
 
 ```sh
 cmake -S native -B build/android -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
   -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-29 -DANDROID_STL=c++_static \
-  -DEDEN_SOURCE_ROOT=/path/to/eden-duo
+  -DEDEN_SOURCE_ROOT=/path/to/eden-duo -DZSTD_SOURCE_ROOT=/path/to/zstd
 cmake --build build/android
 python3 tools/build_dualscreen_package.py --package packages/TearsOfTheKingdom --output dist \
   --version 0.1.0 --min-runtime 22 \
