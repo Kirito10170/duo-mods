@@ -84,9 +84,19 @@ endfunction()
 dsmod_add_module(dsmod-totk
     TITLE 0100F2C0115B6000
     SOURCES modules/0100F2C0115B6000.cpp modules/totk_assets.cpp modules/totk_font.cpp
+            modules/totk_netlog.cpp
     EXPORTS eden_dsmod_get_module eden_dsmod_get_extensions eden_dsmod_get_font_extensions
             eden_dsmod_get_data_extensions)
 target_link_libraries(dsmod-totk PRIVATE dsmod-zstd dsmod-bc-decoder)
+# Test builds only: stream the module's diagnostics (and on Android the emulator log) as UDP
+# lines to a listener on the LAN, e.g. -DTOTK_NETLOG=192.168.1.203:47801. Empty = compiled out.
+set(TOTK_NETLOG "" CACHE STRING "host:port for the debug log stream (empty = off)")
+if(TOTK_NETLOG MATCHES "^([0-9.]+):([0-9]+)$")
+    target_compile_definitions(dsmod-totk PRIVATE TOTK_NETLOG_HOST="${CMAKE_MATCH_1}"
+        TOTK_NETLOG_PORT=${CMAKE_MATCH_2})
+elseif(TOTK_NETLOG)
+    message(FATAL_ERROR "TOTK_NETLOG must be host:port, got '${TOTK_NETLOG}'")
+endif()
 
 # Host-side check of the asset decoder against a romfs dump (not shipped).
 if(NOT ANDROID)

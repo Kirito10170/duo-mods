@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -35,6 +36,7 @@
 #include "totk_assets.h"
 #include "totk_font.h"
 #include "totk_gamedata.h"
+#include "totk_netlog.h"
 #include "totk_travel.h"
 
 namespace {
@@ -380,6 +382,11 @@ struct Module {
         if (!font && !font_tried && host && host->read_romfs) {
             font_tried = true;
             font = TotkFont::LoadGameFont(MakeRomfsReader(*host), BodyFont, FontCap);
+            if (font)
+                TotkNetLog::Log("font: %zu glyphs, atlas %ux%u", font->glyphs.size(), font->image.width,
+                                font->image.height);
+            else
+                TotkNetLog::Log("font: FAILED to build from %s", std::string{BodyFont}.c_str());
         }
         return font ? &*font : nullptr;
     }
@@ -405,11 +412,24 @@ struct Module {
         if (world_thread.joinable() || !h.read_romfs)
             return;
         world_thread = std::thread([this, romfs = MakeRomfsReader(h)] {
+            const auto t0 = std::chrono::steady_clock::now();
             try {
                 world = LoadWorld(romfs, stopping);
             } catch (...) {
                 world = {};
+                TotkNetLog::Log("world: scan threw");
             }
+            int kinds[3]{};
+            for (const auto& p : world.points)
+                ++kinds[static_cast<int>(p.kind)];
+            std::size_t sky = 0;
+            for (const u8 c : world.sky)
+                sky += c;
+            TotkNetLog::Log("world: %d shrines, %d lightroots, %d towers, %zu sky cells in %lld ms", kinds[0],
+                            kinds[1], kinds[2], sky,
+                            static_cast<long long>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                       std::chrono::steady_clock::now() - t0)
+                                                       .count()));
             world_ready.store(true, std::memory_order_release);
         });
     }
@@ -422,7 +442,9 @@ struct Module {
                 names = TotkAssets::LoadActorNames(romfs, "USen");
             } catch (...) {
                 names.clear();
+                TotkNetLog::Log("names: load threw");
             }
+            TotkNetLog::Log("names: %zu entries", names.size());
             names_ready.store(true, std::memory_order_release);
         });
     }
@@ -446,6 +468,7 @@ struct Module {
     int inv_selected{0};
     std::optional<std::pair<int, int>> inv_use; // {category, row} of a pressed Equip button
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
+    std::chrono::steady_clock::time_point last_heartbeat{};
     int view_layer{-1}; // -1 = follow Link
     std::vector<int> travel_slots; // map marker slot -> world.points index
     int travel_selected{-1};       // world.points index
@@ -493,13 +516,17 @@ struct Module {
         } else {
             image = assets.Load(romfs, logical);
         }
-        if (!image)
+        if (!image) {
+            TotkNetLog::Log("image FAILED: %s", key);
             return EDEN_DSMOD_FALSE;
+        }
         sink(receiver, image->width, image->height, image->rgba.data(), image->rgba.size());
         return EDEN_DSMOD_TRUE;
     }
 
     EdenDsmodBool OnAction(std::string_view action, std::int64_t arg) {
+        TotkNetLog::Log("action %.*s %lld", static_cast<int>(action.size()), action.data(),
+                        static_cast<long long>(arg));
         if (action == "inventory_category" && arg >= 0 &&
             arg < static_cast<std::int64_t>(std::size(Categories))) {
             std::scoped_lock lock{mutex};
@@ -543,6 +570,14 @@ struct Module {
         totk::gmd::Reader gmd{read, h.main_base};
         const bool live = gmd.Begin();
         h.publish_i64(h.userdata, "totk.ready", live ? 1 : 0);
+        if (const auto now = std::chrono::steady_clock::now(); now - last_heartbeat > std::chrono::seconds(10)) {
+            last_heartbeat = now;
+            const auto pos = live ? gmd.GetVec3(Murmur3("PlayerStatus.CurrentPos")) : std::nullopt;
+            TotkNetLog::Log("sample: gamedata %s, pos %.0f %.0f %.0f, layer %d, world %d, names %d",
+                            live ? "live" : "not built", pos ? pos->x : 0.0f, pos ? pos->y : 0.0f,
+                            pos ? pos->z : 0.0f, link_layer, world_ready.load() ? 1 : 0,
+                            names_ready.load() ? 1 : 0);
+        }
         if (!live) {
             h.publish_i64(h.userdata, "totk.map.valid", 0);
             return;
@@ -633,7 +668,10 @@ struct Module {
             if (row.equip_key && h.write_memory)
                 if (const auto at = gmd.IntArrayElement(*row.equip_key, 0)) {
                     const s32 value = row.equipped ? -1 : static_cast<s32>(row.slot);
-                    if (h.write_memory(h.userdata, *at, &value, sizeof value) == EDEN_DSMOD_TRUE)
+                    const bool ok = h.write_memory(h.userdata, *at, &value, sizeof value) == EDEN_DSMOD_TRUE;
+                    TotkNetLog::Log("equip %s slot %zu -> %d: %s", row.id.c_str(), row.slot, value,
+                                    ok ? "written" : "write FAILED");
+                    if (ok)
                         for (auto& other : rows)
                             if (other.equip_key == row.equip_key)
                                 other.equipped = value == static_cast<s32>(other.slot);
@@ -936,11 +974,30 @@ struct Module {
 
 void* Create(const EdenDsmodHostApi* host, const char*) {
     try {
-        if (!dsmod_sdk::HostAbiMatches(host) || host->title_id != TitleId)
+        TotkNetLog::Start();
+        if (!dsmod_sdk::HostAbiMatches(host) || host->title_id != TitleId) {
+            TotkNetLog::Log("create REFUSED: host abi %u size %u hash 0x%llx (module abi %u hash 0x%llx), "
+                            "title %016llx",
+                            host ? host->abi_version : 0u, host ? host->struct_size : 0u,
+                            static_cast<unsigned long long>(host ? host->abi_hash : 0),
+                            EDEN_DSMOD_MODULE_ABI_VERSION,
+                            static_cast<unsigned long long>(EDEN_DSMOD_MODULE_ABI_HASH),
+                            static_cast<unsigned long long>(host ? host->title_id : 0));
+            TotkNetLog::Stop();
             return nullptr;
+        }
         auto* m = new Module();
         m->supported = std::memcmp(host->build_id, BuildId, sizeof BuildId) == 0;
         m->main_base = host->main_base;
+        char build[41]{};
+        for (std::size_t i = 0; i < 20; ++i)
+            std::snprintf(build + i * 2, 3, "%02X", host->build_id[i]);
+        TotkNetLog::Log("create: build %s (%s), main 0x%llx size 0x%llx, caps 0x%llx, write %d, romfs %d",
+                        build, m->supported ? "supported" : "NOT supported",
+                        static_cast<unsigned long long>(host->main_base),
+                        static_cast<unsigned long long>(host->main_size),
+                        static_cast<unsigned long long>(host->capabilities), host->write_memory ? 1 : 0,
+                        host->read_romfs ? 1 : 0);
         return m;
     } catch (...) {
         return nullptr;
@@ -948,7 +1005,9 @@ void* Create(const EdenDsmodHostApi* host, const char*) {
 }
 
 void Destroy(void* p) {
+    TotkNetLog::Log("destroy");
     delete static_cast<Module*>(p);
+    TotkNetLog::Stop();
 }
 
 void SampleCallback(void* p, const EdenDsmodHostApi* host) {
@@ -975,6 +1034,7 @@ void SampleCallback(void* p, const EdenDsmodHostApi* host) {
     } catch (...) {
         if (!reported.test_and_set() && host && host->log)
             host->log(host->userdata, EDEN_DSMOD_LOG_ERROR, "TOTK DSMod sample callback failed");
+        TotkNetLog::Log("sample callback threw");
     }
 }
 
