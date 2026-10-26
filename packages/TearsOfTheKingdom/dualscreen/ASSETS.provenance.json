@@ -1,0 +1,41 @@
+{
+ "format": 1,
+ "files": {
+  "assets/cmdbar-*.png": {
+   "origin": "third-party",
+   "source": "igawa6/eden-duo-companions packages/BreathOfTheWild/dualscreen/assets (GPL-3.0), code-drawn command bars"
+  },
+  "assets/ready-*.png": {
+   "origin": "third-party",
+   "source": "igawa6/eden-duo-companions packages/BreathOfTheWild/dualscreen/assets (GPL-3.0), code-drawn frames and masks"
+  },
+  "assets/map-circle-outside.png": {
+   "origin": "third-party",
+   "source": "igawa6/eden-duo-companions BreathOfTheWild assets (GPL-3.0)"
+  },
+  "assets/pg-ready-*.png": {
+   "origin": "third-party",
+   "source": "igawa6/eden-duo-companions BreathOfTheWild assets (GPL-3.0)"
+  },
+  "assets/page-lift.png": {
+   "origin": "generated",
+   "source": "PIL vertical alpha gradient (stands in for BOTW's Gradation128 texture)"
+  },
+  "assets/disc-*.png": {
+   "origin": "generated",
+   "source": "PIL filled circles"
+  },
+  "assets/cell-corner.png": {
+   "origin": "generated",
+   "source": "PIL corner bracket"
+  },
+  "assets/stamina-*.png": {
+   "origin": "generated",
+   "source": "PIL ring arcs"
+  },
+  "assets/map-transparent.png": {
+   "origin": "generated",
+   "source": "PIL"
+  }
+ }
+}

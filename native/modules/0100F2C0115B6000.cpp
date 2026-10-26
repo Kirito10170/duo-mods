@@ -364,6 +364,14 @@ struct ArmorPart {
 constexpr ArmorPart ArmorParts[]{{"_Head", 0xC88D0A1E}, {"_Upper", 0x632017B5}, {"_Lower", 0x94CE9BBF}};
 constexpr std::size_t MaxItems = 420;
 
+// ---- Cheats -------------------------------------------------------------------------------
+// The Cheats page rows, in the manifest's order. A row is offered once its value has been found
+// and a write to it verified to stick.
+enum CheatId : std::size_t { CheatDurability, CheatArrows, CheatRupees, CheatBattery, CheatStamina,
+                             NumCheats };
+constexpr bool CheatReady[NumCheats]{false, true, false, false, false};
+constexpr s32 MaxArrows = 999;
+
 std::string DurabilityText(s32 v) {
     if (v >= 2'000'000'000)
         return "MAX";
@@ -475,6 +483,7 @@ struct Module {
     int inv_category{0};
     int inv_selected{0};
     std::optional<std::pair<int, int>> inv_use; // {category, row} of a pressed Equip button
+    std::array<bool, NumCheats> cheats{};       // the Cheats page toggles, all off at start
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     std::chrono::steady_clock::time_point last_heartbeat{};
     int view_layer{-1}; // -1 = follow Link
@@ -596,6 +605,15 @@ struct Module {
             travel_selected = travel_selected == point ? -1 : point;
             return EDEN_DSMOD_TRUE;
         }
+        if (action == "cheat_toggle" && arg >= 0 && arg < static_cast<std::int64_t>(NumCheats)) {
+            if (!CheatReady[arg])
+                return EDEN_DSMOD_FALSE;
+            std::scoped_lock lock{mutex};
+            cheats[static_cast<std::size_t>(arg)] = !cheats[static_cast<std::size_t>(arg)];
+            TotkNetLog::Log("cheat %lld %s", static_cast<long long>(arg),
+                            cheats[static_cast<std::size_t>(arg)] ? "on" : "off");
+            return EDEN_DSMOD_TRUE;
+        }
         if (action == "map_layers") {
             std::scoped_lock lock{mutex};
             const int from = view_layer < 0 ? link_layer : view_layer;
@@ -631,8 +649,40 @@ struct Module {
         UpdateLitRoots(gmd);
         PublishMap(h, gmd);
         PublishTravel(h, gmd);
+        PublishProgress(h, gmd);
         PublishOptions(h, gmd);
         PublishInventory(h, gmd);
+        ApplyCheats(h, gmd);
+    }
+
+    // The Cheats page: publish each toggle, then hold what is on. Writes go to the GameData
+    // records the game itself keeps the values in.
+    template <class G>
+    void ApplyCheats(const EdenDsmodHostApi& h, G& gmd) {
+        std::array<bool, NumCheats> on;
+        {
+            std::scoped_lock lock{mutex};
+            on = cheats;
+        }
+        for (std::size_t i = 0; i < NumCheats; ++i)
+            h.publish_text(h.userdata, ("totk.cheat." + std::to_string(i) + ".text").c_str(),
+                           !CheatReady[i] ? "Coming soon" : on[i] ? "On" : "Off");
+        h.publish_text(h.userdata, "totk.cheat.note",
+                       "Cheats marked Coming soon are still being mapped in the game's memory.");
+        if (!h.write_memory)
+            return;
+        if (on[CheatArrows]) {
+            const auto names = gmd.GetString64Array(Murmur3("Pouch.Arrow.Content.Name"));
+            const auto stock = gmd.GetIntArray(Murmur3("Pouch.Arrow.Content.StockNum"));
+            for (std::size_t i = 0; names && stock && i < names->size() && i < stock->size(); ++i) {
+                if ((*names)[i].empty() || (*stock)[i] >= MaxArrows)
+                    continue;
+                if (const auto at = gmd.IntArrayElement(Murmur3("Pouch.Arrow.Content.StockNum"), i)) {
+                    const s32 full = MaxArrows;
+                    h.write_memory(h.userdata, *at, &full, sizeof full);
+                }
+            }
+        }
     }
 
     // Pouch.<Cat>.EquipIndex[0] for weapon, bow and shield, the part array for armor.
@@ -852,6 +902,17 @@ struct Module {
             }
             h.publish_text(h.userdata, (key + ".durability_text").c_str(), durability.c_str());
         }
+        // Arrows: TOTK has one arrow type (elements come from fusing), so the pouch's stock.
+        const auto arrow_names = gmd.GetString64Array(Murmur3("Pouch.Arrow.Content.Name"));
+        if (const auto stock = gmd.GetIntArray(Murmur3("Pouch.Arrow.Content.StockNum"));
+            stock && arrow_names) {
+            s64 arrows = 0;
+            for (std::size_t i = 0; i < stock->size() && i < arrow_names->size(); ++i)
+                if (!(*arrow_names)[i].empty())
+                    arrows += std::max<s32>((*stock)[i], 0);
+            h.publish_i64(h.userdata, "totk.ready.arrows", arrows);
+            h.publish_i64(h.userdata, "totk.ready.arrows.valid", 1);
+        }
         if (const auto powers = gmd.GetString64Array(Murmur3("Pouch.SpecialPower.Content.Name"))) {
             h.publish_text(h.userdata, "totk.ready.abilities_lines", AbilityText(*powers).c_str());
             std::size_t n = 0;
@@ -991,6 +1052,36 @@ struct Module {
         h.publish_i64(h.userdata, "totk.travel.sel.can_travel", 0);
         h.publish_text(h.userdata, "totk.travel.sel.hint",
                        sel_travel ? "Travel from here is coming in the next build" : "You can't travel here yet");
+    }
+
+    // The Ready page's dials: shrines completed, lightroots lit and towers activated, each of
+    // all there are.
+    template <class G>
+    void PublishProgress(const EdenDsmodHostApi& h, G& gmd) {
+        if (!world_ready.load(std::memory_order_acquire))
+            return;
+        static const u32 Open = Murmur3("Open"), Clear = Murmur3("Clear");
+        using totk::travel::Kind;
+        std::array<int, 3> done{}, total{};
+        const auto towers = gmd.GetBoolArray(0x8C826FCFu);
+        for (const auto& p : world.points) {
+            const int k = static_cast<int>(p.kind);
+            ++total[k];
+            if (p.kind == Kind::Tower) {
+                const int n = p.label.size() == 7 ? std::atoi(p.label.c_str() + 5) : 0;
+                done[k] += n >= 1 && towers && static_cast<std::size_t>(n) <= towers->size() &&
+                           (*towers)[static_cast<std::size_t>(n - 1)];
+            } else if (p.state) {
+                const auto st = gmd.GetEnum(p.state);
+                done[k] += st && *st == (p.kind == Kind::Shrine ? Clear : Open);
+            }
+        }
+        constexpr const char* Keys[]{"totk.ready.shrines", "totk.ready.lightroots", "totk.ready.towers"};
+        for (int k = 0; k < 3; ++k) {
+            h.publish_i64(h.userdata, Keys[k], done[k]);
+            h.publish_text(h.userdata, (std::string{Keys[k]} + "_text").c_str(),
+                           (std::to_string(done[k]) + "/" + std::to_string(total[k])).c_str());
+        }
     }
 
     // The game's place name ("Tauyosipun Shrine", "Stakijat Lightroot"), until the message

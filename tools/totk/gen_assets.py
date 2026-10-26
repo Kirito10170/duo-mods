@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Draw the package's own UI shapes (no game art): the circular minimap mask and frame, and the
-stamina ring frames. White on transparent; the manifest tints them.
+"""Draw the package's own UI shapes (no game art): the page light, dial discs, the selected-cell
+bracket and the stamina ring frames. White on transparent; the manifest tints them. The frames,
+masks and command bars copied from the BOTW companion are listed in ASSETS.provenance.json.
 
     tools/totk/gen_assets.py packages/TearsOfTheKingdom/dualscreen/assets
 """
@@ -27,32 +28,24 @@ def main(out_dir):
     out.mkdir(parents=True, exist_ok=True)
     Image.new("RGBA", (1, 1), (0, 0, 0, 0)).save(out / "map-transparent.png")
 
-    # Opaque outside a circle inscribed in the square: covers the square map's corners.
-    def outside(d, s):
-        d.rectangle([0, 0, s, s], fill=255)
-        d.ellipse([0, 0, s - 1, s - 1], fill=0)
-    mask = smooth(400, outside)
-    # Keep the square's own edge fully opaque (resampling softens the outermost pixels).
-    for i in range(400):
-        for x, y in ((i, 0), (i, 399), (0, i), (399, i)):
-            mask.putpixel((x, y), (255, 255, 255, 255))
-    mask.save(out / "circle-outside.png", optimize=True)
+    # The page's soft top light (BOTW draws its Gradation128 texture there): opaque at the top.
+    lift = Image.new("RGBA", (1240, 520), (255, 255, 255, 0))
+    for y in range(520):
+        a = int(255 * (1 - y / 519) ** 1.6)
+        lift.paste((255, 255, 255, a), (0, y, 1240, y + 1))
+    lift.save(out / "page-lift.png", optimize=True)
 
-    def ring(width):
-        def draw(d, s):
-            d.ellipse([0, 0, s - 1, s - 1], fill=255)
-            w = width * SS
-            d.ellipse([w, w, s - 1 - w, s - 1 - w], fill=0)
-        return draw
-    smooth(800, ring(3)).save(out / "circle-frame.png", optimize=True)
+    # Dial discs (BOTW draws the game's Nt_Circle64 at these sizes).
+    for size in (84, 80):
+        smooth(size, lambda d, s: d.ellipse([0, 0, s - 1, s - 1], fill=255)).save(
+            out / f"disc-{size}.png", optimize=True)
 
-    # Vertical fade, opaque at the top: keeps a title readable over the map.
-    fade = Image.new("RGBA", (4, 64), (255, 255, 255, 0))
-    for y in range(64):
-        a = int(255 * (1 - y / 63) ** 1.6)
-        for x in range(4):
-            fade.putpixel((x, y), (255, 255, 255, a))
-    fade.save(out / "fade-down.png", optimize=True)
+    # A selected cell's corner bracket, top-left; the manifest rotates it for the others.
+    def bracket(d, s):
+        o, t, n = s * 33 // 67, s * 5 // 67, s * 22 // 67
+        d.rectangle([o - t // 2, o - t // 2, o + n, o + t // 2], fill=255)
+        d.rectangle([o - t // 2, o - t // 2, o + t // 2, o + n], fill=255)
+    smooth(67, bracket).save(out / "cell-corner.png", optimize=True)
 
     # Stamina ring: 51 frames (0, 2, 4 ... 100 %), clockwise from the top, drawn around the
     # minimap frame. Frame 0 is empty.
