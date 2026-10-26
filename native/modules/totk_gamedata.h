@@ -163,6 +163,15 @@ public:
             return std::nullopt;
         return out;
     }
+    /// Guest address of element `index` of an IntArray, for a write_memory store.
+    std::optional<u64> IntArrayElement(u32 hash, std::size_t index) {
+        const auto r = Record(Type::IntArray, hash);
+        u64 count{}, data{};
+        if (!r || !Get(*r + 0x20, count) || !Get(*r + 0x28, data) || count > MaxArray || !data ||
+            index >= count)
+            return std::nullopt;
+        return data + index * sizeof(s32);
+    }
     std::optional<std::vector<std::string>> GetString64Array(u32 hash) {
         const auto r = Record(Type::String64Array, hash);
         u64 count{}, data{};

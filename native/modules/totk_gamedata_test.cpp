@@ -81,6 +81,8 @@ int main() {
     assert(p && p->x == -274.4f && p->z == -118.4f);
     const auto e = r.GetIntArray(Murmur3("Pouch.Weapon.EquipIndex"));
     assert(e && e->size() == 2 && (*e)[0] == 0 && (*e)[1] == -1);
+    assert(r.IntArrayElement(Murmur3("Pouch.Weapon.EquipIndex"), 1) == data + 4);
+    assert(!r.IntArrayElement(Murmur3("Pouch.Weapon.EquipIndex"), 2));
     const auto n = r.GetString64Array(Murmur3("Pouch.Weapon.Content.Name"));
     assert(n && n->size() == 2 && (*n)[0] == "Weapon_Sword_052" && (*n)[1].empty());
     std::puts("totk_gamedata_test: ok");

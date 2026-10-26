@@ -4,9 +4,9 @@
 // Supported build: 1.4.2 (update v655360), main 5CB42B1CF25469FB0635FD046453D843C18BC8AB.
 // Every other build loads too, but only publishes the "update required" state (no reads).
 //
-// Stage 1: the Ready page (vitals, equipped gear, abilities) and the world map, read from the
-// game's GameDataMgr (totk_gamedata.h); map tiles and icons are decoded from the player's romfs
-// (totk_assets.*).
+// The Ready page (vitals, equipped gear, abilities), the world map, the inventory with equip and
+// the game's options, read from its GameDataMgr (totk_gamedata.h); map tiles, icons and the font
+// are decoded from the player's romfs (totk_assets.*, totk_font.*).
 //
 // Android is the target: nothing here may rely on guest calls (NCE has none), so changes to
 // game state go through write_memory or button presses only.
@@ -25,6 +25,8 @@
 #include <optional>
 #include <thread>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 #include <span>
 #include <string>
 #include <string_view>
@@ -172,19 +174,36 @@ const OptionRow Options[]{
     {0, {}}, // voice language: Enum A2DCDC9D, value names not mapped yet
 };
 
-// ---- Inventory --------------------------------------------------------------------------------
-// One tab per pouch, in the manifest's tab order. Stackable pouches show a count, gear shows
-// durability (Content.Life; save editors' "unbreakable" values read as MAX).
+// ---- Inventory ----------------------------------------------------------------------------
+// One tab per category, in the manifest's tab order; a tab may list more than one pouch (bows,
+// then arrows). Gear shows durability (Content.Life; save editors' "unbreakable" values read as
+// MAX), everything else its stack (Content.StockNum).
+enum class Equip { None, Single, Armor };
+struct Pouch {
+    const char* name;
+    bool gear;
+    Equip equip;
+};
 struct Category {
     const char* title;
-    const char* pouch;
-    bool gear;
+    std::array<Pouch, 2> pouches;
 };
 constexpr Category Categories[]{
-    {"Weapons", "Weapon", true},      {"Bows and Arrows", "Bow", true}, {"Shields", "Shield", true},
-    {"Armor", "Armor", false},        {"Materials", "Material", false}, {"Food", "Food", false},
-    {"Key Items", "KeyItem", false},
+    {"Weapons", {{{"Weapon", true, Equip::Single}}}},
+    {"Bows and Arrows", {{{"Bow", true, Equip::Single}, {"Arrow", false, Equip::None}}}},
+    {"Shields", {{{"Shield", true, Equip::Single}}}},
+    {"Armor", {{{"Armor", false, Equip::Armor}}}},
+    {"Materials", {{{"Material", false, Equip::None}}}},
+    {"Food", {{{"Food", false, Equip::None}}}},
+    {"Key Items", {{{"KeyItem", false, Equip::None}, {"SpecialParts", false, Equip::None}}}},
 };
+// Worn armor: element [0] of one IntArray per body part holds the Pouch.Armor slot (-1 = none).
+// The key names are not in the game's list, only their hashes.
+struct ArmorPart {
+    std::string_view suffix;
+    u32 hash;
+};
+constexpr ArmorPart ArmorParts[]{{"_Head", 0xC88D0A1E}, {"_Upper", 0x632017B5}, {"_Lower", 0x94CE9BBF}};
 constexpr std::size_t MaxItems = 420;
 
 std::string DurabilityText(s32 v) {
@@ -256,6 +275,7 @@ struct Module {
     // ---- Inventory page state (guarded by `mutex`) ----
     int inv_category{0};
     int inv_selected{0};
+    std::optional<std::pair<int, int>> inv_use; // {category, row} of a pressed Equip button
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     int view_layer{-1}; // -1 = follow Link
     int link_layer{Surface};
@@ -322,6 +342,11 @@ struct Module {
             inv_selected = static_cast<int>(arg);
             return EDEN_DSMOD_TRUE;
         }
+        if (action == "inventory_use") {
+            std::scoped_lock lock{mutex};
+            inv_use = std::pair{inv_category, inv_selected};
+            return EDEN_DSMOD_TRUE;
+        }
         if (action == "map_layers") {
             std::scoped_lock lock{mutex};
             const int from = view_layer < 0 ? link_layer : view_layer;
@@ -350,27 +375,26 @@ struct Module {
         PublishInventory(h, gmd);
     }
 
-    // Equipped slots of a pouch: EquipIndex is an int array (armor has one per body part).
-    template <class G>
-    std::vector<int> EquippedSlots(G& gmd, const std::string& base) {
-        std::vector<int> out;
-        if (const auto e = gmd.GetIntArray(Murmur3(base + ".EquipIndex")))
-            for (const s32 v : *e)
-                if (v >= 0)
-                    out.push_back(v);
-        if (out.empty())
-            if (const auto e = gmd.GetInt(Murmur3(base + ".EquipIndex")); e && *e >= 0)
-                out.push_back(*e);
-        return out;
+    // Pouch.<Cat>.EquipIndex[0] for weapon, bow and shield, the part array for armor.
+    static std::optional<u32> EquipKey(const Pouch& pouch, const std::string& id) {
+        if (pouch.equip == Equip::Single)
+            return Murmur3(std::string{"Pouch."} + pouch.name + ".EquipIndex");
+        if (pouch.equip == Equip::Armor)
+            for (const auto& part : ArmorParts)
+                if (id.ends_with(part.suffix))
+                    return part.hash;
+        return std::nullopt;
     }
 
     template <class G>
     void PublishInventory(const EdenDsmodHostApi& h, G& gmd) {
         int category, selected;
+        std::optional<std::pair<int, int>> use;
         {
             std::scoped_lock lock{mutex};
             category = inv_category;
             selected = inv_selected;
+            use = std::exchange(inv_use, std::nullopt);
         }
         const auto& cat = Categories[category];
         for (std::size_t t = 0; t < std::size(Categories); ++t)
@@ -378,56 +402,95 @@ struct Module {
                           static_cast<int>(t) == category ? 1 : 0);
         h.publish_i64(h.userdata, "totk.inv.category", category);
         h.publish_text(h.userdata, "totk.inv.title", cat.title);
-        const std::string base = std::string{"Pouch."} + cat.pouch;
-        const auto names = gmd.GetString64Array(Murmur3(base + ".Content.Name"));
-        std::optional<std::vector<s32>> counts = gmd.GetIntArray(Murmur3(base + ".Content.Life"));
-        const auto equipped = EquippedSlots(gmd, base);
+
         // Pouch slots in order, skipping empty ones; `slot` keeps the game's index.
         struct Row {
+            const Pouch* pouch;
             std::size_t slot;
-            const std::string* id;
+            std::string id;
+            std::optional<s32> amount;
+            std::optional<u32> equip_key;
+            bool equipped;
         };
         std::vector<Row> rows;
-        if (names)
-            for (std::size_t i = 0; i < names->size() && rows.size() < MaxItems; ++i)
-                if (!(*names)[i].empty())
-                    rows.push_back({i, &(*names)[i]});
+        std::unordered_map<u32, int> worn; // equip key -> equipped slot
+        for (const auto& pouch : cat.pouches) {
+            if (!pouch.name)
+                continue;
+            const std::string base = std::string{"Pouch."} + pouch.name;
+            const auto names = gmd.GetString64Array(Murmur3(base + ".Content.Name"));
+            if (!names)
+                continue;
+            const auto amounts =
+                gmd.GetIntArray(Murmur3(base + (pouch.gear ? ".Content.Life" : ".Content.StockNum")));
+            for (std::size_t i = 0; i < names->size() && rows.size() < MaxItems; ++i) {
+                const std::string& id = (*names)[i];
+                if (id.empty())
+                    continue;
+                Row row{&pouch, i, id, std::nullopt, EquipKey(pouch, id), false};
+                if (amounts && i < amounts->size())
+                    row.amount = (*amounts)[i];
+                if (row.equip_key) {
+                    auto it = worn.find(*row.equip_key);
+                    if (it == worn.end()) {
+                        const auto e = gmd.GetIntArray(*row.equip_key);
+                        it = worn.emplace(*row.equip_key, e && !e->empty() ? (*e)[0] : -1).first;
+                    }
+                    row.equipped = it->second == static_cast<int>(i);
+                }
+                rows.push_back(std::move(row));
+            }
+        }
         h.publish_i64(h.userdata, "totk.inv.count", static_cast<s64>(rows.size()));
         h.publish_text(h.userdata, "totk.inv.empty_text", rows.empty() ? "Nothing here yet" : "");
         if (selected >= static_cast<int>(rows.size()))
             selected = rows.empty() ? 0 : static_cast<int>(rows.size()) - 1;
+
+        // Equip / take off: one aligned s32 store into the pouch's equip array, the same change
+        // the pause menu makes. Only for the row the button was pressed on, still in place.
+        if (use && use->first == category && use->second == selected && !rows.empty()) {
+            auto& row = rows[static_cast<std::size_t>(selected)];
+            if (row.equip_key && h.write_memory)
+                if (const auto at = gmd.IntArrayElement(*row.equip_key, 0)) {
+                    const s32 value = row.equipped ? -1 : static_cast<s32>(row.slot);
+                    if (h.write_memory(h.userdata, *at, &value, sizeof value) == EDEN_DSMOD_TRUE)
+                        for (auto& other : rows)
+                            if (other.equip_key == row.equip_key)
+                                other.equipped = value == static_cast<s32>(other.slot);
+                }
+        }
+
         for (std::size_t r = 0; r < rows.size(); ++r) {
             const auto& row = rows[r];
             const std::string key = "totk.inv.item." + std::to_string(r);
-            h.publish_text(h.userdata, (key + ".icon").c_str(),
-                           ("module:totk:icon/" + *row.id).c_str());
+            h.publish_text(h.userdata, (key + ".icon").c_str(), ("module:totk:icon/" + row.id).c_str());
             std::string qty;
-            if (counts && row.slot < counts->size()) {
-                const s32 v = (*counts)[row.slot];
-                qty = cat.gear ? DurabilityText(v) : (v > 1 ? "x" + std::to_string(v) : "");
-            }
+            if (row.amount)
+                qty = row.pouch->gear ? DurabilityText(*row.amount)
+                                      : (*row.amount > 1 ? "x" + std::to_string(*row.amount) : "");
             h.publish_text(h.userdata, (key + ".qty").c_str(), qty.c_str());
-            const bool on = std::find(equipped.begin(), equipped.end(),
-                                      static_cast<int>(row.slot)) != equipped.end();
-            h.publish_i64(h.userdata, (key + ".equipped").c_str(), on ? 1 : 0);
+            h.publish_i64(h.userdata, (key + ".equipped").c_str(), row.equipped ? 1 : 0);
             h.publish_i64(h.userdata, (key + ".selected").c_str(),
                           static_cast<int>(r) == selected ? 1 : 0);
         }
         const bool sel_valid = !rows.empty();
         h.publish_i64(h.userdata, "totk.inv.sel.valid", sel_valid ? 1 : 0);
-        h.publish_i64(h.userdata, "totk.inv.sel.can_use", 0); // equip/eat: not wired yet
-        if (!sel_valid)
+        if (!sel_valid) {
+            h.publish_i64(h.userdata, "totk.inv.sel.can_use", 0);
             return;
-        const auto& row = rows[static_cast<std::size_t>(selected)];
-        h.publish_text(h.userdata, "totk.inv.sel.icon", ("module:totk:icon/" + *row.id).c_str());
-        h.publish_text(h.userdata, "totk.inv.sel.name", ItemText(*row.id).c_str());
-        h.publish_text(h.userdata, "totk.inv.sel.desc", ItemCaption(*row.id).c_str());
-        std::string stat;
-        if (counts && row.slot < counts->size()) {
-            const s32 v = (*counts)[row.slot];
-            stat = cat.gear ? "Durability " + DurabilityText(v)
-                            : (v > 0 ? "Owned " + std::to_string(v) : "");
         }
+        const auto& row = rows[static_cast<std::size_t>(selected)];
+        const bool can_equip = row.equip_key && h.write_memory;
+        h.publish_i64(h.userdata, "totk.inv.sel.can_use", can_equip ? 1 : 0);
+        h.publish_text(h.userdata, "totk.inv.sel.use_text",
+                       can_equip ? (row.equipped ? "Unequip" : "Equip") : "");
+        h.publish_text(h.userdata, "totk.inv.sel.icon", ("module:totk:icon/" + row.id).c_str());
+        h.publish_text(h.userdata, "totk.inv.sel.name", ItemText(row.id).c_str());
+        h.publish_text(h.userdata, "totk.inv.sel.desc", ItemCaption(row.id).c_str());
+        std::string stat;
+        if (row.amount)
+            stat = row.pouch->gear ? "Durability " + DurabilityText(*row.amount)
+                                   : (*row.amount > 0 ? "Owned " + std::to_string(*row.amount) : "");
         h.publish_text(h.userdata, "totk.inv.sel.stat", stat.c_str());
     }
 
@@ -701,7 +764,8 @@ const EdenDsmodModuleApi ModuleApi{EDEN_DSMOD_MODULE_ABI_VERSION,
                                    EDEN_DSMOD_MODULE_ABI_HASH,
                                    TitleId,
                                    "Tears of the Kingdom DSMod",
-                                   EDEN_DSMOD_CAP_EXTENSIONS | EDEN_DSMOD_CAP_ROMFS_READ,
+                                   EDEN_DSMOD_CAP_EXTENSIONS | EDEN_DSMOD_CAP_ROMFS_READ |
+                                       EDEN_DSMOD_CAP_WRITE_MEMORY,
                                    &SupportsBuild,
                                    &Create,
                                    &Destroy,
