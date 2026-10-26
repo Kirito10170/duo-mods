@@ -124,7 +124,7 @@ std::string AbilityText(const std::vector<std::string>& ids) {
             if (a.id == id)
                 name = a.name;
         if (!out.empty())
-            out += ", ";
+            out += "\n";
         out += name;
     }
     return out;
@@ -278,24 +278,39 @@ struct Module {
         const auto life = gmd.GetInt(Murmur3("PlayerStatus.Life"));
         const auto max_life = gmd.GetInt(Murmur3("PlayerStatus.MaxLife"));
         if (life && max_life && *max_life > 0) {
-            // Quarter hearts.
-            char buf[48];
+            // Quarter hearts: the whole hearts big, the rest and the maximum underneath.
             const int whole = *life / 4, quarter = *life % 4;
+            char of[48];
             if (quarter)
-                std::snprintf(buf, sizeof buf, "%d %d/4 of %d", whole, quarter, *max_life / 4);
+                std::snprintf(of, sizeof of, "+%d/4  of %d", quarter, *max_life / 4);
             else
-                std::snprintf(buf, sizeof buf, "%d of %d", whole, *max_life / 4);
-            h.publish_text(h.userdata, "totk.ready.hearts_text", buf);
-            h.publish_i64(h.userdata, "totk.ready.life", *life);
-            h.publish_i64(h.userdata, "totk.ready.max_life", *max_life);
+                std::snprintf(of, sizeof of, "of %d", *max_life / 4);
+            h.publish_text(h.userdata, "totk.ready.hearts", std::to_string(whole).c_str());
+            h.publish_text(h.userdata, "totk.ready.hearts_of", of);
+            h.publish_f64(h.userdata, "totk.ready.life_pct",
+                          std::clamp(*life * 100.0 / *max_life, 0.0, 100.0));
         }
+        // Stamina and battery: 1000 per wheel / per battery cell.
+        const auto amount = [&](const char* key, const char* cur) {
+            if (const auto c = gmd.GetFloat(Murmur3(cur)); c && std::isfinite(*c)) {
+                char buf[32];
+                std::snprintf(buf, sizeof buf, "%.1f", std::max(0.0f, *c) / 1000.0f);
+                h.publish_text(h.userdata, key, buf);
+            }
+        };
+        amount("totk.ready.stamina_text", "PlayerStatus.Stamina");
+        amount("totk.ready.battery_text", "PlayerStatus.Energy");
+        if (const auto c = gmd.GetFloat(Murmur3("PlayerStatus.Stamina")),
+            m = gmd.GetFloat(Murmur3("PlayerStatus.MaxStamina"));
+            c && m && *m > 0 && std::isfinite(*c))
+            h.publish_i64(h.userdata, "totk.ready.stamina_frame",
+                          std::lround(std::clamp(*c / *m, 0.0f, 1.0f) * 50.0f));
         const auto pct = [&](const char* key, const char* cur, const char* max) {
             const auto c = gmd.GetFloat(Murmur3(cur));
             const auto m = gmd.GetFloat(Murmur3(max));
             if (c && m && *m > 0 && std::isfinite(*c))
                 h.publish_f64(h.userdata, key, std::clamp(*c / *m * 100.0f, 0.0f, 100.0f));
         };
-        pct("totk.ready.stamina_pct", "PlayerStatus.Stamina", "PlayerStatus.MaxStamina");
         pct("totk.ready.battery_pct", "PlayerStatus.Energy", "PlayerStatus.MaxEnergy");
     }
 
@@ -335,7 +350,7 @@ struct Module {
             h.publish_text(h.userdata, (key + ".durability_text").c_str(), durability.c_str());
         }
         if (const auto powers = gmd.GetString64Array(Murmur3("Pouch.SpecialPower.Content.Name")))
-            h.publish_text(h.userdata, "totk.ready.abilities_text", AbilityText(*powers).c_str());
+            h.publish_text(h.userdata, "totk.ready.abilities_lines", AbilityText(*powers).c_str());
     }
 
     template <class G>

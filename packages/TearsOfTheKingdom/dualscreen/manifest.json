@@ -120,16 +120,15 @@
      "color": "#00000000"
     },
     {
-     "type": "rect",
+     "type": "image",
      "rect": [
-      24,
-      24,
-      620,
-      620
+      220,
+      64,
+      800,
+      800
      ],
-     "bg": "#FF000D17",
-     "color": "#3CFFFCC6",
-     "frame": 2,
+     "src": "file:assets/circle-outside.png",
+     "tint": "#FF000D17",
      "need_bind": "totk.supported"
     },
     {
@@ -137,17 +136,17 @@
      "id": "ready_map",
      "area": "Hyrule",
      "rect": [
-      28,
-      28,
-      612,
-      612
+      220,
+      64,
+      800,
+      800
      ],
      "area_label": false,
      "marker_x_bind": "totk.map.x",
      "marker_y_bind": "totk.map.y",
      "marker_src": "module:totk:player_marker",
      "need_bind": "totk.map.valid",
-     "follow_window": 900,
+     "follow_window": 1100,
      "overlays": [
       {
        "src_bind": "totk.map.tile.near.0",
@@ -989,424 +988,607 @@
        "y0": -5000,
        "y1": -4000
       }
+     ],
+     "marker_size": [
+      84,
+      84
      ]
+    },
+    {
+     "type": "image",
+     "rect": [
+      220,
+      64,
+      800,
+      800
+     ],
+     "src": "file:assets/circle-outside.png",
+     "tint": "#FF0C0F11",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      220,
+      64,
+      800,
+      800
+     ],
+     "src": "file:assets/circle-frame.png",
+     "tint": "#6EFFFCC6",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      210,
+      54,
+      820,
+      820
+     ],
+     "bind": "totk.ready.stamina_frame",
+     "src_names": [
+      "file:assets/stamina-00.png",
+      "file:assets/stamina-01.png",
+      "file:assets/stamina-02.png",
+      "file:assets/stamina-03.png",
+      "file:assets/stamina-04.png",
+      "file:assets/stamina-05.png",
+      "file:assets/stamina-06.png",
+      "file:assets/stamina-07.png",
+      "file:assets/stamina-08.png",
+      "file:assets/stamina-09.png",
+      "file:assets/stamina-10.png",
+      "file:assets/stamina-11.png",
+      "file:assets/stamina-12.png",
+      "file:assets/stamina-13.png",
+      "file:assets/stamina-14.png",
+      "file:assets/stamina-15.png",
+      "file:assets/stamina-16.png",
+      "file:assets/stamina-17.png",
+      "file:assets/stamina-18.png",
+      "file:assets/stamina-19.png",
+      "file:assets/stamina-20.png",
+      "file:assets/stamina-21.png",
+      "file:assets/stamina-22.png",
+      "file:assets/stamina-23.png",
+      "file:assets/stamina-24.png",
+      "file:assets/stamina-25.png",
+      "file:assets/stamina-26.png",
+      "file:assets/stamina-27.png",
+      "file:assets/stamina-28.png",
+      "file:assets/stamina-29.png",
+      "file:assets/stamina-30.png",
+      "file:assets/stamina-31.png",
+      "file:assets/stamina-32.png",
+      "file:assets/stamina-33.png",
+      "file:assets/stamina-34.png",
+      "file:assets/stamina-35.png",
+      "file:assets/stamina-36.png",
+      "file:assets/stamina-37.png",
+      "file:assets/stamina-38.png",
+      "file:assets/stamina-39.png",
+      "file:assets/stamina-40.png",
+      "file:assets/stamina-41.png",
+      "file:assets/stamina-42.png",
+      "file:assets/stamina-43.png",
+      "file:assets/stamina-44.png",
+      "file:assets/stamina-45.png",
+      "file:assets/stamina-46.png",
+      "file:assets/stamina-47.png",
+      "file:assets/stamina-48.png",
+      "file:assets/stamina-49.png",
+      "file:assets/stamina-50.png"
+     ],
+     "tint": "#FF6CE07A",
+     "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      334,
-      652,
       620,
-      48
+      882,
+      800,
+      56
      ],
      "text": "",
      "text_scale": 4,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 48,
+     "text_center_h": 56,
      "text_bind": "totk.map.layer_name",
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
-     "rect": [
-      680,
-      24,
-      536,
-      48
-     ],
-     "text": "Hearts",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      680,
-      72,
-      536,
-      64
-     ],
-     "text": "",
-     "text_scale": 6,
-     "color": "#FFFFFCC6",
-     "text_bind": "totk.ready.hearts_text",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      680,
-      152,
-      536,
-      40
-     ],
-     "text": "Stamina",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
-     "need_bind": "totk.supported"
-    },
-    {
      "type": "rect",
      "rect": [
-      680,
-      196,
-      536,
+      18,
+      18,
+      180,
+      190
+     ],
+     "bg": "#FF0A0B0C",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      108,
+      50,
+      160,
       28
-     ],
-     "bg": "#C8000000",
-     "color": "#3CFFFCC6",
-     "frame": 1,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "bar",
-     "rect": [
-      683,
-      199,
-      530,
-      22
-     ],
-     "bind": "totk.ready.stamina_pct",
-     "max": 100,
-     "color": "#FF7CD17A",
-     "bg": "#40FFFCC6",
-     "frame": 0,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      680,
-      240,
-      536,
-      40
-     ],
-     "text": "Zonai battery",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      680,
-      284,
-      536,
-      28
-     ],
-     "bg": "#C8000000",
-     "color": "#3CFFFCC6",
-     "frame": 1,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "bar",
-     "rect": [
-      683,
-      287,
-      530,
-      22
-     ],
-     "bind": "totk.ready.battery_pct",
-     "max": 100,
-     "color": "#FF5FC8F0",
-     "bg": "#40FFFCC6",
-     "frame": 0,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      680,
-      340,
-      536,
-      88
-     ],
-     "bg": "#C8000000",
-     "color": "#3CFFFCC6",
-     "frame": 1,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      696,
-      346,
-      500,
-      32
-     ],
-     "text": "Weapon",
-     "text_scale": 3,
-     "color": "#9EE6ECF2",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      696,
-      380,
-      400,
-      40
-     ],
-     "text": "",
-     "text_scale": 4,
-     "color": "#FFFFFCC6",
-     "text_bind": "totk.ready.weapon.name",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      1200,
-      380,
-      120,
-      40
-     ],
-     "text": "",
-     "text_scale": 4,
-     "color": "#FF5FC8F0",
-     "align": "right",
-     "text_bind": "totk.ready.weapon.durability_text",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      680,
-      440,
-      536,
-      88
-     ],
-     "bg": "#C8000000",
-     "color": "#3CFFFCC6",
-     "frame": 1,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      696,
-      446,
-      500,
-      32
-     ],
-     "text": "Bow",
-     "text_scale": 3,
-     "color": "#9EE6ECF2",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      696,
-      480,
-      400,
-      40
-     ],
-     "text": "",
-     "text_scale": 4,
-     "color": "#FFFFFCC6",
-     "text_bind": "totk.ready.bow.name",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      1200,
-      480,
-      120,
-      40
-     ],
-     "text": "",
-     "text_scale": 4,
-     "color": "#FF5FC8F0",
-     "align": "right",
-     "text_bind": "totk.ready.bow.durability_text",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      680,
-      540,
-      536,
-      88
-     ],
-     "bg": "#C8000000",
-     "color": "#3CFFFCC6",
-     "frame": 1,
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "label",
-     "rect": [
-      696,
-      546,
-      500,
-      32
      ],
      "text": "Shield",
-     "text_scale": 3,
+     "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      696,
-      580,
-      400,
-      40
+      108,
+      84,
+      160,
+      72
      ],
      "text": "",
-     "text_scale": 4,
+     "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "wrap_width": 160,
+     "max_lines": 2,
      "text_bind": "totk.ready.shield.name",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      1200,
-      580,
-      120,
-      40
+      108,
+      150,
+      180,
+      50
      ],
      "text": "",
-     "text_scale": 4,
-     "color": "#FF5FC8F0",
-     "align": "right",
+     "text_scale": 5,
+     "color": "#FFFFFFFF",
+     "align": "center",
+     "text_center_h": 50,
      "text_bind": "totk.ready.shield.durability_text",
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
+     "type": "rect",
      "rect": [
-      680,
-      650,
-      536,
-      40
+      18,
+      18,
+      180,
+      190
      ],
-     "text": "Abilities",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "bg": "#00000000",
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      1042,
+      18,
+      180,
+      190
+     ],
+     "bg": "#FF0A0B0C",
+     "color": "#FF4A4630",
+     "frame": 3,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      680,
-      696,
-      536,
-      220
+      1132,
+      50,
+      160,
+      28
+     ],
+     "text": "Bow",
+     "text_scale": 2,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1132,
+      84,
+      160,
+      72
      ],
      "text": "",
-     "text_scale": 4,
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "wrap_width": 536,
-     "text_bind": "totk.ready.abilities_text",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "wrap_width": 160,
+     "max_lines": 2,
+     "text_bind": "totk.ready.bow.name",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      334,
-      720,
-      620,
+      1132,
+      150,
+      180,
+      50
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FFFFFFFF",
+     "align": "center",
+     "text_center_h": 50,
+     "text_bind": "totk.ready.bow.durability_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      1042,
+      18,
+      180,
+      190
+     ],
+     "bg": "#00000000",
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      1042,
+      742,
+      180,
+      190
+     ],
+     "bg": "#FF0A0B0C",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1132,
+      774,
+      160,
+      28
+     ],
+     "text": "Weapon",
+     "text_scale": 2,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1132,
+      808,
+      160,
+      72
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "wrap_width": 160,
+     "max_lines": 2,
+     "text_bind": "totk.ready.weapon.name",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1132,
+      874,
+      180,
+      50
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FFFFFFFF",
+     "align": "center",
+     "text_center_h": 50,
+     "text_bind": "totk.ready.weapon.durability_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      1042,
+      742,
+      180,
+      190
+     ],
+     "bg": "#00000000",
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      18,
+      232,
+      180,
+      300
+     ],
+     "bg": "#FF050708",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      18,
+      232,
+      6,
+      300
+     ],
+     "bg": "#FF0090FD",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      110,
+      252,
+      160,
+      40
+     ],
+     "text": "Hearts",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      108,
+      300,
+      168,
+      90
+     ],
+     "text": "",
+     "text_scale": 8,
+     "color": "#FFFFFFFF",
+     "align": "center",
+     "text_center_h": 90,
+     "text_bind": "totk.ready.hearts",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      110,
+      400,
+      160,
       40
      ],
      "text": "",
      "text_scale": 3,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_bind": "totk.map.coords_text",
+     "text_bind": "totk.ready.hearts_of",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "bar",
+     "rect": [
+      36,
+      460,
+      144,
+      10
+     ],
+     "bind": "totk.ready.life_pct",
+     "max": 100,
+     "bg": "#40FFFCC6",
+     "color": "#FFE8434F",
+     "frame": 0,
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
-      0,
-      950,
-      1240,
-      130
+      18,
+      552,
+      180,
+      380
      ],
-     "bg": "#E6141A1C",
-     "color": "#00000000"
+     "bg": "#FF050708",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
-      24,
-      950,
-      1192,
-      1
+      18,
+      552,
+      6,
+      380
      ],
-     "bg": "#50FFFCC6",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      24,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_ready"
+     "bg": "#FF0090FD",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      138,
-      966,
-      228,
-      98
+      110,
+      572,
+      160,
+      40
      ],
-     "text": "Ready",
-     "text_scale": 5,
+     "text": "Battery",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      108,
+      630,
+      168,
+      90
+     ],
+     "text": "",
+     "text_scale": 7,
+     "color": "#FFFFFFFF",
+     "align": "center",
+     "text_center_h": 90,
+     "text_bind": "totk.ready.battery_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "bar",
+     "rect": [
+      36,
+      740,
+      144,
+      10
+     ],
+     "bind": "totk.ready.battery_pct",
+     "max": 100,
+     "bg": "#40FFFCC6",
      "color": "#FF5FC8F0",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      262,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_map"
+     "frame": 0,
+     "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      376,
-      966,
-      228,
-      98
+      110,
+      780,
+      160,
+      40
      ],
-     "text": "Map",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
+     "text": "Stamina",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      108,
+      830,
+      168,
+      80
+     ],
+     "text": "",
+     "text_scale": 6,
+     "color": "#FF6CE07A",
+     "align": "center",
+     "text_center_h": 80,
+     "text_bind": "totk.ready.stamina_text",
+     "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
-      500,
-      966,
-      228,
-      98
+      1032,
+      232,
+      190,
+      490
+     ],
+     "bg": "#FF050708",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      1216,
+      232,
+      6,
+      490
+     ],
+     "bg": "#FF0090FD",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1125,
+      252,
+      170,
+      40
+     ],
+     "text": "Abilities",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1125,
+      304,
+      170,
+      400
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "wrap_width": 170,
+     "line_gap": 12,
+     "text_bind": "totk.ready.abilities_lines",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      252,
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -1416,24 +1598,55 @@
     {
      "type": "label",
      "rect": [
-      614,
-      966,
-      228,
-      98
+      363,
+      952,
+      222,
+      112
      ],
      "text": "Inventory",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "rect",
      "rect": [
-      738,
-      966,
-      228,
-      98
+      492,
+      952,
+      222,
+      112
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_map"
+    },
+    {
+     "type": "label",
+     "rect": [
+      603,
+      952,
+      222,
+      112
+     ],
+     "text": "Map",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
+     "align": "center",
+     "text_center_h": 112
+    },
+    {
+     "type": "rect",
+     "rect": [
+      732,
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -1443,16 +1656,18 @@
     {
      "type": "label",
      "rect": [
-      852,
-      966,
-      228,
-      98
+      843,
+      952,
+      222,
+      112
      ],
      "text": "Settings",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "label",
@@ -1465,6 +1680,8 @@
      "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
      "text_scale": 4,
      "color": "#FFFFB74D",
+     "italic": true,
+     "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
      "hide_bind": "totk.supported"
@@ -1483,17 +1700,6 @@
       1240,
       1080
      ],
-     "bg": "#FF0C0F11",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      0,
-      0,
-      1240,
-      950
-     ],
      "bg": "#FF000D17",
      "color": "#00000000"
     },
@@ -1505,7 +1711,7 @@
       0,
       0,
       1240,
-      950
+      1080
      ],
      "area_label": false,
      "marker_x_bind": "totk.map.x",
@@ -1515,8 +1721,8 @@
      "pan_zoom": true,
      "max_zoom": 16,
      "marker_size": [
-      64,
-      64
+      72,
+      72
      ],
      "overlays": [
       {
@@ -2602,77 +2808,44 @@
      ]
     },
     {
-     "type": "rect",
+     "type": "image",
      "rect": [
       0,
       0,
       1240,
-      92
+      160
      ],
-     "bg": "#E6141A1C",
-     "color": "#00000000",
+     "src": "file:assets/fade-down.png",
+     "tint": "#C8000000",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       620,
-      12,
+      24,
       1240,
-      68
+      72
      ],
      "text": "",
      "text_scale": 6,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 68,
+     "text_center_h": 72,
+     "outline": "#C8000A19",
+     "outline_px": 3,
      "text_bind": "totk.map.layer_name",
      "need_bind": "totk.supported"
     },
     {
-     "type": "label",
-     "rect": [
-      620,
-      900,
-      1240,
-      40
-     ],
-     "text": "Pinch to zoom - Drag to pan",
-     "text_scale": 3,
-     "color": "#9EE6ECF2",
-     "align": "center",
-     "hide_bind": "totk.map.valid",
-     "need_bind": "totk.supported"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      0,
-      950,
-      1240,
-      130
-     ],
-     "bg": "#E6141A1C",
-     "color": "#00000000"
-    },
-    {
      "type": "rect",
      "rect": [
       24,
-      950,
-      1192,
-      1
-     ],
-     "bg": "#50FFFCC6",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      24,
-      966,
-      228,
-      98
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -2682,105 +2855,42 @@
     {
      "type": "label",
      "rect": [
-      138,
-      966,
-      228,
-      98
+      135,
+      952,
+      222,
+      112
      ],
-     "text": "Ready",
+     "text": "Back",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      262,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_map"
+     "text_center_h": 112
     },
     {
      "type": "label",
      "rect": [
-      376,
-      966,
-      228,
-      98
+      620,
+      952,
+      712,
+      112
      ],
-     "text": "Map",
-     "text_scale": 5,
-     "color": "#FF5FC8F0",
+     "text": "Pinch to zoom - Drag to pan",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "rect",
      "rect": [
-      500,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_inventory"
-    },
-    {
-     "type": "label",
-     "rect": [
-      614,
-      966,
-      228,
-      98
-     ],
-     "text": "Inventory",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      738,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_options"
-    },
-    {
-     "type": "label",
-     "rect": [
-      852,
-      966,
-      228,
-      98
-     ],
-     "text": "Settings",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      996,
-      966,
-      220,
-      98
+      994,
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -2790,16 +2900,18 @@
     {
      "type": "label",
      "rect": [
-      1106,
-      966,
-      220,
-      98
+      1105,
+      952,
+      222,
+      112
      ],
      "text": "Layers",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "label",
@@ -2812,6 +2924,8 @@
      "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
      "text_scale": 4,
      "color": "#FFFFB74D",
+     "italic": true,
+     "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
      "hide_bind": "totk.supported"
@@ -2869,6 +2983,8 @@
      "text": "Weapons",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -2898,6 +3014,8 @@
      "text": "Bows",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -2927,6 +3045,8 @@
      "text": "Shields",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -2956,6 +3076,8 @@
      "text": "Armor",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -2985,6 +3107,8 @@
      "text": "Materials",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -3014,6 +3138,8 @@
      "text": "Food",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -3043,6 +3169,8 @@
      "text": "Key Items",
      "text_scale": 2,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
      "text_center_h": 112,
      "need_bind": "totk.supported"
@@ -3058,6 +3186,8 @@
      "text": "Weapons",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 80,
      "need_bind": "totk.supported"
@@ -3125,6 +3255,8 @@
      "text": "Inventory in progress",
      "text_scale": 4,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "need_bind": "totk.supported"
     },
     {
@@ -3150,38 +3282,18 @@
      "text": "Items appear here once the reader is wired up.",
      "text_scale": 3,
      "color": "#9EE6ECF2",
+     "italic": true,
+     "slant_deg": 9.0,
      "wrap_width": 380,
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
-      0,
-      950,
-      1240,
-      130
-     ],
-     "bg": "#E6141A1C",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
       24,
-      950,
-      1192,
-      1
-     ],
-     "bg": "#50FFFCC6",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      24,
-      966,
-      228,
-      98
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -3191,105 +3303,26 @@
     {
      "type": "label",
      "rect": [
-      138,
-      966,
-      228,
-      98
+      135,
+      952,
+      222,
+      112
      ],
-     "text": "Ready",
+     "text": "Back",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "rect",
      "rect": [
-      262,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_map"
-    },
-    {
-     "type": "label",
-     "rect": [
-      376,
-      966,
-      228,
-      98
-     ],
-     "text": "Map",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      500,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_inventory"
-    },
-    {
-     "type": "label",
-     "rect": [
-      614,
-      966,
-      228,
-      98
-     ],
-     "text": "Inventory",
-     "text_scale": 5,
-     "color": "#FF5FC8F0",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      738,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_options"
-    },
-    {
-     "type": "label",
-     "rect": [
-      852,
-      966,
-      228,
-      98
-     ],
-     "text": "Settings",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      996,
-      966,
-      220,
-      98
+      994,
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -3299,16 +3332,18 @@
     {
      "type": "label",
      "rect": [
-      1106,
-      966,
-      220,
-      98
+      1105,
+      952,
+      222,
+      112
      ],
      "text": "Sort",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "label",
@@ -3321,6 +3356,8 @@
      "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
      "text_scale": 4,
      "color": "#FFFFB74D",
+     "italic": true,
+     "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
      "hide_bind": "totk.supported"
@@ -3364,6 +3401,8 @@
      "text": "Options",
      "text_scale": 6,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 80
     },
     {
@@ -3401,6 +3440,8 @@
      "text": "Invert Vertical Camera",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3415,6 +3456,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.0.text",
@@ -3444,6 +3487,8 @@
      "text": "Invert Horizontal Camera",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3458,6 +3503,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.1.text",
@@ -3487,6 +3534,8 @@
      "text": "Camera Sensitivity",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3501,6 +3550,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.2.text",
@@ -3530,6 +3581,8 @@
      "text": "Aim with Motion Controls",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3544,6 +3597,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.3.text",
@@ -3573,6 +3628,8 @@
      "text": "Invert Vertical Ability Controls",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3587,6 +3644,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.4.text",
@@ -3616,6 +3675,8 @@
      "text": "Invert Horizontal Ability Controls",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3630,6 +3691,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.5.text",
@@ -3659,6 +3722,8 @@
      "text": "Swap Jump Controls",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3673,6 +3738,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.6.text",
@@ -3702,6 +3769,8 @@
      "text": "Lock Minimap to North",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3716,6 +3785,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.7.text",
@@ -3745,6 +3816,8 @@
      "text": "HUD Mode",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3759,6 +3832,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.8.text",
@@ -3788,6 +3863,8 @@
      "text": "Message Window",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3802,6 +3879,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.9.text",
@@ -3831,6 +3910,8 @@
      "text": "Voice Language",
      "text_scale": 3,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "text_center_h": 64,
      "need_bind": "totk.supported"
     },
@@ -3845,6 +3926,8 @@
      "text": "",
      "text_scale": 3,
      "color": "#FF5FC8F0",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "right",
      "text_center_h": 64,
      "text_bind": "totk.option.10.text",
@@ -3853,32 +3936,10 @@
     {
      "type": "rect",
      "rect": [
-      0,
-      950,
-      1240,
-      130
-     ],
-     "bg": "#E6141A1C",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
       24,
-      950,
-      1192,
-      1
-     ],
-     "bg": "#50FFFCC6",
-     "color": "#00000000"
-    },
-    {
-     "type": "rect",
-     "rect": [
-      24,
-      966,
-      228,
-      98
+      952,
+      222,
+      112
      ],
      "bg": "#FF0A0A05",
      "color": "#FF4A4630",
@@ -3888,97 +3949,18 @@
     {
      "type": "label",
      "rect": [
-      138,
-      966,
-      228,
-      98
+      135,
+      952,
+      222,
+      112
      ],
-     "text": "Ready",
+     "text": "Back",
      "text_scale": 5,
      "color": "#FFFFFCC6",
+     "italic": true,
+     "slant_deg": 9.0,
      "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      262,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_map"
-    },
-    {
-     "type": "label",
-     "rect": [
-      376,
-      966,
-      228,
-      98
-     ],
-     "text": "Map",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      500,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_inventory"
-    },
-    {
-     "type": "label",
-     "rect": [
-      614,
-      966,
-      228,
-      98
-     ],
-     "text": "Inventory",
-     "text_scale": 5,
-     "color": "#FFFFFCC6",
-     "align": "center",
-     "text_center_h": 98
-    },
-    {
-     "type": "rect",
-     "rect": [
-      738,
-      966,
-      228,
-      98
-     ],
-     "bg": "#FF0A0A05",
-     "color": "#FF4A4630",
-     "frame": 3,
-     "on_tap": "go_options"
-    },
-    {
-     "type": "label",
-     "rect": [
-      852,
-      966,
-      228,
-      98
-     ],
-     "text": "Settings",
-     "text_scale": 5,
-     "color": "#FF5FC8F0",
-     "align": "center",
-     "text_center_h": 98
+     "text_center_h": 112
     },
     {
      "type": "label",
@@ -3991,6 +3973,8 @@
      "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
      "text_scale": 4,
      "color": "#FFFFB74D",
+     "italic": true,
+     "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
      "hide_bind": "totk.supported"
