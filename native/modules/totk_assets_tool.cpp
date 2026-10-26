@@ -5,6 +5,7 @@
 //   totk-assets-tool <romfs> list <path>        SARC members, or BNTX texture names
 //   totk-assets-tool <romfs> dump <key> <out>   decode a module:totk:<key> image to PAM (RGBA)
 //   totk-assets-tool <romfs> msbt <path> [member] MSBT labels and text (member: inside a SARC)
+//   totk-assets-tool <romfs> font <member> <out>  rasterise a Font.bfarc font to a PAM atlas
 // It exercises exactly the code the module ships. The emulator's ASTC decoder is not here, so
 // an ASTC texture is written as <out>.astc (astcenc container) and the PAM comes out grey;
 // `astcenc -dl <out>.astc <out>.png` decodes it for checking.
@@ -16,6 +17,7 @@
 #include <string>
 
 #include "totk_assets.h"
+#include "totk_font.h"
 
 using namespace TotkAssets;
 
@@ -89,6 +91,24 @@ int main(int argc, char** argv) {
             return 1;
         for (const auto& [label, text] : MsbtEntries(*bytes))
             std::printf("%s\t%s\n", label.c_str(), text.c_str());
+        return 0;
+    }
+    if (op == "font" && argc >= 5) {
+        const auto atlas = TotkFont::LoadGameFont(read, argv[3], 40);
+        if (!atlas) {
+            std::fprintf(stderr, "font failed: %s\n", argv[3]);
+            return 1;
+        }
+        std::size_t present = 0;
+        for (const auto& g : atlas->glyphs)
+            present += g.advance != 0;
+        std::ofstream o(argv[4], std::ios::binary);
+        o << "P7\nWIDTH " << atlas->image.width << "\nHEIGHT " << atlas->image.height
+          << "\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n";
+        o.write(reinterpret_cast<const char*>(atlas->image.rgba.data()),
+                static_cast<std::streamsize>(atlas->image.rgba.size()));
+        std::printf("%s: %zu glyphs, atlas %ux%u\n", argv[3], present, atlas->image.width,
+                    atlas->image.height);
         return 0;
     }
     if (op == "dump" && argc >= 5) {

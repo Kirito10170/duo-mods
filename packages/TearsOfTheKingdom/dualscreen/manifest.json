@@ -8,6 +8,8 @@
  "canvas_w": 1240,
  "canvas_h": 1080,
  "background": "#FF0C0F11",
+ "font": "module:totk:font",
+ "font_atlas": "module:totk:font-atlas",
  "actions": {
   "go_ready": {
    "kind": "page",

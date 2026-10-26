@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <optional>
 #include <thread>
 #include <unordered_map>
 #include <span>
@@ -29,6 +30,7 @@
 #include <string_view>
 
 #include "totk_assets.h"
+#include "totk_font.h"
 #include "totk_gamedata.h"
 
 namespace {
@@ -152,10 +154,29 @@ const OptionRow Options[]{
     {0, {}}, // voice language: Enum A2DCDC9D, value names not mapped yet
 };
 
+// The game's menu font (Rodin bold), rasterised for labels at this cap height.
+constexpr std::string_view BodyFont = "scft/ninP_RodinNTLG-B_DH_003_subset.bfotf";
+constexpr std::uint32_t FontCap = 40;
+constexpr std::uint8_t FontMarker[]{'T', 'O', 'T', 'K', 'F', 'O', 'N', 'T', '1'};
+
 struct Module {
     bool supported{};
     u64 main_base{};
     TotkAssets::Decoder assets;
+    // Built on the asset worker the first time the host asks for the font; read by decode_font
+    // and the atlas image afterwards.
+    std::mutex font_mutex;
+    std::optional<TotkFont::Atlas> font;
+    bool font_tried{};
+
+    const TotkFont::Atlas* Font(const EdenDsmodHostApi* host) {
+        std::scoped_lock lock{font_mutex};
+        if (!font && !font_tried && host && host->read_romfs) {
+            font_tried = true;
+            font = TotkFont::LoadGameFont(MakeRomfsReader(*host), BodyFont, FontCap);
+        }
+        return font ? &*font : nullptr;
+    }
     // Item display names, loaded once off the sample thread from the player's message archive.
     std::thread names_thread;
     std::atomic<bool> names_ready{false};
@@ -206,6 +227,14 @@ struct Module {
         if (!k.starts_with(prefix))
             return EDEN_DSMOD_FALSE;
         const auto logical = k.substr(prefix.size());
+        if (logical == "font-atlas") {
+            const auto* atlas = Font(host);
+            if (!atlas)
+                return EDEN_DSMOD_FALSE;
+            sink(receiver, atlas->image.width, atlas->image.height, atlas->image.rgba.data(),
+                 atlas->image.rgba.size());
+            return EDEN_DSMOD_TRUE;
+        }
         const auto romfs = MakeRomfsReader(*host);
         std::shared_ptr<const TotkAssets::Image> image;
         if (logical == "player_marker") {
@@ -278,15 +307,12 @@ struct Module {
         const auto life = gmd.GetInt(Murmur3("PlayerStatus.Life"));
         const auto max_life = gmd.GetInt(Murmur3("PlayerStatus.MaxLife"));
         if (life && max_life && *max_life > 0) {
-            // Quarter hearts: the whole hearts big, the rest and the maximum underneath.
-            const int whole = *life / 4, quarter = *life % 4;
-            char of[48];
-            if (quarter)
-                std::snprintf(of, sizeof of, "+%d/4  of %d", quarter, *max_life / 4);
-            else
-                std::snprintf(of, sizeof of, "of %d", *max_life / 4);
-            h.publish_text(h.userdata, "totk.ready.hearts", std::to_string(whole).c_str());
-            h.publish_text(h.userdata, "totk.ready.hearts_of", of);
+            // Quarter hearts, as the game counts them: "29¾", and the maximum underneath.
+            constexpr const char* Quarters[]{"", "\u00BC", "\u00BD", "\u00BE"};
+            const std::string hearts = std::to_string(*life / 4) + Quarters[*life % 4];
+            const std::string of = "of " + std::to_string(*max_life / 4);
+            h.publish_text(h.userdata, "totk.ready.hearts", hearts.c_str());
+            h.publish_text(h.userdata, "totk.ready.hearts_of", of.c_str());
             h.publish_f64(h.userdata, "totk.ready.life_pct",
                           std::clamp(*life * 100.0 / *max_life, 0.0, 100.0));
         }
@@ -473,6 +499,38 @@ EdenDsmodBool LoadImageCallback(void* p, const EdenDsmodHostApi* host, const cha
     return EDEN_DSMOD_FALSE;
 }
 
+// "module:totk:font": a marker the host hands back to decode_font once the atlas is built.
+EdenDsmodBool LoadDataCallback(void* p, const EdenDsmodHostApi* host, const char* key,
+                               void* receiver, EdenDsmodDataSink sink) {
+    try {
+        if (!p || !key || !sink || std::string_view{key} != "module:totk:font")
+            return EDEN_DSMOD_FALSE;
+        if (!static_cast<Module*>(p)->Font(host))
+            return EDEN_DSMOD_FALSE;
+        sink(receiver, FontMarker, sizeof FontMarker);
+        return EDEN_DSMOD_TRUE;
+    } catch (...) {
+        return EDEN_DSMOD_FALSE;
+    }
+}
+
+EdenDsmodBool DecodeFontCallback(void* p, const std::uint8_t* bytes, std::size_t size,
+                                 void* receiver, EdenDsmodFontSink sink) {
+    try {
+        if (!p || !bytes || !sink || size != sizeof FontMarker ||
+            std::memcmp(bytes, FontMarker, size) != 0)
+            return EDEN_DSMOD_FALSE;
+        const auto* atlas = static_cast<Module*>(p)->Font(nullptr);
+        if (!atlas)
+            return EDEN_DSMOD_FALSE;
+        sink(receiver, atlas->line_height, atlas->first_codepoint, atlas->glyphs.data(),
+             static_cast<std::uint32_t>(atlas->glyphs.size()));
+        return EDEN_DSMOD_TRUE;
+    } catch (...) {
+        return EDEN_DSMOD_FALSE;
+    }
+}
+
 const EdenDsmodModuleApi ModuleApi{EDEN_DSMOD_MODULE_ABI_VERSION,
                                    sizeof(EdenDsmodModuleApi),
                                    0,
@@ -488,7 +546,15 @@ const EdenDsmodModuleApi ModuleApi{EDEN_DSMOD_MODULE_ABI_VERSION,
 const EdenDsmodModuleExtensions ModuleExtensions{
     EDEN_DSMOD_EXT_VERSION, sizeof(EdenDsmodModuleExtensions), EDEN_DSMOD_EXT_HASH,
     &ConfigureCallback,     &ActionCallback,                   &LoadImageCallback};
+const EdenDsmodFontExtensions FontExtensions{EDEN_DSMOD_FONT_EXT_VERSION,
+                                             sizeof(EdenDsmodFontExtensions),
+                                             EDEN_DSMOD_FONT_EXT_HASH, &DecodeFontCallback};
+const EdenDsmodModuleDataExtensions DataExtensions{EDEN_DSMOD_DATA_EXT_VERSION,
+                                                   sizeof(EdenDsmodModuleDataExtensions),
+                                                   EDEN_DSMOD_DATA_EXT_HASH, &LoadDataCallback};
 } // namespace
 
 DSMOD_SDK_EXPORT_MODULE(ModuleApi)
 DSMOD_SDK_EXPORT_EXTENSIONS(ModuleExtensions)
+DSMOD_SDK_EXPORT_FONT_EXTENSIONS(FontExtensions)
+DSMOD_SDK_EXPORT_DATA_EXTENSIONS(DataExtensions)

@@ -83,15 +83,18 @@ endfunction()
 # The Legend of Zelda: Tears of the Kingdom, 1.4.2.
 dsmod_add_module(dsmod-totk
     TITLE 0100F2C0115B6000
-    SOURCES modules/0100F2C0115B6000.cpp modules/totk_assets.cpp
-    EXPORTS eden_dsmod_get_module eden_dsmod_get_extensions)
+    SOURCES modules/0100F2C0115B6000.cpp modules/totk_assets.cpp modules/totk_font.cpp
+    EXPORTS eden_dsmod_get_module eden_dsmod_get_extensions eden_dsmod_get_font_extensions
+            eden_dsmod_get_data_extensions)
 target_link_libraries(dsmod-totk PRIVATE dsmod-zstd dsmod-bc-decoder)
 
 # Host-side check of the asset decoder against a romfs dump (not shipped).
 if(NOT ANDROID)
-    add_executable(totk-assets-tool modules/totk_assets_tool.cpp modules/totk_assets.cpp)
+    add_executable(totk-assets-tool modules/totk_assets_tool.cpp modules/totk_assets.cpp
+        modules/totk_font.cpp)
     target_compile_features(totk-assets-tool PRIVATE cxx_std_20)
-    target_include_directories(totk-assets-tool PRIVATE "${EDEN_SOURCE_ROOT}/src")
+    target_include_directories(totk-assets-tool PRIVATE "${EDEN_SOURCE_ROOT}/src"
+        "${CMAKE_CURRENT_LIST_DIR}/modules")
     target_link_libraries(totk-assets-tool PRIVATE dsmod-zstd dsmod-bc-decoder)
 
     add_executable(totk-gamedata-test modules/totk_gamedata_test.cpp)

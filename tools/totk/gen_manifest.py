@@ -271,6 +271,9 @@ def main():
         "canvas_w": W,
         "canvas_h": H,
         "background": BG,
+        # The game's menu font, rasterised by the module from the player's romfs.
+        "font": "module:totk:font",
+        "font_atlas": "module:totk:font-atlas",
         "actions": actions,
         "module_outputs": ["totk.supported", "totk.unsupported", "totk.ready"],
         "map": {"areas": {"Hyrule": {"min": list(MAP_MIN), "max": list(MAP_MAX),
