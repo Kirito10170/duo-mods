@@ -369,7 +369,11 @@ constexpr std::size_t MaxItems = 420;
 // and a write to it verified to stick.
 enum CheatId : std::size_t { CheatDurability, CheatArrows, CheatRupees, CheatBattery, CheatStamina,
                              NumCheats };
-constexpr bool CheatReady[NumCheats]{false, true, true, true, false};
+constexpr bool CheatReady[NumCheats]{true, true, true, true, false};
+// Equipped gear keeps its live durability on the held actor as a pair of {u64 vtable, s32 value}
+// entries (current, previous), 0x10 apart; the pouch's Content.Life follows them.
+constexpr u64 DurabilityVtable = 0x391D670;
+constexpr u64 DurabilityScanBytes = 32ull << 20; // heap scanned per sample while looking
 constexpr s32 MaxArrows = 999, MaxRupees = 999'999;
 
 // ---- Item spawning ------------------------------------------------------------------------
@@ -505,6 +509,16 @@ struct Module {
     int inv_selected{0};
     std::optional<std::pair<int, int>> inv_use; // {category, row} of a pressed Equip button
     std::array<bool, NumCheats> cheats{};       // the Cheats page toggles, all off at start
+    // Infinite durability: the equipped items' live entries, found by a sliced heap scan.
+    struct HeldGear {
+        std::string id;              // the equipped item (re-scan when it changes)
+        s32 target{-1};              // the durability to hold
+        std::vector<u64> entries;    // guest addresses of matching {vtable, value} pairs
+        bool searched{false};
+        std::chrono::steady_clock::time_point searched_at{};
+    };
+    std::array<HeldGear, 3> held{};
+    u64 scan_cursor{0};
     int spawn_tab{0}, spawn_selected{0};
     std::optional<std::pair<int, int>> spawn_request; // {tab, row} of a pressed Add button
     s32 spawn_amount{1};
@@ -702,6 +716,105 @@ struct Module {
         PublishSpawn(h, gmd);
     }
 
+    // Infinite durability for the equipped weapon, bow and shield. The pouch value is copied
+    // from the held actor every frame, so the actor's own entry is what gets held: found once
+    // per equip by scanning the heap for the durability pair with the pouch's value, then
+    // rewritten whenever it drops.
+    template <class G>
+    void HoldDurability(const EdenDsmodHostApi& h, G& gmd) {
+        constexpr const char* Pouches[]{"Weapon", "Bow", "Shield"};
+        const u64 vtable = h.main_base + DurabilityVtable;
+        bool need_scan = false;
+        std::array<s32, 3> life{};
+        for (std::size_t k = 0; k < 3; ++k) {
+            auto& g = held[k];
+            const std::string base = std::string{"Pouch."} + Pouches[k];
+            const auto names = gmd.GetString64Array(Murmur3(base + ".Content.Name"));
+            const auto lives = gmd.GetIntArray(Murmur3(base + ".Content.Life"));
+            const auto equip = gmd.GetIntArray(Murmur3(base + ".EquipIndex"));
+            const int index = equip && !equip->empty() ? (*equip)[0] : -1;
+            const bool valid = names && lives && index >= 0 &&
+                               static_cast<std::size_t>(index) < std::min(names->size(), lives->size()) &&
+                               !(*names)[static_cast<std::size_t>(index)].empty();
+            const std::string id = valid ? (*names)[static_cast<std::size_t>(index)] : std::string{};
+            if (id != g.id) {
+                g = {};
+                g.id = id;
+            }
+            if (!valid)
+                continue;
+            life[k] = (*lives)[static_cast<std::size_t>(index)];
+            if (g.target < 0)
+                g.target = life[k]; // what it had when the cheat (or this item) came on
+            // Keep the found entries topped up; drop any that stopped looking like ours (a load
+            // rebuilds the actor), and look again once none are left.
+            const bool had = !g.entries.empty();
+            std::erase_if(g.entries, [&](u64 at) {
+                u64 vt{};
+                s32 v{};
+                if (!h.read_memory(h.userdata, at, &vt, 8) || vt != vtable ||
+                    !h.read_memory(h.userdata, at + 8, &v, 4))
+                    return true;
+                if (v < g.target)
+                    h.write_memory(h.userdata, at + 8, &g.target, sizeof g.target);
+                return false;
+            });
+            if (had && g.entries.empty())
+                g.searched = false;
+            // Not found on a full pass (still loading, say): try again a little later.
+            if (g.searched && g.entries.empty() &&
+                std::chrono::steady_clock::now() - g.searched_at > std::chrono::seconds(15))
+                g.searched = false;
+            if (g.entries.empty() && !g.searched)
+                need_scan = true;
+        }
+        if (!need_scan || !h.get_heap_begin || !h.get_heap_end)
+            return;
+        const u64 begin = h.get_heap_begin(h.userdata), end = h.get_heap_end(h.userdata);
+        if (end <= begin)
+            return;
+        if (scan_cursor < begin || scan_cursor >= end)
+            scan_cursor = begin;
+        const u64 stop = std::min(end, scan_cursor + DurabilityScanBytes);
+        std::vector<u8> chunk(1u << 20);
+        for (u64 at = scan_cursor; at < stop; at += chunk.size()) {
+            const std::size_t n = static_cast<std::size_t>(std::min<u64>(chunk.size() + 0x20, end - at));
+            chunk.resize(std::max<std::size_t>(n, 0x20));
+            if (n < 0x20 || !h.read_memory(h.userdata, at, chunk.data(), n)) {
+                chunk.resize(1u << 20);
+                continue;
+            }
+            for (std::size_t o = 0; o + 0x1C <= n && o < (1u << 20); o += 8) {
+                u64 vt0, vt1;
+                std::memcpy(&vt0, chunk.data() + o, 8);
+                if (vt0 != vtable)
+                    continue;
+                std::memcpy(&vt1, chunk.data() + o + 0x10, 8);
+                if (vt1 != vtable)
+                    continue;
+                s32 v0;
+                std::memcpy(&v0, chunk.data() + o + 8, 4);
+                for (std::size_t k = 0; k < 3; ++k)
+                    if (!held[k].id.empty() && held[k].entries.size() < 4 && v0 == life[k]) {
+                        held[k].entries.push_back(at + o);
+                        held[k].entries.push_back(at + o + 0x10);
+                    }
+            }
+            chunk.resize(1u << 20);
+        }
+        scan_cursor = stop;
+        if (stop >= end) {
+            // A full pass is done: whatever was not found is not on the heap right now.
+            for (auto& g : held) {
+                if (!g.id.empty() && !g.searched)
+                    TotkNetLog::Log("durability: %s -> %zu entries", g.id.c_str(), g.entries.size());
+                g.searched = !g.id.empty();
+                g.searched_at = std::chrono::steady_clock::now();
+            }
+            scan_cursor = begin;
+        }
+    }
+
     // The Spawn page: a catalog per tab, and Add puts the chosen item in the game's pouch the
     // way a pickup does: more of a stack already held, else the name and amount in a free slot.
     template <class G>
@@ -858,6 +971,11 @@ struct Module {
                     h.write_memory(h.userdata, *at, &full, sizeof full);
                 }
         }
+        if (on[CheatDurability])
+            HoldDurability(h, gmd);
+        else
+            for (auto& g : held)
+                g = {};
         if (on[CheatArrows]) {
             const auto names = gmd.GetString64Array(Murmur3("Pouch.Arrow.Content.Name"));
             const auto stock = gmd.GetIntArray(Murmur3("Pouch.Arrow.Content.StockNum"));
