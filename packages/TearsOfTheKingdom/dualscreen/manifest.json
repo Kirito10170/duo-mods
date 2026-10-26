@@ -3789,7 +3789,8 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     },
     {
      "type": "label",
@@ -3807,7 +3808,8 @@
      "wrap_width": 1120,
      "align": "center",
      "text_bind": "module_error_message",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     }
    ]
   },
@@ -5168,7 +5170,8 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     },
     {
      "type": "label",
@@ -5186,7 +5189,8 @@
      "wrap_width": 1120,
      "align": "center",
      "text_bind": "module_error_message",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     }
    ]
   },
@@ -5227,6 +5231,7 @@
      "src": "module:totk:common/IconWeapon_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.0",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5266,6 +5271,7 @@
      "src": "module:totk:common/IconBow_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.1",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5305,6 +5311,7 @@
      "src": "module:totk:common/IconShield_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.2",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5344,6 +5351,7 @@
      "src": "module:totk:common/IconEquipment_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.3",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5383,6 +5391,7 @@
      "src": "module:totk:common/IconMaterial_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.4",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5422,6 +5431,7 @@
      "src": "module:totk:common/IconCuisine_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.5",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5461,6 +5471,7 @@
      "src": "module:totk:common/IconTreasure_72x72^s",
      "tint": "#78E6ECF2",
      "hide_bind": "totk.inv.tab.6",
+     "hide_eq": 1,
      "need_bind": "totk.supported"
     },
     {
@@ -5860,7 +5871,8 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     },
     {
      "type": "label",
@@ -5878,7 +5890,8 @@
      "wrap_width": 1120,
      "align": "center",
      "text_bind": "module_error_message",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     }
    ],
    "scrolls": [
@@ -6546,7 +6559,8 @@
      "slant_deg": 9.0,
      "wrap_width": 1120,
      "align": "center",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     },
     {
      "type": "label",
@@ -6564,7 +6578,8 @@
      "wrap_width": 1120,
      "align": "center",
      "text_bind": "module_error_message",
-     "hide_bind": "totk.module"
+     "hide_bind": "totk.module",
+     "hide_eq": 1
     }
    ]
   }

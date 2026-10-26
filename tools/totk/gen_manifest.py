@@ -120,6 +120,10 @@ def bottom_bar(buttons, right=(), hint=None):
     return w
 
 
+# A widget's hide_bind alone hides nothing: it hides outside keep_min..keep_max or at hide_eq.
+# Every gate here is a 0/1 flag, so each one says hide_eq=1.
+
+
 def unsupported_notice():
     """Two different failures: the module ran and saw another game build (it says which), or
     the module never loaded at all (nothing published)."""
@@ -131,10 +135,10 @@ def unsupported_notice():
             label([60, 420, 1120, 200],
                   "The companion's native module did not start. Check that Eden Duo is 1.3.2.2 or "
                   "newer, then reinstall the mod.",
-                  4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind="totk.module"),
+                  4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind="totk.module", hide_eq=1),
             # The runtime's own reason when the module failed to load or stopped.
             label([60, 640, 1120, 120], "", 3, "#B4E6ECF2", wrap_width=1120, align="center",
-                  text_bind="module_error_message", hide_bind="totk.module")]
+                  text_bind="module_error_message", hide_bind="totk.module", hide_eq=1)]
 
 
 def gear_tile(r, slot):
@@ -267,7 +271,7 @@ def inventory_page():
     for i, (_, icon) in enumerate(TABS):
         x = 28 + i * 104
         w.append(image([x + 16, 28, 72, 72], common(icon), tint="#78E6ECF2",
-                       hide_bind=f"totk.inv.tab.{i}", **g))
+                       hide_bind=f"totk.inv.tab.{i}", hide_eq=1, **g))
         w.append(image([x + 10, 22, 84, 84], common(icon), tint="#FFFFFFFF",
                        need_bind=f"totk.inv.tab.{i}"))
         w.append(rect([x, 8, 104, 112], CLEAR, frame=0, on_tap=f"inventory_category_{i}", **g))
