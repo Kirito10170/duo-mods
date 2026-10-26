@@ -82,7 +82,7 @@ def map_page():
          label([0, 24, W, 80], "Surface", 6, TITLE_BLUE, align="center", need_bind=CONTENT_GATE),
          label([0, 440, W, 60], "Map in progress", 4, CREAM_DIM, align="center",
                need_bind=CONTENT_GATE),
-         label([0, 900, W, 40], "Pinch to zoom · Drag to pan", 3, CREAM_DIM, align="center",
+         label([0, 900, W, 40], "Pinch to zoom - Drag to pan", 3, CREAM_DIM, align="center",
                need_bind=CONTENT_GATE)]
     w += command_bar("map", [("Layers", "map_layers")])
     return {"id": "map", "title": "Map", "widgets": w + [unsupported_notice()]}
