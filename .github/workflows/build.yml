@@ -84,7 +84,7 @@ jobs:
           python3 tools/compact_zip.py dist/0100F2C0115B6000.dsmod.zip
           mv dist/0100F2C0115B6000.dsmod.zip "dist/0100F2C0115B6000-TearsOfTheKingdom-$VERSION.dsmod.zip"
           python3 tools/build_dualscreen_package.py --package packages/TearsOfTheKingdom \
-            --output dist-debug --version "$VERSION-debug" --name "Tears of the Kingdom companion (debug log)" \
+            --output dist-debug --version "$VERSION" --name "Tears of the Kingdom companion (debug log)" \
             --min-runtime 22 --build-id "$BUILD_ID" \
             --module android-arm64-v8a=build/android-debug/0100F2C0115B6000.so
           python3 tools/compact_zip.py dist-debug/0100F2C0115B6000.dsmod.zip
