@@ -3381,9 +3381,9 @@
      "type": "rect",
      "rect": [
       24,
-      150,
+      142,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3394,38 +3394,125 @@
      "type": "label",
      "rect": [
       56,
-      150,
-      700,
-      96
+      142,
+      760,
+      64
+     ],
+     "text": "Invert Vertical Camera",
+     "text_scale": 3,
+     "color": "#FFFFFCC6",
+     "text_center_h": 64,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1184,
+      142,
+      384,
+      64
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_center_h": 64,
+     "text_bind": "totk.option.0.text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      214,
+      1192,
+      64
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      56,
+      214,
+      760,
+      64
+     ],
+     "text": "Invert Horizontal Camera",
+     "text_scale": 3,
+     "color": "#FFFFFCC6",
+     "text_center_h": 64,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1184,
+      214,
+      384,
+      64
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_center_h": 64,
+     "text_bind": "totk.option.1.text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      286,
+      1192,
+      64
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      56,
+      286,
+      760,
+      64
      ],
      "text": "Camera Sensitivity",
-     "text_scale": 4,
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      150,
+      286,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.2.text",
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
       24,
-      258,
+      358,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3436,38 +3523,39 @@
      "type": "label",
      "rect": [
       56,
-      258,
-      700,
-      96
+      358,
+      760,
+      64
      ],
-     "text": "Invert Vertical Axis",
-     "text_scale": 4,
+     "text": "Aim with Motion Controls",
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      258,
+      358,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.3.text",
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
       24,
-      366,
+      430,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3478,38 +3566,39 @@
      "type": "label",
      "rect": [
       56,
-      366,
-      700,
-      96
+      430,
+      760,
+      64
      ],
-     "text": "Invert Horizontal Axis",
-     "text_scale": 4,
+     "text": "Invert Vertical Ability Controls",
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      366,
+      430,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.4.text",
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
       24,
-      474,
+      502,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3520,38 +3609,39 @@
      "type": "label",
      "rect": [
       56,
-      474,
-      700,
-      96
+      502,
+      760,
+      64
      ],
-     "text": "Aiming Controls",
-     "text_scale": 4,
+     "text": "Invert Horizontal Ability Controls",
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      474,
+      502,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.5.text",
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
       24,
-      582,
+      574,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3562,38 +3652,125 @@
      "type": "label",
      "rect": [
       56,
-      582,
-      700,
-      96
+      574,
+      760,
+      64
+     ],
+     "text": "Swap Jump Controls",
+     "text_scale": 3,
+     "color": "#FFFFFCC6",
+     "text_center_h": 64,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1184,
+      574,
+      384,
+      64
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_center_h": 64,
+     "text_bind": "totk.option.6.text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      646,
+      1192,
+      64
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      56,
+      646,
+      760,
+      64
+     ],
+     "text": "Lock Minimap to North",
+     "text_scale": 3,
+     "color": "#FFFFFCC6",
+     "text_center_h": 64,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1184,
+      646,
+      384,
+      64
+     ],
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_center_h": 64,
+     "text_bind": "totk.option.7.text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      718,
+      1192,
+      64
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      56,
+      718,
+      760,
+      64
      ],
      "text": "HUD Mode",
-     "text_scale": 4,
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      582,
+      718,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.8.text",
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
       24,
-      690,
+      790,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3604,38 +3781,39 @@
      "type": "label",
      "rect": [
       56,
-      690,
-      700,
-      96
+      790,
+      760,
+      64
      ],
-     "text": "Map Orientation",
-     "text_scale": 4,
+     "text": "Message Window",
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      690,
+      790,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.9.text",
      "need_bind": "totk.supported"
     },
     {
      "type": "rect",
      "rect": [
       24,
-      798,
+      862,
       1192,
-      96
+      64
      ],
      "bg": "#C8000000",
      "color": "#3CFFFCC6",
@@ -3646,29 +3824,30 @@
      "type": "label",
      "rect": [
       56,
-      798,
-      700,
-      96
+      862,
+      760,
+      64
      ],
-     "text": "Text Speed",
-     "text_scale": 4,
+     "text": "Voice Language",
+     "text_scale": 3,
      "color": "#FFFFFCC6",
-     "text_center_h": 96,
+     "text_center_h": 64,
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
       1184,
-      798,
+      862,
       384,
-      96
+      64
      ],
-     "text": "\u2014",
-     "text_scale": 4,
-     "color": "#9EE6ECF2",
+     "text": "",
+     "text_scale": 3,
+     "color": "#FF5FC8F0",
      "align": "right",
-     "text_center_h": 96,
+     "text_center_h": 64,
+     "text_bind": "totk.option.10.text",
      "need_bind": "totk.supported"
     },
     {

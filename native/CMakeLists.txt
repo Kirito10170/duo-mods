@@ -93,4 +93,8 @@ if(NOT ANDROID)
     target_compile_features(totk-assets-tool PRIVATE cxx_std_20)
     target_include_directories(totk-assets-tool PRIVATE "${EDEN_SOURCE_ROOT}/src")
     target_link_libraries(totk-assets-tool PRIVATE dsmod-zstd dsmod-bc-decoder)
+
+    add_executable(totk-gamedata-test modules/totk_gamedata_test.cpp)
+    target_compile_features(totk-gamedata-test PRIVATE cxx_std_20)
+    target_compile_options(totk-gamedata-test PRIVATE -UNDEBUG)
 endif()

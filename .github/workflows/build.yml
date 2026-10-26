@@ -57,6 +57,7 @@ jobs:
             -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
             -DEDEN_SOURCE_ROOT="$GITHUB_WORKSPACE/eden-duo" -DZSTD_SOURCE_ROOT="$GITHUB_WORKSPACE/zstd"
           cmake --build build/linux
+          build/linux/totk-gamedata-test
           strip build/linux/0100F2C0115B6000.so
 
       - name: Package

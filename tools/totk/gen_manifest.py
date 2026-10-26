@@ -26,8 +26,11 @@ CLEAR = "#00000000"
 
 NAV = [("ready", "Ready"), ("map", "Map"), ("inventory", "Inventory"), ("options", "Settings")]
 CATEGORIES = ["Weapons", "Bows", "Shields", "Armor", "Materials", "Food", "Key Items"]
-OPTIONS = ["Camera Sensitivity", "Invert Vertical Axis", "Invert Horizontal Axis",
-           "Aiming Controls", "HUD Mode", "Map Orientation", "Text Speed"]
+# The game's System > Options list (amiibo, a toggle with no value, is left out).
+OPTIONS = ["Invert Vertical Camera", "Invert Horizontal Camera", "Camera Sensitivity",
+           "Aim with Motion Controls", "Invert Vertical Ability Controls",
+           "Invert Horizontal Ability Controls", "Swap Jump Controls", "Lock Minimap to North",
+           "HUD Mode", "Message Window", "Voice Language"]
 # Published by the module, which the host loads only on the supported build (module.build_ids).
 CONTENT_GATE = "totk.supported"
 # The world map: 12 x 10 cells of 1000 m, x east, map y = -z (north up). Cell i = row * 12 + col,
@@ -191,12 +194,12 @@ def options_page():
          label([40, 20, 800, 80], "Options", 6, CREAM, text_center_h=80),
          rect([24, 128, 1192, 2], RULE)]
     for i, name in enumerate(OPTIONS):
-        y = 150 + i * 108
-        w.append(rect([24, y, 1192, 96], TILE_BG, TILE_FRAME, frame=1, need_bind=CONTENT_GATE))
-        w.append(label([56, y, 700, 96], name, 4, CREAM, text_center_h=96,
+        y = 142 + i * 72
+        w.append(rect([24, y, 1192, 64], TILE_BG, TILE_FRAME, frame=1, need_bind=CONTENT_GATE))
+        w.append(label([56, y, 760, 64], name, 3, CREAM, text_center_h=64,
                        need_bind=CONTENT_GATE))
-        w.append(label([800, y, 384, 96], "—", 4, CREAM_DIM, align="right", text_center_h=96,
-                       need_bind=CONTENT_GATE))
+        w.append(label([800, y, 384, 64], "", 3, TITLE_BLUE, align="right", text_center_h=64,
+                       text_bind=f"totk.option.{i}.text", need_bind=CONTENT_GATE))
     w += command_bar("options")
     return {"id": "options", "title": "Settings", "widgets": w + [unsupported_notice()]}
 
