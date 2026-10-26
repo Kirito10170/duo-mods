@@ -608,6 +608,22 @@ std::unordered_map<std::string, ActorText> LoadActorNames(const RomfsReader& rea
         if (!sarc)
             continue;
         SarcWalk(*sarc, [&](std::string_view member, std::span<const u8> bytes) {
+            // Shrines: "0NNN" name and "2NNN" subtitle of DungeonNNN.
+            if (member == "LocationMsg/Dungeon.msbt") {
+                for (auto& [label, text] : MsbtEntries(bytes))
+                    if (label.size() == 4 && (label[0] == '0' || label[0] == '2') && !text.empty()) {
+                        auto& entry = names["Dungeon" + label.substr(1)];
+                        (label[0] == '0' ? entry.name : entry.caption) = std::move(text);
+                    }
+                return false;
+            }
+            // Lightroots "CheckPointNNN", towers "TowerNN" and other places, by label.
+            if (member == "LocationMsg/Location.msbt") {
+                for (auto& [label, text] : MsbtEntries(bytes))
+                    if (!text.empty())
+                        names[label].name = std::move(text);
+                return false;
+            }
             if (!member.starts_with("ActorMsg/") || !member.ends_with(".msbt"))
                 return false;
             for (auto& [label, text] : MsbtEntries(bytes)) {

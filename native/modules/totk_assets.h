@@ -59,7 +59,9 @@ std::vector<std::string> SarcNames(std::span<const std::uint8_t> sarc);
 /// MSBT label -> text (UTF-8, inline control tags dropped).
 std::vector<std::pair<std::string, std::string>> MsbtEntries(std::span<const std::uint8_t> msbt);
 /// Display text of actors (items, weapons, materials) from /Mals/<lang>.Product.*.sarc.zs:
-/// every ActorMsg/*.msbt "<Actor>_Name" and "<Actor>_Caption", keyed by actor name.
+/// every ActorMsg/*.msbt "<Actor>_Name" and "<Actor>_Caption", keyed by actor name; plus place
+/// names from LocationMsg: "DungeonNNN" (shrine name, caption = its subtitle), "CheckPointNNN"
+/// (lightroots), "TowerNN" (Skyview towers) and the other Location.msbt labels.
 struct ActorText {
     std::string name, caption;
 };

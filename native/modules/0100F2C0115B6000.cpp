@@ -182,8 +182,8 @@ constexpr std::string_view ShrineScenes[]{
 constexpr std::size_t MaxTravel = 400;
 // Marker pictures from the Common layout archive, by travel::Kind.
 constexpr const char* TravelIcons[]{"module:totk:common/MapIconDungeon_L_Icon^s",
-                                    "module:totk:common/MapIconCheckPoint_L_Icon^s",
-                                    "module:totk:common/MapIconTower_L_Icon^s"};
+                                    "module:totk:common/MapIconArrivalPoint_L_FrameIcon^s",
+                                    "module:totk:common/MapIconTower_00^s"};
 
 struct TravelPoint {
     totk::travel::Kind kind;
@@ -842,6 +842,8 @@ struct Module {
                     shown = state && *state != Hidden;
                     travel = state && (*state == Open || *state == Enter || *state == Clear);
                     status = !state ? "" : *state == Clear ? "Completed" : travel ? "Visited" : "Not yet entered";
+                    if (const auto sub = ItemCaption(p.label); !sub.empty())
+                        status = sub + "  -  " + status;
                 } else if (p.kind == Kind::Lightroot) {
                     shown = state && *state == Open;
                     travel = shown;
@@ -882,11 +884,16 @@ struct Module {
                        sel_travel ? "Travel from here is coming in the next build" : "You can't travel here yet");
     }
 
-    static std::string TravelName(const TravelPoint& p) {
+    // The game's place name ("Tauyosipun Shrine", "Stakijat Lightroot"), until the message
+    // archive is in a plain one.
+    std::string TravelName(const TravelPoint& p) const {
         using totk::travel::Kind;
         if (p.kind == Kind::Tower)
             return "Skyview Tower";
-        const std::string_view digits = std::string_view{p.label}.substr(std::min<std::size_t>(p.label.size(), p.kind == Kind::Shrine ? 7 : 10));
+        if (const auto name = ItemText(p.label); name != p.label)
+            return name;
+        const std::string_view digits = std::string_view{p.label}.substr(
+            std::min<std::size_t>(p.label.size(), p.kind == Kind::Shrine ? 7 : 10));
         return (p.kind == Kind::Shrine ? "Shrine " : "Lightroot ") + std::string{digits};
     }
 
