@@ -96,7 +96,12 @@ constexpr const char* FarZoom = "03";
 constexpr float DepthsBelow = -150.0f, SkyNear = 500.0f, SkyAlways = 1500.0f;
 constexpr int SkyGrid = 100, SkyCols = 12000 / SkyGrid, SkyRows = 10000 / SkyGrid;
 
-std::string TileKey(int layer, int cell, const char* zoom) {
+// Depths: the game keeps the Depths dark except around lit lightroots (computed, not a texture).
+// The companion darkens each Depths tile outside LitRadius of every lit root; a tile's key carries
+// a signature of the roots that touch it, so lighting one reloads only the tiles it reaches.
+constexpr float LitRadius = 500.0f, LitFeather = 150.0f, DarkLevel = 0.28f;
+
+std::string TileKey(int layer, int cell, const char* zoom, u32 lit_signature = 0) {
     char buf[64];
     const int col = cell % Cols, row = cell / Cols;
     int n = std::snprintf(buf, sizeof buf, "module:totk:map/%c_%02d-%02d_%s", LayerLetters[layer],
@@ -110,6 +115,8 @@ std::string TileKey(int layer, int cell, const char* zoom) {
         for (int i = 0; i < flags; ++i)
             buf[n++] = 'T';
         buf[n] = 0;
+    } else {
+        std::snprintf(buf + n, sizeof buf - static_cast<std::size_t>(n), "~%08x", lit_signature);
     }
     return buf;
 }
@@ -514,6 +521,8 @@ struct Module {
                                         "Common.Product.100.Nin_NX_NVN"})
                 if ((image = assets.Load(romfs, std::string{"lyt/"} + archive + "/" + common)))
                     break;
+        } else if (logical.starts_with("map/U_") && logical.find('~') != std::string_view::npos) {
+            image = LitDepthsTile(romfs, logical);
         } else {
             image = assets.Load(romfs, logical);
             // A map tile exists only for the flag combinations the game ships; the module asks for
@@ -619,6 +628,7 @@ struct Module {
         }
         PublishVitals(h, gmd);
         PublishGear(h, gmd);
+        UpdateLitRoots(gmd);
         PublishMap(h, gmd);
         PublishTravel(h, gmd);
         PublishOptions(h, gmd);
@@ -889,8 +899,8 @@ struct Module {
         // strings are rebuilt only when the layer on show changes.
         if (layer != tiles_layer) {
             for (int i = 0; i < Cells; ++i) {
-                near_tiles[i] = TileKey(layer, i, NearZoom);
-                far_tiles[i] = TileKey(layer, i, FarZoom);
+                near_tiles[i] = TileKey(layer, i, NearZoom, lit_signature[i]);
+                far_tiles[i] = TileKey(layer, i, FarZoom, lit_signature[i]);
             }
             tiles_layer = layer;
         }
@@ -996,6 +1006,87 @@ struct Module {
         return (p.kind == Kind::Shrine ? "Shrine " : "Lightroot ") + std::string{digits};
     }
 
+    // Which lightroots are lit, and for each Depths cell a signature of the lit roots near it.
+    template <class G>
+    void UpdateLitRoots(G& gmd) {
+        if (!world_ready.load(std::memory_order_acquire))
+            return;
+        static const u32 Open = Murmur3("Open");
+        std::vector<std::pair<float, float>> lit;
+        std::array<u32, Cells> sig{};
+        constexpr float Reach = LitRadius + LitFeather;
+        for (std::size_t i = 0; i < world.points.size(); ++i) {
+            const auto& p = world.points[i];
+            if (p.kind != totk::travel::Kind::Lightroot || !p.state)
+                continue;
+            if (const auto st = gmd.GetEnum(p.state); !st || *st != Open)
+                continue;
+            lit.emplace_back(p.x, p.z);
+            const int c0 = static_cast<int>(std::floor((p.x - Reach + 6000.0f) / 1000.0f));
+            const int c1 = static_cast<int>(std::floor((p.x + Reach + 6000.0f) / 1000.0f));
+            const int r0 = static_cast<int>(std::floor((p.z - Reach + 5000.0f) / 1000.0f));
+            const int r1 = static_cast<int>(std::floor((p.z + Reach + 5000.0f) / 1000.0f));
+            for (int r = std::max(r0, 0); r <= std::min(r1, Rows - 1); ++r)
+                for (int c = std::max(c0, 0); c <= std::min(c1, Cols - 1); ++c) {
+                    u32& h = sig[static_cast<std::size_t>(r * Cols + c)];
+                    h = (h ^ static_cast<u32>(i + 1)) * 0x01000193u;
+                }
+        }
+        if (sig == lit_signature && !lit_signature_unset)
+            return;
+        {
+            std::scoped_lock lock{lit_mutex};
+            lit_roots = std::move(lit);
+        }
+        lit_signature = sig;
+        lit_signature_unset = false;
+        tiles_layer = -1; // rebuild the tile keys
+        TotkNetLog::Log("depths: %zu lit lightroots", lit_roots.size());
+    }
+
+    // A Depths tile, dark except within LitRadius of a lit root (soft edge of LitFeather).
+    std::shared_ptr<const TotkAssets::Image> LitDepthsTile(const TotkAssets::RomfsReader& romfs,
+                                                           std::string_view logical) {
+        const auto tilde = logical.find('~');
+        const auto base = assets.Load(romfs, logical.substr(0, tilde));
+        if (!base || base->width == 0 || base->height == 0)
+            return base;
+        // "map/U_CC-RR_ZZ": the cell's world box.
+        const auto name = logical.substr(4);
+        const int col = std::atoi(std::string{name.substr(2, 2)}.c_str());
+        const int row = std::atoi(std::string{name.substr(5, 2)}.c_str());
+        const float x0 = -6000.0f + 1000.0f * col, z0 = -5000.0f + 1000.0f * row;
+        std::vector<std::pair<float, float>> roots;
+        {
+            std::scoped_lock lock{lit_mutex};
+            for (const auto& [x, z] : lit_roots)
+                if (x > x0 - LitRadius - LitFeather && x < x0 + 1000.0f + LitRadius + LitFeather &&
+                    z > z0 - LitRadius - LitFeather && z < z0 + 1000.0f + LitRadius + LitFeather)
+                    roots.emplace_back(x, z);
+        }
+        auto out = std::make_shared<TotkAssets::Image>(*base);
+        const float sx = 1000.0f / static_cast<float>(base->width);
+        const float sz = 1000.0f / static_cast<float>(base->height);
+        for (u32 v = 0; v < base->height; ++v) {
+            const float z = z0 + (static_cast<float>(v) + 0.5f) * sz;
+            for (u32 u = 0; u < base->width; ++u) {
+                const float x = x0 + (static_cast<float>(u) + 0.5f) * sx;
+                float light = 0.0f;
+                for (const auto& [rx, rz] : roots) {
+                    const float d = std::sqrt((x - rx) * (x - rx) + (z - rz) * (z - rz));
+                    light = std::max(light, std::clamp((LitRadius + LitFeather - d) / LitFeather, 0.0f, 1.0f));
+                    if (light >= 1.0f)
+                        break;
+                }
+                const float k = DarkLevel + (1.0f - DarkLevel) * light;
+                u8* px = out->rgba.data() + (static_cast<std::size_t>(v) * base->width + u) * 4;
+                for (int c = 0; c < 3; ++c)
+                    px[c] = static_cast<u8>(static_cast<float>(px[c]) * k);
+            }
+        }
+        return out;
+    }
+
     static const std::string& TileBind(std::string_view zoom, int i) {
         static const auto make = [](std::string_view z) {
             std::array<std::string, Cells> out;
@@ -1008,6 +1099,11 @@ struct Module {
     }
 
     int tiles_layer{-1};
+    // Lit lightroots (x, z): written by the sample thread, read by the asset worker.
+    std::mutex lit_mutex;
+    std::vector<std::pair<float, float>> lit_roots;
+    std::array<u32, Cells> lit_signature{};
+    bool lit_signature_unset{true};
     std::array<std::string, Cells> near_tiles, far_tiles;
 };
 
