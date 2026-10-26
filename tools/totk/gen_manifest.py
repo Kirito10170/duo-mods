@@ -24,12 +24,37 @@ BUTTON_BG = "#FF0A0A05"
 BUTTON_FRAME = "#FF4A4630"
 CLEAR = "#00000000"
 
-NAV = [("map", "Map"), ("inventory", "Inventory"), ("options", "Settings")]
+NAV = [("ready", "Ready"), ("map", "Map"), ("inventory", "Inventory"), ("options", "Settings")]
 CATEGORIES = ["Weapons", "Bows", "Shields", "Armor", "Materials", "Food", "Key Items"]
 OPTIONS = ["Camera Sensitivity", "Invert Vertical Axis", "Invert Horizontal Axis",
            "Aiming Controls", "HUD Mode", "Map Orientation", "Text Speed"]
 # Published by the module, which the host loads only on the supported build (module.build_ids).
 CONTENT_GATE = "totk.supported"
+# The world map: 12 x 10 cells of 1000 m, x east, map y = -z (north up). Cell i = row * 12 + col,
+# row 0 the northern edge; the module publishes each cell's tile key for the layer on show.
+MAP_MIN, MAP_MAX, CELL, COLS, ROWS = (-6000, -5000), (6000, 5000), 1000, 12, 10
+# Link's marker; the module serves the arrow from the game's layout archive.
+PLAYER_MARKER = "module:totk:player_marker"
+
+
+def map_overlays(base, detail=None):
+    out = []
+    for i in range(COLS * ROWS):
+        col, row = i % COLS, i // COLS
+        o = {"src_bind": f"totk.map.tile.{base}.{i}",
+             "x0": MAP_MIN[0] + col * CELL, "x1": MAP_MIN[0] + (col + 1) * CELL,
+             "y0": MAP_MAX[1] - (row + 1) * CELL, "y1": MAP_MAX[1] - row * CELL}
+        if detail is not None:
+            o["src_detail_bind"] = f"totk.map.tile.{detail}.{i}"
+            o["detail_threshold"] = 210
+        out.append(o)
+    return out
+
+
+def map_widget(r, wid, **kw):
+    return {"type": "map", "id": wid, "area": "Hyrule", "rect": r, "area_label": False,
+            "marker_x_bind": "totk.map.x", "marker_y_bind": "totk.map.y",
+            "marker_src": PLAYER_MARKER, "need_bind": "totk.map.valid", **kw}
 
 
 def rect(r, bg, color=CLEAR, **kw):
@@ -60,8 +85,8 @@ def command_bar(active, extra=()):
     w = [rect([0, 950, W, 130], HEADER), rect([24, 950, 1192, 1], RULE)]
     x = 24
     for pid, text in NAV:
-        w += button([x, 966, 236, 98], text, "go_" + pid, pid == active)
-        x += 248
+        w += button([x, 966, 228, 98], text, "go_" + pid, pid == active)
+        x += 238
     x = W - 24
     for text, action in reversed(list(extra)):
         x -= 220
@@ -76,14 +101,60 @@ def unsupported_notice():
                  4, "#FFFFB74D", wrap_width=1120, align="center", hide_bind=CONTENT_GATE)
 
 
+def bar(r, bind, color):
+    return [rect(r, TILE_BG, TILE_FRAME, frame=1, need_bind=CONTENT_GATE),
+            {"type": "bar", "rect": [r[0] + 3, r[1] + 3, r[2] - 6, r[3] - 6], "bind": bind,
+             "max": 100, "color": color, "bg": "#40FFFCC6", "frame": 0,
+             "need_bind": CONTENT_GATE}]
+
+
+def ready_page():
+    """The BOTW companion's Ready page, first pass: minimap, vitals and equipped gear."""
+    w = [rect([0, 0, W, H], BG)]
+    # Minimap following Link, framed like the game's own.
+    w.append(rect([24, 24, 620, 620], "#FF000D17", TILE_FRAME, frame=2, need_bind=CONTENT_GATE))
+    w.append(map_widget([28, 28, 612, 612], "ready_map", follow_window=900,
+                        overlays=map_overlays("near")))
+    w.append(label([24, 652, 620, 48], "", 4, TITLE_BLUE, align="center", text_center_h=48,
+                   text_bind="totk.map.layer_name", need_bind=CONTENT_GATE))
+    # Vitals.
+    x = 680
+    w.append(label([x, 24, 536, 48], "Hearts", 4, CREAM_DIM, need_bind=CONTENT_GATE))
+    w.append(label([x, 72, 536, 64], "", 6, CREAM, text_bind="totk.ready.hearts_text",
+                   need_bind=CONTENT_GATE))
+    w.append(label([x, 152, 536, 40], "Stamina", 4, CREAM_DIM, need_bind=CONTENT_GATE))
+    w += bar([x, 196, 536, 28], "totk.ready.stamina_pct", "#FF7CD17A")
+    w.append(label([x, 240, 536, 40], "Zonai battery", 4, CREAM_DIM, need_bind=CONTENT_GATE))
+    w += bar([x, 284, 536, 28], "totk.ready.battery_pct", "#FF5FC8F0")
+    # Equipped gear: name and durability.
+    for i, (slot, title) in enumerate([("weapon", "Weapon"), ("bow", "Bow"), ("shield", "Shield")]):
+        y = 340 + i * 100
+        w.append(rect([x, y, 536, 88], TILE_BG, TILE_FRAME, frame=1, need_bind=CONTENT_GATE))
+        w.append(label([x + 16, y + 6, 500, 32], title, 3, CREAM_DIM, need_bind=CONTENT_GATE))
+        w.append(label([x + 16, y + 40, 400, 40], "", 4, CREAM,
+                       text_bind=f"totk.ready.{slot}.name", need_bind=CONTENT_GATE))
+        w.append(label([x + 400, y + 40, 120, 40], "", 4, TITLE_BLUE, align="right",
+                       text_bind=f"totk.ready.{slot}.durability_text", need_bind=CONTENT_GATE))
+    # Abilities.
+    w.append(label([x, 650, 536, 40], "Abilities", 4, CREAM_DIM, need_bind=CONTENT_GATE))
+    w.append(label([x, 696, 536, 220], "", 4, CREAM, wrap_width=536,
+                   text_bind="totk.ready.abilities_text", need_bind=CONTENT_GATE))
+    w.append(label([24, 720, 620, 40], "", 3, CREAM_DIM, align="center",
+                   text_bind="totk.map.coords_text", need_bind=CONTENT_GATE))
+    w += command_bar("ready")
+    return {"id": "ready", "title": "Ready", "widgets": w + [unsupported_notice()]}
+
+
 def map_page():
     w = [rect([0, 0, W, H], BG),
-         rect([0, 0, W, 950], "#FF16202A"),
-         label([0, 24, W, 80], "Surface", 6, TITLE_BLUE, align="center", need_bind=CONTENT_GATE),
-         label([0, 440, W, 60], "Map in progress", 4, CREAM_DIM, align="center",
-               need_bind=CONTENT_GATE),
+         rect([0, 0, W, 950], "#FF000D17"),
+         map_widget([0, 0, W, 950], "world_map", pan_zoom=True, max_zoom=16,
+                    marker_size=[64, 64], overlays=map_overlays("far", "near")),
+         rect([0, 0, W, 92], HEADER, need_bind=CONTENT_GATE),
+         label([0, 12, W, 68], "", 6, TITLE_BLUE, align="center", text_center_h=68,
+               text_bind="totk.map.layer_name", need_bind=CONTENT_GATE),
          label([0, 900, W, 40], "Pinch to zoom - Drag to pan", 3, CREAM_DIM, align="center",
-               need_bind=CONTENT_GATE)]
+               hide_bind="totk.map.valid", need_bind=CONTENT_GATE)]
     w += command_bar("map", [("Layers", "map_layers")])
     return {"id": "map", "title": "Map", "widgets": w + [unsupported_notice()]}
 
@@ -149,7 +220,11 @@ def main():
         "background": BG,
         "actions": actions,
         "module_outputs": ["totk.supported", "totk.unsupported", "totk.ready"],
-        "pages": [map_page(), inventory_page(), options_page()],
+        "map": {"areas": {"Hyrule": {"min": list(MAP_MIN), "max": list(MAP_MAX),
+                                     "image": "file:assets/map-transparent.png",
+                                     "clamp_view": True}},
+                "style": {"background": "#FF000D17"}},
+        "pages": [ready_page(), map_page(), inventory_page(), options_page()],
     }
     print(json.dumps(manifest, indent=1))
 

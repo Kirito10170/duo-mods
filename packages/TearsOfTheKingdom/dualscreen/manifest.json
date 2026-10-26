@@ -9,6 +9,12 @@
  "canvas_h": 1080,
  "background": "#FF0C0F11",
  "actions": {
+  "go_ready": {
+   "kind": "page",
+   "page": "ready",
+   "transition": "fade",
+   "duration_ms": 150
+  },
   "go_map": {
    "kind": "page",
    "page": "map",
@@ -78,10 +84,29 @@
   "totk.unsupported",
   "totk.ready"
  ],
+ "map": {
+  "areas": {
+   "Hyrule": {
+    "min": [
+     -6000,
+     -5000
+    ],
+    "max": [
+     6000,
+     5000
+    ],
+    "image": "file:assets/map-transparent.png",
+    "clamp_view": true
+   }
+  },
+  "style": {
+   "background": "#FF000D17"
+  }
+ },
  "pages": [
   {
-   "id": "map",
-   "title": "Map",
+   "id": "ready",
+   "title": "Ready",
    "widgets": [
     {
      "type": "rect",
@@ -97,54 +122,1206 @@
     {
      "type": "rect",
      "rect": [
-      0,
-      0,
-      1240,
-      950
+      24,
+      24,
+      620,
+      620
      ],
-     "bg": "#FF16202A",
-     "color": "#00000000"
+     "bg": "#FF000D17",
+     "color": "#3CFFFCC6",
+     "frame": 2,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "map",
+     "id": "ready_map",
+     "area": "Hyrule",
+     "rect": [
+      28,
+      28,
+      612,
+      612
+     ],
+     "area_label": false,
+     "marker_x_bind": "totk.map.x",
+     "marker_y_bind": "totk.map.y",
+     "marker_src": "module:totk:player_marker",
+     "need_bind": "totk.map.valid",
+     "follow_window": 900,
+     "overlays": [
+      {
+       "src_bind": "totk.map.tile.near.0",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.1",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.2",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.3",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.4",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.5",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.6",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.7",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.8",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.9",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.10",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.11",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 4000,
+       "y1": 5000
+      },
+      {
+       "src_bind": "totk.map.tile.near.12",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.13",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.14",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.15",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.16",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.17",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.18",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.19",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.20",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.21",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.22",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.23",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 3000,
+       "y1": 4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.24",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.25",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.26",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.27",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.28",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.29",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.30",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.31",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.32",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.33",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.34",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.35",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 2000,
+       "y1": 3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.36",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.37",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.38",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.39",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.40",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.41",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.42",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.43",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.44",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.45",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.46",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.47",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 1000,
+       "y1": 2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.48",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.49",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.50",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.51",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.52",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.53",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.54",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.55",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.56",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.57",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.58",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.59",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 0,
+       "y1": 1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.60",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.61",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.62",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.63",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.64",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.65",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.66",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.67",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.68",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.69",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.70",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.71",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -1000,
+       "y1": 0
+      },
+      {
+       "src_bind": "totk.map.tile.near.72",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.73",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.74",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.75",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.76",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.77",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.78",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.79",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.80",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.81",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.82",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.83",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -2000,
+       "y1": -1000
+      },
+      {
+       "src_bind": "totk.map.tile.near.84",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.85",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.86",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.87",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.88",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.89",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.90",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.91",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.92",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.93",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.94",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.95",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -3000,
+       "y1": -2000
+      },
+      {
+       "src_bind": "totk.map.tile.near.96",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.97",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.98",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.99",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.100",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.101",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.102",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.103",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.104",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.105",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.106",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.107",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -4000,
+       "y1": -3000
+      },
+      {
+       "src_bind": "totk.map.tile.near.108",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.109",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.110",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.111",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.112",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.113",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.114",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.115",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.116",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.117",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.118",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -5000,
+       "y1": -4000
+      },
+      {
+       "src_bind": "totk.map.tile.near.119",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -5000,
+       "y1": -4000
+      }
+     ]
     },
     {
      "type": "label",
      "rect": [
+      334,
+      652,
       620,
-      24,
-      1240,
-      80
+      48
      ],
-     "text": "Surface",
-     "text_scale": 6,
+     "text": "",
+     "text_scale": 4,
      "color": "#FF5FC8F0",
      "align": "center",
+     "text_center_h": 48,
+     "text_bind": "totk.map.layer_name",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      620,
-      440,
-      1240,
-      60
+      680,
+      24,
+      536,
+      48
      ],
-     "text": "Map in progress",
+     "text": "Hearts",
      "text_scale": 4,
      "color": "#9EE6ECF2",
-     "align": "center",
      "need_bind": "totk.supported"
     },
     {
      "type": "label",
      "rect": [
-      620,
-      900,
-      1240,
+      680,
+      72,
+      536,
+      64
+     ],
+     "text": "",
+     "text_scale": 6,
+     "color": "#FFFFFCC6",
+     "text_bind": "totk.ready.hearts_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      680,
+      152,
+      536,
       40
      ],
-     "text": "Pinch to zoom - Drag to pan",
+     "text": "Stamina",
+     "text_scale": 4,
+     "color": "#9EE6ECF2",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      680,
+      196,
+      536,
+      28
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "bar",
+     "rect": [
+      683,
+      199,
+      530,
+      22
+     ],
+     "bind": "totk.ready.stamina_pct",
+     "max": 100,
+     "color": "#FF7CD17A",
+     "bg": "#40FFFCC6",
+     "frame": 0,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      680,
+      240,
+      536,
+      40
+     ],
+     "text": "Zonai battery",
+     "text_scale": 4,
+     "color": "#9EE6ECF2",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      680,
+      284,
+      536,
+      28
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "bar",
+     "rect": [
+      683,
+      287,
+      530,
+      22
+     ],
+     "bind": "totk.ready.battery_pct",
+     "max": 100,
+     "color": "#FF5FC8F0",
+     "bg": "#40FFFCC6",
+     "frame": 0,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      680,
+      340,
+      536,
+      88
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      696,
+      346,
+      500,
+      32
+     ],
+     "text": "Weapon",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      696,
+      380,
+      400,
+      40
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FFFFFCC6",
+     "text_bind": "totk.ready.weapon.name",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1200,
+      380,
+      120,
+      40
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_bind": "totk.ready.weapon.durability_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      680,
+      440,
+      536,
+      88
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      696,
+      446,
+      500,
+      32
+     ],
+     "text": "Bow",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      696,
+      480,
+      400,
+      40
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FFFFFCC6",
+     "text_bind": "totk.ready.bow.name",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1200,
+      480,
+      120,
+      40
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_bind": "totk.ready.bow.durability_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      680,
+      540,
+      536,
+      88
+     ],
+     "bg": "#C8000000",
+     "color": "#3CFFFCC6",
+     "frame": 1,
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      696,
+      546,
+      500,
+      32
+     ],
+     "text": "Shield",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      696,
+      580,
+      400,
+      40
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FFFFFCC6",
+     "text_bind": "totk.ready.shield.name",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1200,
+      580,
+      120,
+      40
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FF5FC8F0",
+     "align": "right",
+     "text_bind": "totk.ready.shield.durability_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      680,
+      650,
+      536,
+      40
+     ],
+     "text": "Abilities",
+     "text_scale": 4,
+     "color": "#9EE6ECF2",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      680,
+      696,
+      536,
+      220
+     ],
+     "text": "",
+     "text_scale": 4,
+     "color": "#FFFFFCC6",
+     "wrap_width": 536,
+     "text_bind": "totk.ready.abilities_text",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      334,
+      720,
+      620,
+      40
+     ],
+     "text": "",
      "text_scale": 3,
      "color": "#9EE6ECF2",
      "align": "center",
+     "text_bind": "totk.map.coords_text",
      "need_bind": "totk.supported"
     },
     {
@@ -174,7 +1351,34 @@
      "rect": [
       24,
       966,
-      236,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_ready"
+    },
+    {
+     "type": "label",
+     "rect": [
+      138,
+      966,
+      228,
+      98
+     ],
+     "text": "Ready",
+     "text_scale": 5,
+     "color": "#FF5FC8F0",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "rect",
+     "rect": [
+      262,
+      966,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -185,23 +1389,23 @@
     {
      "type": "label",
      "rect": [
-      142,
+      376,
       966,
-      236,
+      228,
       98
      ],
      "text": "Map",
      "text_scale": 5,
-     "color": "#FF5FC8F0",
+     "color": "#FFFFFCC6",
      "align": "center",
      "text_center_h": 98
     },
     {
      "type": "rect",
      "rect": [
-      272,
+      500,
       966,
-      236,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -212,9 +1416,9 @@
     {
      "type": "label",
      "rect": [
-      390,
+      614,
       966,
-      236,
+      228,
       98
      ],
      "text": "Inventory",
@@ -226,9 +1430,9 @@
     {
      "type": "rect",
      "rect": [
-      520,
+      738,
       966,
-      236,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -239,9 +1443,1329 @@
     {
      "type": "label",
      "rect": [
-      638,
+      852,
       966,
-      236,
+      228,
+      98
+     ],
+     "text": "Settings",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "label",
+     "rect": [
+      620,
+      420,
+      1120,
+      200
+     ],
+     "text": "This companion needs Tears of the Kingdom version 1.4.2. Update the game to use it.",
+     "text_scale": 4,
+     "color": "#FFFFB74D",
+     "wrap_width": 1120,
+     "align": "center",
+     "hide_bind": "totk.supported"
+    }
+   ]
+  },
+  {
+   "id": "map",
+   "title": "Map",
+   "widgets": [
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      0,
+      1240,
+      1080
+     ],
+     "bg": "#FF0C0F11",
+     "color": "#00000000"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      0,
+      1240,
+      950
+     ],
+     "bg": "#FF000D17",
+     "color": "#00000000"
+    },
+    {
+     "type": "map",
+     "id": "world_map",
+     "area": "Hyrule",
+     "rect": [
+      0,
+      0,
+      1240,
+      950
+     ],
+     "area_label": false,
+     "marker_x_bind": "totk.map.x",
+     "marker_y_bind": "totk.map.y",
+     "marker_src": "module:totk:player_marker",
+     "need_bind": "totk.map.valid",
+     "pan_zoom": true,
+     "max_zoom": 16,
+     "marker_size": [
+      64,
+      64
+     ],
+     "overlays": [
+      {
+       "src_bind": "totk.map.tile.far.0",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.0",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.1",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.1",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.2",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.2",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.3",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.3",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.4",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.4",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.5",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.5",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.6",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.6",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.7",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.7",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.8",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.8",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.9",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.9",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.10",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.10",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.11",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 4000,
+       "y1": 5000,
+       "src_detail_bind": "totk.map.tile.near.11",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.12",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.12",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.13",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.13",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.14",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.14",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.15",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.15",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.16",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.16",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.17",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.17",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.18",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.18",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.19",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.19",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.20",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.20",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.21",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.21",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.22",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.22",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.23",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 3000,
+       "y1": 4000,
+       "src_detail_bind": "totk.map.tile.near.23",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.24",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.24",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.25",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.25",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.26",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.26",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.27",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.27",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.28",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.28",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.29",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.29",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.30",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.30",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.31",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.31",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.32",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.32",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.33",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.33",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.34",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.34",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.35",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 2000,
+       "y1": 3000,
+       "src_detail_bind": "totk.map.tile.near.35",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.36",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.36",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.37",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.37",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.38",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.38",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.39",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.39",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.40",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.40",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.41",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.41",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.42",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.42",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.43",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.43",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.44",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.44",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.45",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.45",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.46",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.46",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.47",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 1000,
+       "y1": 2000,
+       "src_detail_bind": "totk.map.tile.near.47",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.48",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.48",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.49",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.49",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.50",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.50",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.51",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.51",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.52",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.52",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.53",
+       "x0": -1000,
+       "x1": 0,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.53",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.54",
+       "x0": 0,
+       "x1": 1000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.54",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.55",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.55",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.56",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.56",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.57",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.57",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.58",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.58",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.59",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": 0,
+       "y1": 1000,
+       "src_detail_bind": "totk.map.tile.near.59",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.60",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.60",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.61",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.61",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.62",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.62",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.63",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.63",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.64",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.64",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.65",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.65",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.66",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.66",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.67",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.67",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.68",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.68",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.69",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.69",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.70",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.70",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.71",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -1000,
+       "y1": 0,
+       "src_detail_bind": "totk.map.tile.near.71",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.72",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.72",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.73",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.73",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.74",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.74",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.75",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.75",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.76",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.76",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.77",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.77",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.78",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.78",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.79",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.79",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.80",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.80",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.81",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.81",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.82",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.82",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.83",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -2000,
+       "y1": -1000,
+       "src_detail_bind": "totk.map.tile.near.83",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.84",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.84",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.85",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.85",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.86",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.86",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.87",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.87",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.88",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.88",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.89",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.89",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.90",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.90",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.91",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.91",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.92",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.92",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.93",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.93",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.94",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.94",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.95",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -3000,
+       "y1": -2000,
+       "src_detail_bind": "totk.map.tile.near.95",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.96",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.96",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.97",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.97",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.98",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.98",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.99",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.99",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.100",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.100",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.101",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.101",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.102",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.102",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.103",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.103",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.104",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.104",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.105",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.105",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.106",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.106",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.107",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -4000,
+       "y1": -3000,
+       "src_detail_bind": "totk.map.tile.near.107",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.108",
+       "x0": -6000,
+       "x1": -5000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.108",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.109",
+       "x0": -5000,
+       "x1": -4000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.109",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.110",
+       "x0": -4000,
+       "x1": -3000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.110",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.111",
+       "x0": -3000,
+       "x1": -2000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.111",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.112",
+       "x0": -2000,
+       "x1": -1000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.112",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.113",
+       "x0": -1000,
+       "x1": 0,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.113",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.114",
+       "x0": 0,
+       "x1": 1000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.114",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.115",
+       "x0": 1000,
+       "x1": 2000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.115",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.116",
+       "x0": 2000,
+       "x1": 3000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.116",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.117",
+       "x0": 3000,
+       "x1": 4000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.117",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.118",
+       "x0": 4000,
+       "x1": 5000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.118",
+       "detail_threshold": 210
+      },
+      {
+       "src_bind": "totk.map.tile.far.119",
+       "x0": 5000,
+       "x1": 6000,
+       "y0": -5000,
+       "y1": -4000,
+       "src_detail_bind": "totk.map.tile.near.119",
+       "detail_threshold": 210
+      }
+     ]
+    },
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      0,
+      1240,
+      92
+     ],
+     "bg": "#E6141A1C",
+     "color": "#00000000",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      620,
+      12,
+      1240,
+      68
+     ],
+     "text": "",
+     "text_scale": 6,
+     "color": "#FF5FC8F0",
+     "align": "center",
+     "text_center_h": 68,
+     "text_bind": "totk.map.layer_name",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "label",
+     "rect": [
+      620,
+      900,
+      1240,
+      40
+     ],
+     "text": "Pinch to zoom - Drag to pan",
+     "text_scale": 3,
+     "color": "#9EE6ECF2",
+     "align": "center",
+     "hide_bind": "totk.map.valid",
+     "need_bind": "totk.supported"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      0,
+      950,
+      1240,
+      130
+     ],
+     "bg": "#E6141A1C",
+     "color": "#00000000"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      950,
+      1192,
+      1
+     ],
+     "bg": "#50FFFCC6",
+     "color": "#00000000"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      24,
+      966,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_ready"
+    },
+    {
+     "type": "label",
+     "rect": [
+      138,
+      966,
+      228,
+      98
+     ],
+     "text": "Ready",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "rect",
+     "rect": [
+      262,
+      966,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_map"
+    },
+    {
+     "type": "label",
+     "rect": [
+      376,
+      966,
+      228,
+      98
+     ],
+     "text": "Map",
+     "text_scale": 5,
+     "color": "#FF5FC8F0",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "rect",
+     "rect": [
+      500,
+      966,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_inventory"
+    },
+    {
+     "type": "label",
+     "rect": [
+      614,
+      966,
+      228,
+      98
+     ],
+     "text": "Inventory",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "rect",
+     "rect": [
+      738,
+      966,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_options"
+    },
+    {
+     "type": "label",
+     "rect": [
+      852,
+      966,
+      228,
       98
      ],
      "text": "Settings",
@@ -656,7 +3180,34 @@
      "rect": [
       24,
       966,
-      236,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_ready"
+    },
+    {
+     "type": "label",
+     "rect": [
+      138,
+      966,
+      228,
+      98
+     ],
+     "text": "Ready",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "rect",
+     "rect": [
+      262,
+      966,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -667,9 +3218,9 @@
     {
      "type": "label",
      "rect": [
-      142,
+      376,
       966,
-      236,
+      228,
       98
      ],
      "text": "Map",
@@ -681,9 +3232,9 @@
     {
      "type": "rect",
      "rect": [
-      272,
+      500,
       966,
-      236,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -694,9 +3245,9 @@
     {
      "type": "label",
      "rect": [
-      390,
+      614,
       966,
-      236,
+      228,
       98
      ],
      "text": "Inventory",
@@ -708,9 +3259,9 @@
     {
      "type": "rect",
      "rect": [
-      520,
+      738,
       966,
-      236,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -721,9 +3272,9 @@
     {
      "type": "label",
      "rect": [
-      638,
+      852,
       966,
-      236,
+      228,
       98
      ],
      "text": "Settings",
@@ -1147,7 +3698,34 @@
      "rect": [
       24,
       966,
-      236,
+      228,
+      98
+     ],
+     "bg": "#FF0A0A05",
+     "color": "#FF4A4630",
+     "frame": 3,
+     "on_tap": "go_ready"
+    },
+    {
+     "type": "label",
+     "rect": [
+      138,
+      966,
+      228,
+      98
+     ],
+     "text": "Ready",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "center",
+     "text_center_h": 98
+    },
+    {
+     "type": "rect",
+     "rect": [
+      262,
+      966,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -1158,9 +3736,9 @@
     {
      "type": "label",
      "rect": [
-      142,
+      376,
       966,
-      236,
+      228,
       98
      ],
      "text": "Map",
@@ -1172,9 +3750,9 @@
     {
      "type": "rect",
      "rect": [
-      272,
+      500,
       966,
-      236,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -1185,9 +3763,9 @@
     {
      "type": "label",
      "rect": [
-      390,
+      614,
       966,
-      236,
+      228,
       98
      ],
      "text": "Inventory",
@@ -1199,9 +3777,9 @@
     {
      "type": "rect",
      "rect": [
-      520,
+      738,
       966,
-      236,
+      228,
       98
      ],
      "bg": "#FF0A0A05",
@@ -1212,9 +3790,9 @@
     {
      "type": "label",
      "rect": [
-      638,
+      852,
       966,
-      236,
+      228,
       98
      ],
      "text": "Settings",
