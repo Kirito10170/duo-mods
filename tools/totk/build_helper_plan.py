@@ -89,6 +89,11 @@ def build_plan(work: Path) -> dict:
     code = binary.read_bytes()
     if not code or len(code) % 4 or len(code) > 65536:
         raise SystemExit(f"unexpected helper size {len(code)}")
+    # The runtime refuses exception/system instructions (0xD4/0xD5 words) other than NOP.
+    for at in range(0, len(code), 4):
+        word = struct.unpack_from("<I", code, at)[0]
+        if word >> 24 in (0xD4, 0xD5) and word != 0xD503201F:
+            raise SystemExit(f"system instruction {word:#010x} at {at:#x}: the runtime refuses it")
 
     relocations = []
     for line in tool("llvm-readelf", "-r", str(obj)).splitlines():
