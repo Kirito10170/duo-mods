@@ -17,6 +17,7 @@
 //   0x018 u32 arg1         equip/unequip/eat: Pouch.<Cat>.Content index; add: count
 //   0x060 u32 result_seq   = req_seq once handled (release)
 //   0x064 u32 result_code  0 ok, 1 refused by the game, 2 bad op, 3 stale epoch, 4 no receiver
+//   0x068 u32 claimed_seq  the last req_seq a caller took on (exclusive store)
 //   0x100 char name[256]   travel: "StartPos_Tower02"; add: the item's actor name
 //   0xFFC u32 epoch        the runtime's epoch word
 //
@@ -57,6 +58,16 @@ mailbox_add:
     ldr w9, [x19, #0x60]
     cmp w20, w9
     b.eq done                // nothing new
+
+    // The hooked call runs several times a frame, from threads that can preempt each other:
+    // claim the request so exactly one caller handles it.
+    add x10, x19, #0x68
+claim:
+    ldaxr w9, [x10]
+    cmp w9, w20
+    b.eq claimed_elsewhere
+    stlxr w11, w20, [x10]
+    cbnz w11, claim
 
     ldr w9, [x19, #0x10]
     add x10, x19, #4092
@@ -168,6 +179,8 @@ answer:
     add x9, x19, #0x60
     stlr w20, [x9]
 
+claimed_elsewhere:
+    clrex
 done:
     ldp x0, x1, [sp, #0x10]
     ldp x2, x3, [sp, #0x20]

@@ -16,6 +16,7 @@ constexpr std::uint32_t Arg0 = 0x014;       // pouch category
 constexpr std::uint32_t Arg1 = 0x018;       // content slot (add: count)
 constexpr std::uint32_t ResultSeq = 0x060;  // helper: set to ReqSeq once answered
 constexpr std::uint32_t ResultCode = 0x064; // 0 accepted, 1 refused, 2 bad op, 3 stale, 4 no receiver
+constexpr std::uint32_t ClaimedSeq = 0x068; // helper-only: which request a caller took on
 constexpr std::uint32_t Name = 0x100;       // NUL-terminated "StartPos_..." name
 constexpr std::uint32_t NameSize = 256;
 constexpr std::uint32_t Epoch = 4092;       // host's mailbox epoch word
