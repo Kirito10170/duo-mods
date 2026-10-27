@@ -338,6 +338,12 @@ const OptionRow Options[]{
 // then arrows). Gear shows durability (Content.Life; save editors' "unbreakable" values read as
 // MAX), everything else its stack (Content.StockNum).
 enum class Equip { None, Single, Armor };
+
+// Writing only the save data leaves the game's live state behind: an equip drops the held
+// model without loading the new one, and a spawned item never reaches the pouch. Both stay
+// off until they go through the game's own calls (a guest helper, like travel).
+constexpr bool EquipWorks = false;
+constexpr bool SpawnWorks = false;
 struct Pouch {
     const char* name;
     bool gear;
@@ -751,7 +757,7 @@ struct Module {
             spawn_result.clear();
             return EDEN_DSMOD_TRUE;
         }
-        if (action == "spawn_add" && arg >= 1 && arg <= MaxStack) {
+        if (SpawnWorks && action == "spawn_add" && arg >= 1 && arg <= MaxStack) {
             std::scoped_lock lock{mutex};
             spawn_request = std::pair{spawn_tab, spawn_selected};
             spawn_amount = static_cast<s32>(arg);
@@ -1023,7 +1029,7 @@ struct Module {
         const bool valid = !list.empty();
         h.publish_i64(h.userdata, "totk.spawn.sel.valid", valid ? 1 : 0);
         h.publish_i64(h.userdata, "totk.spawn.sel.stack", valid && !SpawnTabs[tab].gear ? 1 : 0);
-        h.publish_i64(h.userdata, "totk.spawn.can_add", valid && h.write_memory ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.spawn.can_add", SpawnWorks && valid && h.write_memory ? 1 : 0);
         if (!valid)
             return;
         const auto& id = list[static_cast<std::size_t>(selected)];
@@ -1035,7 +1041,8 @@ struct Module {
             std::scoped_lock lock{mutex};
             result = spawn_result;
         }
-        h.publish_text(h.userdata, "totk.spawn.result", result.c_str());
+        h.publish_text(h.userdata, "totk.spawn.result",
+                       SpawnWorks ? result.c_str() : "Adding items is coming in a later build");
     }
 
     template <class G>
@@ -1214,7 +1221,7 @@ struct Module {
 
         // Equip / take off: one aligned s32 store into the pouch's equip array, the same change
         // the pause menu makes. Only for the row the button was pressed on, still in place.
-        if (use && use->first == category && use->second == selected && !rows.empty()) {
+        if (EquipWorks && use && use->first == category && use->second == selected && !rows.empty()) {
             auto& row = rows[static_cast<std::size_t>(selected)];
             if (row.equip_key && h.write_memory)
                 if (const auto at = gmd.IntArrayElement(*row.equip_key, 0)) {
@@ -1249,7 +1256,7 @@ struct Module {
             return;
         }
         const auto& row = rows[static_cast<std::size_t>(selected)];
-        const bool can_equip = row.equip_key && h.write_memory;
+        const bool can_equip = EquipWorks && row.equip_key && h.write_memory;
         h.publish_i64(h.userdata, "totk.inv.sel.can_use", can_equip ? 1 : 0);
         h.publish_text(h.userdata, "totk.inv.sel.use_text",
                        can_equip ? (row.equipped ? "Unequip" : "Equip") : "");
