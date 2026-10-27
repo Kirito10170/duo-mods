@@ -10,8 +10,10 @@
 //   0x000 u32 magic        written by the hook every frame ('TKTV')
 //   0x004 u32 heartbeat    +1 per frame
 //   0x008 u32 req_seq      the module bumps it (release) after filling the request
-//   0x00C u32 req_op       1 = travel
+//   0x00C u32 req_op       1 travel, 2 equip, 3 unequip
 //   0x010 u32 req_epoch    must equal the plan's epoch word at 0xFFC
+//   0x014 u32 arg0         equip/unequip: pouch category (0 weapon, 1 bow, 3 shield, 4 armor)
+//   0x018 u32 arg1         equip/unequip: Pouch.<Cat>.Content index
 //   0x060 u32 result_seq   = req_seq once handled (release)
 //   0x064 u32 result_code  0 ok, 1 refused by the game, 2 bad op, 3 stale epoch, 4 no receiver
 //   0x100 char name[256]   "StartPos_Tower02", NUL-terminated
@@ -19,6 +21,11 @@
 //
 // warp(x0 = receiver, x1 = &{u64 ptr, u32 cap, char buf[0x100] at +0xC}) returns non-zero
 // when it accepted the name. receiver = [[[[main+0x3ACB230]+0x1E8]+0x58]+0x100].
+//
+// equip(x0 = pouch, w1 = category, w2 = slot, w3 = -1) and
+// unequip(x0 = pouch, w1 = category, w2 = slot, w3 = -1, w4 = 0, w5 = 1) are the pause menu's
+// own Equip and Remove (live model swap included); both return non-zero when done.
+// pouch = [main+0x3A6F678].
 
 .text
 .global totk_ui_hook
@@ -57,10 +64,35 @@ mailbox_add:
     b.ne answer              // staged before a pause/reload: drop it
 
     ldr w9, [x19, #0xC]
-    mov w0, #2
     cmp w9, #1
-    b.ne answer
+    b.eq travel
+    cmp w9, #2
+    b.eq equip
+    cmp w9, #3
+    b.eq equip
+    mov w0, #2               // unknown op
+    b answer
 
+equip:
+    mov w0, #4
+    adrp x10, pouch_root
+    ldr x10, [x10, :lo12:pouch_root]
+    cbz x10, answer
+    mov x0, x10
+    ldr w1, [x19, #0x14]
+    ldr w2, [x19, #0x18]
+    mov w3, #-1
+    cmp w9, #3
+    b.eq unequip
+    bl native_equip
+    b called
+unequip:
+    mov w4, #0
+    mov w5, #1
+    bl native_unequip
+    b called
+
+travel:
     // receiver chain, every hop checked
     mov w0, #4
     adrp x9, warp_root
@@ -94,6 +126,11 @@ copied:
     bl native_warp
     cmp x0, #0
     cset w0, eq              // 0 accepted, 1 refused
+    b answer
+
+called:
+    tst w0, #0xFF            // bool return
+    cset w0, eq              // 0 done, 1 refused
 
 answer:
     str w0, [x19, #0x64]

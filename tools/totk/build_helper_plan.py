@@ -55,6 +55,10 @@ SYMBOLS = dict(
     native_warp=0x1FCB2EC,
     # [[[[warp_root]+0x1E8]+0x58]+0x100] is its receiver.
     warp_root=0x3ACB230,
+    # The pause menu's Equip and Remove; [pouch_root] is the pouch they take.
+    native_equip=0x209B878,
+    native_unequip=0x20A417C,
+    pouch_root=0x3A6F678,
 )
 
 RELOCATION_KINDS = {

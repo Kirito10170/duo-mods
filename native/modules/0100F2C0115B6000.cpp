@@ -339,16 +339,23 @@ const OptionRow Options[]{
 // MAX), everything else its stack (Content.StockNum).
 enum class Equip { None, Single, Armor };
 
-// Writing only the save data leaves the game's live state behind: an equip drops the held
-// model without loading the new one, and a spawned item never reaches the pouch. Both stay
-// off until they go through the game's own calls (a guest helper, like travel).
-constexpr bool EquipWorks = false;
+// Writing only the save data leaves the game's live state behind: a spawned item never reaches
+// the pouch. It stays off until it goes through the game's own call (a guest helper, like travel).
 constexpr bool SpawnWorks = false;
+
 struct Pouch {
     const char* name;
     bool gear;
     Equip equip;
 };
+// The category number the game's Equip and Remove take for a pouch.
+std::optional<u32> PouchCategory(const Pouch& pouch) {
+    const std::string_view name{pouch.name};
+    return name == "Weapon" ? std::optional<u32>{0} : name == "Bow" ? std::optional<u32>{1}
+         : name == "Shield" ? std::optional<u32>{3} : name == "Armor" ? std::optional<u32>{4}
+         : std::nullopt;
+}
+
 struct Category {
     const char* title;
     std::array<Pouch, 2> pouches;
@@ -553,10 +560,11 @@ struct Module {
 
     // ---- Travel: the guest helper's mailbox (native/helper/totk/travel-hook.S) ----
     const EdenDsmodHostExtensions* mailbox{};
-    u32 mailbox_heartbeat{0}, travel_seq{0};
-    bool helper_alive{false}, travel_pending{false};
+    u32 mailbox_heartbeat{0}, travel_seq{0}, pending_op{0};
+    bool helper_alive{false}, helper_busy{false};
     std::chrono::steady_clock::time_point helper_seen{}, travel_sent{}, travel_landed{};
     std::string travel_message;   // what the last Travel did, for the map panel
+    std::string equip_message;    // what the last Equip did, for the inventory panel
     int travel_request{-1};       // world.points index the Travel button asked for
 
     bool Load32(u32 offset, u32& v) const {
@@ -580,49 +588,68 @@ struct Module {
             Store32(totk::mailbox::Epoch, static_cast<u32>(host_epoch));
         else if (u32 e{}; Load32(totk::mailbox::Epoch, e) && e == 0)
             Store32(totk::mailbox::Epoch, 1);
-        if (!travel_pending)
+        if (!helper_busy)
             return;
         u32 done{}, code{};
         if (Load32(totk::mailbox::ResultSeq, done) && done == travel_seq && Load32(totk::mailbox::ResultCode, code)) {
-            travel_pending = false;
+            helper_busy = false;
+            TotkNetLog::Log("helper: op %u answered %u", pending_op, code);
+            if (pending_op != totk::mailbox::OpTravel) {
+                equip_message = code == 0 ? "" : code == 1 ? "The game didn't allow that right now"
+                                                           : "Equipping isn't available right now";
+                return;
+            }
             if (code == 0)
                 travel_landed = now; // the game is loading; no second request until it's done
-            TotkNetLog::Log("travel: answered %u", code);
             travel_message = code == 0 ? "" : code == 1 ? "The game refused this destination"
-                                                                    : "Travel isn't available right now";
+                                                        : "Travel isn't available right now";
         } else if (now - travel_sent > seconds(5)) {
-            travel_pending = false;
-            travel_message = "Travel isn't available right now";
+            helper_busy = false;
+            (pending_op == totk::mailbox::OpTravel ? travel_message : equip_message) =
+                "The game didn't answer; try again";
         }
+    }
+
+    // Hand one request to the helper: name (if any) and arguments first, the sequence word last.
+    bool SendRequest(u32 op, u32 arg0, u32 arg1, std::string_view name) {
+        if (!helper_alive || helper_busy || name.size() >= totk::mailbox::NameSize)
+            return false;
+        u32 epoch{}, seq{};
+        if (!Load32(totk::mailbox::Epoch, epoch) || epoch == 0 || !Load32(totk::mailbox::ResultSeq, seq))
+            return false;
+        bool ok = true;
+        if (!name.empty()) {
+            std::array<u8, totk::mailbox::NameSize> text{};
+            std::memcpy(text.data(), name.data(), name.size());
+            for (u32 i = 0; i < text.size(); i += 4) {
+                u32 word;
+                std::memcpy(&word, text.data() + i, 4);
+                ok = Store32(totk::mailbox::Name + i, word) && ok;
+            }
+        }
+        ok = Store32(totk::mailbox::Arg0, arg0) && ok;
+        ok = Store32(totk::mailbox::Arg1, arg1) && ok;
+        ok = Store32(totk::mailbox::ReqOp, op) && ok;
+        ok = Store32(totk::mailbox::ReqEpoch, epoch) && ok;
+        travel_seq = seq + 1;
+        ok = ok && Store32(totk::mailbox::ReqSeq, travel_seq); // last: hands the request over
+        TotkNetLog::Log("helper: op %u (%u, %u) %.*s %s", op, arg0, arg1, static_cast<int>(name.size()),
+                        name.data(), ok ? "staged" : "store FAILED");
+        if (ok) {
+            helper_busy = true;
+            pending_op = op;
+            travel_sent = std::chrono::steady_clock::now();
+        }
+        return ok;
     }
 
     // Stage "StartPos_<name>" for the helper to hand to the game's warp request.
     bool SendTravel(const TravelPoint& p) {
         using totk::travel::Kind;
         const std::string name = std::string{p.kind == Kind::Shrine ? "StartPos_C" : "StartPos_"} + p.label;
-        if (!helper_alive || travel_pending || name.size() >= totk::mailbox::NameSize)
-            return false;
-        u32 epoch{}, seq{};
-        if (!Load32(totk::mailbox::Epoch, epoch) || epoch == 0 || !Load32(totk::mailbox::ResultSeq, seq))
-            return false;
-        std::array<u8, totk::mailbox::NameSize> text{};
-        std::memcpy(text.data(), name.data(), name.size());
-        bool ok = true;
-        for (u32 i = 0; i < text.size(); i += 4) {
-            u32 word;
-            std::memcpy(&word, text.data() + i, 4);
-            ok = Store32(totk::mailbox::Name + i, word) && ok;
-        }
-        ok = Store32(totk::mailbox::ReqOp, totk::mailbox::OpTravel) && ok;
-        ok = Store32(totk::mailbox::ReqEpoch, epoch) && ok;
-        travel_seq = seq + 1;
-        ok = ok && Store32(totk::mailbox::ReqSeq, travel_seq); // last: hands the request over
-        TotkNetLog::Log("travel: %s %s", name.c_str(), ok ? "staged" : "store FAILED");
-        if (ok) {
-            travel_pending = true;
-            travel_sent = std::chrono::steady_clock::now();
+        const bool ok = SendRequest(totk::mailbox::OpTravel, 0, 0, name);
+        if (ok)
             travel_message = "Traveling...";
-        }
         return ok;
     }
 
@@ -1219,21 +1246,16 @@ struct Module {
         if (selected >= static_cast<int>(rows.size()))
             selected = rows.empty() ? 0 : static_cast<int>(rows.size()) - 1;
 
-        // Equip / take off: one aligned s32 store into the pouch's equip array, the same change
-        // the pause menu makes. Only for the row the button was pressed on, still in place.
-        if (EquipWorks && use && use->first == category && use->second == selected && !rows.empty()) {
-            auto& row = rows[static_cast<std::size_t>(selected)];
-            if (row.equip_key && h.write_memory)
-                if (const auto at = gmd.IntArrayElement(*row.equip_key, 0)) {
-                    const s32 value = row.equipped ? -1 : static_cast<s32>(row.slot);
-                    const bool ok = h.write_memory(h.userdata, *at, &value, sizeof value) == EDEN_DSMOD_TRUE;
-                    TotkNetLog::Log("equip %s slot %zu -> %d: %s", row.id.c_str(), row.slot, value,
-                                    ok ? "written" : "write FAILED");
-                    if (ok)
-                        for (auto& other : rows)
-                            if (other.equip_key == row.equip_key)
-                                other.equipped = value == static_cast<s32>(other.slot);
-                }
+        // Equip / take off through the pause menu's own calls (the helper), so the held model
+        // follows. Only for the row the button was pressed on, still in place; the equipped mark
+        // updates from the save data once the game has done it.
+        if (use && use->first == category && use->second == selected && !rows.empty()) {
+            const auto& row = rows[static_cast<std::size_t>(selected)];
+            if (const auto cat = PouchCategory(*row.pouch); cat && row.equip_key) {
+                const u32 op = row.equipped ? totk::mailbox::OpUnequip : totk::mailbox::OpEquip;
+                if (SendRequest(op, *cat, static_cast<u32>(row.slot), {}))
+                    equip_message.clear();
+            }
         }
 
         for (std::size_t r = 0; r < rows.size(); ++r) {
@@ -1256,7 +1278,7 @@ struct Module {
             return;
         }
         const auto& row = rows[static_cast<std::size_t>(selected)];
-        const bool can_equip = EquipWorks && row.equip_key && h.write_memory;
+        const bool can_equip = row.equip_key && PouchCategory(*row.pouch) && helper_alive && !helper_busy;
         h.publish_i64(h.userdata, "totk.inv.sel.can_use", can_equip ? 1 : 0);
         h.publish_text(h.userdata, "totk.inv.sel.use_text",
                        can_equip ? (row.equipped ? "Unequip" : "Equip") : "");
@@ -1267,6 +1289,8 @@ struct Module {
         if (row.amount)
             stat = row.pouch->gear ? "Durability " + DurabilityText(*row.amount)
                                    : (*row.amount > 0 ? "Owned " + std::to_string(*row.amount) : "");
+        if (!equip_message.empty())
+            stat = equip_message;
         h.publish_text(h.userdata, "totk.inv.sel.stat", stat.c_str());
     }
 
@@ -1524,10 +1548,10 @@ struct Module {
                              std::chrono::steady_clock::now() - travel_landed < std::chrono::seconds(30);
         if (request >= 0 && request == selected && sel_travel && !loading)
             SendTravel(world.points[static_cast<std::size_t>(request)]);
-        const bool ready = helper_alive && !travel_pending && !loading;
+        const bool ready = helper_alive && !helper_busy && !loading;
         h.publish_i64(h.userdata, "totk.travel.sel.can_travel", sel_travel && ready ? 1 : 0);
         std::string hint = !sel_travel ? "You can't travel here yet"
-                           : travel_pending || loading ? (travel_message.empty() ? "Traveling..." : travel_message)
+                           : (helper_busy && pending_op == totk::mailbox::OpTravel) || loading ? (travel_message.empty() ? "Traveling..." : travel_message)
                            : !helper_alive ? "Travel needs the game running with this mod loaded"
                            : travel_message;
         h.publish_text(h.userdata, "totk.travel.sel.hint", hint.c_str());
