@@ -38,7 +38,7 @@
     }
   ],
   "guest_code": {
-    "bytes": "fd7ba8a9fd030091e00701a9e20f02a9e41703a9e61f04a9f35305a9130000907302009189ca8a52896aa972690200b9690640b929050011690600b96922009134fddf88696240b99f02096b60080054691240b96af23f914afddf88600080526a0700343f010a6b21070054690e40b93f050071e00200543f090071a00000543f0d0071600000544000805230000014800080520a0000904a0140f98a0500b4e0030aaa611640b9621a40b9030080123f0d00716000005400000094220000140400805225008052000000941e0000148000805209000090290140f9890300b429f540f9490300b4292d40f9090300b4298140f9c90200b4e18301912a3000912a0000f90b2080522b0800b96c0204910d0080d28e696d384e692d38ae000034ad050091bffd03f163ffff545f692d38e00309aa000000941f0000f1e0179f1a030000141f1c0072e0179f1a606600b96982019134fd9f88e00741a9e20f42a9e41743a9e61f44a9f35345a9fd7bd8a800000014",
+    "bytes": "fd7ba8a9fd030091e00701a9e20f02a9e41703a9e61f04a9f35305a9130000907302009189ca8a52896aa972690200b9690640b929050011690600b96922009134fddf88696240b99f02096bc00b0054691240b96af23f914afddf8860008052ca0a00343f010a6b810a0054690e40b93f050071c00700543f090071200100543f0d0071e00000543f110071a00200543f150071a00500544000805247000014800080520a0000904a0140f96a0800b4e0030aaa611640b9621a40b9030080123f0d007160000054000000943900001404008052250080520000009435000014800080520a0000904a0140f96a0600b43c000094ff0301d1ff7f00a909008092e9a700a9e9a701a9e91700f9ff1b00f9290080d2e91f00f9e0030aaae18302910200009042000091631640b9641a40b925008052260180520700805200000094ff0301911b000014800080520a0000904a0140f92a0300b4e0030aaa611640b9621a40b900000094120000148000805209000090290140f9090200b429f540f9c90100b4292d40f9890100b4298140f9490100b413000094e1830191e00309aa000000941f0000f1e0179f1a030000141f1c0072e0179f1a606600b96982019134fd9f88e00741a9e20f42a9e41743a9e61f44a9f35345a9fd7bd8a800000014e18301912f3000912f0000f90b2080522b0800b96c0204910d0080d28e696d38ee692d38ae000034ad050091bffd03f163ffff54ff692d38c0035fd6",
     "relocations": [
       {
         "offset": 28,
@@ -53,49 +53,97 @@
         "addend": 0
       },
       {
-        "offset": 148,
+        "offset": 164,
         "kind": "aarch64_adrp",
         "target": "main",
         "addend": 61273720
       },
       {
-        "offset": 152,
+        "offset": 168,
         "kind": "aarch64_ldr64_lo12",
         "target": "main",
         "addend": 61273720
-      },
-      {
-        "offset": 184,
-        "kind": "aarch64_branch26",
-        "target": "main",
-        "addend": 34191480
       },
       {
         "offset": 200,
         "kind": "aarch64_branch26",
         "target": "main",
+        "addend": 34191480
+      },
+      {
+        "offset": 216,
+        "kind": "aarch64_branch26",
+        "target": "main",
         "addend": 34226556
       },
       {
-        "offset": 212,
+        "offset": 228,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 232,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 288,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 56672360
+      },
+      {
+        "offset": 292,
+        "kind": "aarch64_add_lo12",
+        "target": "main",
+        "addend": 56672360
+      },
+      {
+        "offset": 316,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 34156032
+      },
+      {
+        "offset": 332,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 336,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 356,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 34247960
+      },
+      {
+        "offset": 368,
         "kind": "aarch64_adrp",
         "target": "main",
         "addend": 61649456
       },
       {
-        "offset": 216,
+        "offset": 372,
         "kind": "aarch64_ldr64_lo12",
         "target": "main",
         "addend": 61649456
       },
       {
-        "offset": 308,
+        "offset": 416,
         "kind": "aarch64_branch26",
         "target": "main",
         "addend": 33338092
       },
       {
-        "offset": 368,
+        "offset": 476,
         "kind": "aarch64_branch26",
         "target": "main",
         "addend": 3698800

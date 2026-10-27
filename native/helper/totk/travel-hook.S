@@ -10,13 +10,14 @@
 //   0x000 u32 magic        written by the hook every frame ('TKTV')
 //   0x004 u32 heartbeat    +1 per frame
 //   0x008 u32 req_seq      the module bumps it (release) after filling the request
-//   0x00C u32 req_op       1 travel, 2 equip, 3 unequip
+//   0x00C u32 req_op       1 travel, 2 equip, 3 unequip, 4 add item, 5 eat
 //   0x010 u32 req_epoch    must equal the plan's epoch word at 0xFFC
-//   0x014 u32 arg0         equip/unequip: pouch category (0 weapon, 1 bow, 3 shield, 4 armor)
-//   0x018 u32 arg1         equip/unequip: Pouch.<Cat>.Content index
+//   0x014 u32 arg0         pouch category (0 weapon, 1 bow, 2 arrow, 3 shield, 4 armor,
+//                          5 material, 6 food)
+//   0x018 u32 arg1         equip/unequip/eat: Pouch.<Cat>.Content index; add: count
 //   0x060 u32 result_seq   = req_seq once handled (release)
 //   0x064 u32 result_code  0 ok, 1 refused by the game, 2 bad op, 3 stale epoch, 4 no receiver
-//   0x100 char name[256]   "StartPos_Tower02", NUL-terminated
+//   0x100 char name[256]   travel: "StartPos_Tower02"; add: the item's actor name
 //   0xFFC u32 epoch        the runtime's epoch word
 //
 // warp(x0 = receiver, x1 = &{u64 ptr, u32 cap, char buf[0x100] at +0xC}) returns non-zero
@@ -25,7 +26,9 @@
 // equip(x0 = pouch, w1 = category, w2 = slot, w3 = -1) and
 // unequip(x0 = pouch, w1 = category, w2 = slot, w3 = -1, w4 = 0, w5 = 1) are the pause menu's
 // own Equip and Remove (live model swap included); both return non-zero when done.
-// pouch = [main+0x3A6F678].
+// add(x0 = pouch, x1 = &name struct, x2 = &main+0x360C068, w3 = category, w4 = count, w5 = 1,
+// w6 = 9, w7 = 0, stack {0, -1 x5, 0, (u8)1}) is the event system's add-to-pouch (default
+// stats); eat(x0 = pouch, w1 = category, w2 = slot) is the menu's Eat. pouch = [main+0x3A6F678].
 
 .text
 .global totk_ui_hook
@@ -70,6 +73,10 @@ mailbox_add:
     b.eq equip
     cmp w9, #3
     b.eq equip
+    cmp w9, #4
+    b.eq add_item
+    cmp w9, #5
+    b.eq eat
     mov w0, #2               // unknown op
     b answer
 
@@ -92,6 +99,45 @@ unequip:
     bl native_unequip
     b called
 
+add_item:
+    mov w0, #4
+    adrp x10, pouch_root
+    ldr x10, [x10, :lo12:pouch_root]
+    cbz x10, answer
+    bl build_name
+    sub sp, sp, #0x40        // stack arguments
+    stp xzr, xzr, [sp]
+    mov x9, #-1
+    stp x9, x9, [sp, #0x08]
+    stp x9, x9, [sp, #0x18]
+    str x9, [sp, #0x28]
+    str xzr, [sp, #0x30]
+    mov x9, #1
+    str x9, [sp, #0x38]
+    mov x0, x10
+    add x1, sp, #0xA0        // the name struct (sp+0x60 before the sub)
+    adrp x2, add_defaults
+    add x2, x2, :lo12:add_defaults
+    ldr w3, [x19, #0x14]
+    ldr w4, [x19, #0x18]
+    mov w5, #1
+    mov w6, #9
+    mov w7, #0
+    bl native_add
+    add sp, sp, #0x40
+    b called
+
+eat:
+    mov w0, #4
+    adrp x10, pouch_root
+    ldr x10, [x10, :lo12:pouch_root]
+    cbz x10, answer
+    mov x0, x10
+    ldr w1, [x19, #0x14]
+    ldr w2, [x19, #0x18]
+    bl native_eat
+    b called
+
 travel:
     // receiver chain, every hop checked
     mov w0, #4
@@ -105,23 +151,8 @@ travel:
     ldr x9, [x9, #0x100]
     cbz x9, answer
 
-    // name struct on the stack: {ptr, cap, buf}
+    bl build_name
     add x1, sp, #0x60
-    add x10, x1, #0xC
-    str x10, [x1]
-    mov w11, #0x100
-    str w11, [x1, #8]
-    add x12, x19, #0x100
-    mov x13, #0
-copy:
-    ldrb w14, [x12, x13]
-    strb w14, [x10, x13]
-    cbz w14, copied
-    add x13, x13, #1
-    cmp x13, #0xFF
-    b.lo copy
-    strb wzr, [x10, x13]
-copied:
     mov x0, x9
     bl native_warp
     cmp x0, #0
@@ -145,3 +176,24 @@ done:
     ldp x19, x20, [sp, #0x50]
     ldp x29, x30, [sp], #0x180
     b native_ui_update
+
+// Leaf: build {ptr, cap 0x100, buf at +0xC} at the hook frame's sp+0x60 from mailbox+0x100.
+// Uses x11-x15 only; returns with x1 = the struct.
+build_name:
+    add x1, sp, #0x60
+    add x15, x1, #0xC
+    str x15, [x1]
+    mov w11, #0x100
+    str w11, [x1, #8]
+    add x12, x19, #0x100
+    mov x13, #0
+1:
+    ldrb w14, [x12, x13]
+    strb w14, [x15, x13]
+    cbz w14, 2f
+    add x13, x13, #1
+    cmp x13, #0xFF
+    b.lo 1b
+    strb wzr, [x15, x13]
+2:
+    ret

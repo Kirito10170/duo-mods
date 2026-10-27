@@ -339,10 +339,6 @@ const OptionRow Options[]{
 // MAX), everything else its stack (Content.StockNum).
 enum class Equip { None, Single, Armor };
 
-// Writing only the save data leaves the game's live state behind: a spawned item never reaches
-// the pouch. It stays off until it goes through the game's own call (a guest helper, like travel).
-constexpr bool SpawnWorks = false;
-
 struct Pouch {
     const char* name;
     bool gear;
@@ -354,6 +350,11 @@ std::optional<u32> PouchCategory(const Pouch& pouch) {
     return name == "Weapon" ? std::optional<u32>{0} : name == "Bow" ? std::optional<u32>{1}
          : name == "Shield" ? std::optional<u32>{3} : name == "Armor" ? std::optional<u32>{4}
          : std::nullopt;
+}
+
+// Food takes the menu's Eat (category 6) from the companion.
+bool IsFood(const Pouch& pouch) {
+    return std::string_view{pouch.name} == "Food";
 }
 
 struct Category {
@@ -400,18 +401,19 @@ constexpr s32 MaxArrows = 999, MaxRupees = 999'999;
 struct SpawnTab {
     const char* title;
     const char* pouch;
+    u32 category; // the game's pouch category for its add-to-pouch call
     bool gear;
     std::array<std::string_view, 3> prefixes;
 };
 constexpr SpawnTab SpawnTabs[]{
-    {"Weapons", "Weapon", true, {"Weapon_Sword_", "Weapon_Lsword_", "Weapon_Spear_"}},
-    {"Bows", "Bow", true, {"Weapon_Bow_"}},
-    {"Shields", "Shield", true, {"Weapon_Shield_"}},
-    {"Materials", "Material", false, {"Item_", "Animal_Insect_"}},
+    {"Weapons", "Weapon", 0, true, {"Weapon_Sword_", "Weapon_Lsword_", "Weapon_Spear_"}},
+    {"Bows", "Bow", 1, true, {"Weapon_Bow_"}},
+    {"Shields", "Shield", 3, true, {"Weapon_Shield_"}},
+    {"Materials", "Material", 5, false, {"Item_", "Animal_Insect_"}},
 };
 // Cooked and roasted things go to the Food pouch with extra fields; they are not offered.
 constexpr std::string_view SpawnSkip[]{"Item_Cook_", "Item_Roast_", "Item_Chilled_", "Item_Boiled_"};
-constexpr s32 MaxStack = 999, SpawnLife = 40;
+constexpr s32 MaxStack = 999;
 constexpr std::size_t MaxSpawnItems = 420;
 
 std::string DurabilityText(s32 v) {
@@ -564,7 +566,8 @@ struct Module {
     bool helper_alive{false}, helper_busy{false};
     std::chrono::steady_clock::time_point helper_seen{}, travel_sent{}, travel_landed{};
     std::string travel_message;   // what the last Travel did, for the map panel
-    std::string equip_message;    // what the last Equip did, for the inventory panel
+    std::string equip_message;    // what the last Equip or Eat did, for the inventory panel
+    std::string pending_label;    // the item an Add is for, for its result line
     int travel_request{-1};       // world.points index the Travel button asked for
 
     bool Load32(u32 offset, u32& v) const {
@@ -594,9 +597,16 @@ struct Module {
         if (Load32(totk::mailbox::ResultSeq, done) && done == travel_seq && Load32(totk::mailbox::ResultCode, code)) {
             helper_busy = false;
             TotkNetLog::Log("helper: op %u answered %u", pending_op, code);
+            if (pending_op == totk::mailbox::OpAdd) {
+                std::scoped_lock lock{mutex};
+                spawn_result = code == 0 ? "Added " + pending_label
+                             : code == 1 ? "The game couldn't add that (pouch full?)"
+                                         : "Adding items isn't available right now";
+                return;
+            }
             if (pending_op != totk::mailbox::OpTravel) {
                 equip_message = code == 0 ? "" : code == 1 ? "The game didn't allow that right now"
-                                                           : "Equipping isn't available right now";
+                                                           : "That isn't available right now";
                 return;
             }
             if (code == 0)
@@ -605,8 +615,13 @@ struct Module {
                                                         : "Travel isn't available right now";
         } else if (now - travel_sent > seconds(5)) {
             helper_busy = false;
-            (pending_op == totk::mailbox::OpTravel ? travel_message : equip_message) =
-                "The game didn't answer; try again";
+            if (pending_op == totk::mailbox::OpAdd) {
+                std::scoped_lock lock{mutex};
+                spawn_result = "The game didn't answer; try again";
+            } else {
+                (pending_op == totk::mailbox::OpTravel ? travel_message : equip_message) =
+                    "The game didn't answer; try again";
+            }
         }
     }
 
@@ -784,7 +799,7 @@ struct Module {
             spawn_result.clear();
             return EDEN_DSMOD_TRUE;
         }
-        if (SpawnWorks && action == "spawn_add" && arg >= 1 && arg <= MaxStack) {
+        if (action == "spawn_add" && arg >= 1 && arg <= MaxStack) {
             std::scoped_lock lock{mutex};
             spawn_request = std::pair{spawn_tab, spawn_selected};
             spawn_amount = static_cast<s32>(arg);
@@ -1036,7 +1051,7 @@ struct Module {
         if (selected >= static_cast<int>(list.size()))
             selected = list.empty() ? 0 : static_cast<int>(list.size()) - 1;
         if (request && request->first == tab && request->second == selected && !list.empty()) {
-            const std::string result = Spawn(h, gmd, SpawnTabs[tab], list[static_cast<std::size_t>(selected)], amount);
+            const std::string result = Spawn(SpawnTabs[tab], list[static_cast<std::size_t>(selected)], amount);
             std::scoped_lock lock{mutex};
             spawn_result = result;
         }
@@ -1056,7 +1071,7 @@ struct Module {
         const bool valid = !list.empty();
         h.publish_i64(h.userdata, "totk.spawn.sel.valid", valid ? 1 : 0);
         h.publish_i64(h.userdata, "totk.spawn.sel.stack", valid && !SpawnTabs[tab].gear ? 1 : 0);
-        h.publish_i64(h.userdata, "totk.spawn.can_add", SpawnWorks && valid && h.write_memory ? 1 : 0);
+        h.publish_i64(h.userdata, "totk.spawn.can_add", valid && helper_alive && !helper_busy ? 1 : 0);
         if (!valid)
             return;
         const auto& id = list[static_cast<std::size_t>(selected)];
@@ -1068,57 +1083,21 @@ struct Module {
             std::scoped_lock lock{mutex};
             result = spawn_result;
         }
-        h.publish_text(h.userdata, "totk.spawn.result",
-                       SpawnWorks ? result.c_str() : "Adding items is coming in a later build");
+        h.publish_text(h.userdata, "totk.spawn.result", result.c_str());
     }
 
-    template <class G>
-    std::string Spawn(const EdenDsmodHostApi& h, G& gmd, const SpawnTab& tab, const std::string& id,
-                      s32 amount) {
-        if (!h.write_memory || id.size() >= 64)
-            return "Can't add items here";
-        const std::string base = std::string{"Pouch."} + tab.pouch;
-        const u32 name_key = Murmur3(base + ".Content.Name");
-        const u32 amount_key = Murmur3(base + (tab.gear ? ".Content.Life" : ".Content.StockNum"));
-        const auto names_now = gmd.GetString64Array(name_key);
-        const auto amounts = gmd.GetIntArray(amount_key);
-        if (!names_now || !amounts)
-            return "The pouch isn't ready";
-        const auto write_s32 = [&](std::size_t slot, s32 v) {
-            const auto at = gmd.IntArrayElement(amount_key, slot);
-            return at && h.write_memory(h.userdata, *at, &v, sizeof v) == EDEN_DSMOD_TRUE;
-        };
-        // A stack already held grows (up to 999).
-        if (!tab.gear)
-            for (std::size_t i = 0; i < names_now->size() && i < amounts->size(); ++i)
-                if ((*names_now)[i] == id) {
-                    const s32 now = std::max<s32>((*amounts)[i], 0);
-                    const s32 next = std::min(MaxStack, now + amount);
-                    const bool ok = write_s32(i, next);
-                    TotkNetLog::Log("spawn %s: stack slot %zu %d -> %d %s", id.c_str(), i, now, next,
-                                    ok ? "ok" : "FAILED");
-                    return ok ? "Added " + std::to_string(next - now) + " " + ItemText(id) : "Couldn't add it";
-                }
-        // Else the first free slot (no name), within the slots the player has unlocked.
-        std::size_t limit = names_now->size();
-        if (const auto valid = gmd.GetInt(Murmur3(base + ".ValidNum")); valid && *valid > 0)
-            limit = std::min(limit, static_cast<std::size_t>(*valid));
-        for (std::size_t i = 0; i < limit && i < amounts->size(); ++i) {
-            if (!(*names_now)[i].empty())
-                continue;
-            const auto at = gmd.String64Element(name_key, i);
-            if (!at)
-                break;
-            std::array<char, 64> text{};
-            std::memcpy(text.data(), id.data(), id.size());
-            // Amount first, so the game never sees the name with a free slot's -1.
-            const s32 value = tab.gear ? SpawnLife : std::min(MaxStack, amount);
-            const bool ok = write_s32(i, value) &&
-                            h.write_memory(h.userdata, *at, text.data(), text.size()) == EDEN_DSMOD_TRUE;
-            TotkNetLog::Log("spawn %s: new slot %zu (%d) %s", id.c_str(), i, value, ok ? "ok" : "FAILED");
-            return ok ? "Added " + ItemText(id) : "Couldn't add it";
-        }
-        return "No room in your " + std::string{tab.title} + " pouch";
+    // Hand the item to the game's own add-to-pouch (the helper): it finds the stack or a free
+    // slot itself, with the item's default stats. The result arrives in PollHelper.
+    std::string Spawn(const SpawnTab& tab, const std::string& id, s32 amount) {
+        if (id.size() >= totk::mailbox::NameSize)
+            return "Can't add that";
+        if (!helper_alive)
+            return "Adding items needs the game running";
+        const s32 count = tab.gear ? 1 : std::clamp(amount, 1, MaxStack);
+        if (!SendRequest(totk::mailbox::OpAdd, tab.category, static_cast<u32>(count), id))
+            return "Busy, try again";
+        pending_label = (count > 1 ? std::to_string(count) + " " : std::string{}) + ItemText(id);
+        return "Adding...";
     }
 
     // The Cheats page: publish each toggle, then hold what is on. Writes go to the GameData
@@ -1251,7 +1230,10 @@ struct Module {
         // updates from the save data once the game has done it.
         if (use && use->first == category && use->second == selected && !rows.empty()) {
             const auto& row = rows[static_cast<std::size_t>(selected)];
-            if (const auto cat = PouchCategory(*row.pouch); cat && row.equip_key) {
+            if (IsFood(*row.pouch)) {
+                if (SendRequest(totk::mailbox::OpEat, 6, static_cast<u32>(row.slot), {}))
+                    equip_message.clear();
+            } else if (const auto cat = PouchCategory(*row.pouch); cat && row.equip_key) {
                 const u32 op = row.equipped ? totk::mailbox::OpUnequip : totk::mailbox::OpEquip;
                 if (SendRequest(op, *cat, static_cast<u32>(row.slot), {}))
                     equip_message.clear();
@@ -1278,10 +1260,12 @@ struct Module {
             return;
         }
         const auto& row = rows[static_cast<std::size_t>(selected)];
-        const bool can_equip = row.equip_key && PouchCategory(*row.pouch) && helper_alive && !helper_busy;
-        h.publish_i64(h.userdata, "totk.inv.sel.can_use", can_equip ? 1 : 0);
+        const bool ready = helper_alive && !helper_busy;
+        const bool can_eat = ready && IsFood(*row.pouch) && row.amount && *row.amount > 0;
+        const bool can_equip = ready && row.equip_key && PouchCategory(*row.pouch);
+        h.publish_i64(h.userdata, "totk.inv.sel.can_use", can_equip || can_eat ? 1 : 0);
         h.publish_text(h.userdata, "totk.inv.sel.use_text",
-                       can_equip ? (row.equipped ? "Unequip" : "Equip") : "");
+                       can_eat ? "Eat" : can_equip ? (row.equipped ? "Unequip" : "Equip") : "");
         h.publish_text(h.userdata, "totk.inv.sel.icon", ("module:totk:icon/" + row.id).c_str());
         h.publish_text(h.userdata, "totk.inv.sel.name", ItemText(row.id).c_str());
         h.publish_text(h.userdata, "totk.inv.sel.desc", ItemCaption(row.id).c_str());

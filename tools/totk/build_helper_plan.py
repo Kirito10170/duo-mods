@@ -59,6 +59,11 @@ SYMBOLS = dict(
     native_equip=0x209B878,
     native_unequip=0x20A417C,
     pouch_root=0x3A6F678,
+    # Add to pouch (the event system's, default stats; add_defaults is its constant third
+    # argument) and the menu's Eat.
+    native_add=0x2092E00,
+    add_defaults=0x360C068,
+    native_eat=0x20A9518,
 )
 
 RELOCATION_KINDS = {
