@@ -179,9 +179,8 @@ answer:
     add x9, x19, #0x60
     stlr w20, [x9]
 
-claimed_elsewhere:
-    clrex
-done:
+claimed_elsewhere:           // (no clrex: load plans refuse system instructions; the open
+done:                        //  monitor is harmless)
     ldp x0, x1, [sp, #0x10]
     ldp x2, x3, [sp, #0x20]
     ldp x4, x5, [sp, #0x30]
