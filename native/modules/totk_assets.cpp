@@ -1,0 +1,721 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// Asset-free art for the Tears of the Kingdom companion: zstd (with the game's ZsDic
+// dictionaries) -> SARC -> BNTX -> RGBA from the player's own romfs. Adapted from
+// igawa6/eden-duo-companions native/modules/wonder_assets.cpp (GPL-3.0); the SARC, BNTX,
+// deswizzle and BC/ASTC code is unchanged from there.
+
+#include "totk_assets.h"
+
+#include <algorithm>
+#include <array>
+#include <cctype>
+#include <cstring>
+#include <list>
+#include <mutex>
+#include <unordered_map>
+
+#include <bc_decoder.h>
+#define ZSTD_STATIC_LINKING_ONLY
+#include <zstd.h>
+
+#include "core/mods/modules/dsmod_module_sdk.h"
+
+namespace TotkAssets {
+namespace {
+using namespace dsmod_sdk::int_types;
+constexpr std::size_t MaxSource = 64 * 1024 * 1024;
+// Zoom-00 map tiles are 3000 px square; everything else is far smaller.
+constexpr u32 MaxDimension = 4096;
+constexpr u64 MaxPixels = 16 * 1024 * 1024;
+
+// [o, o + n) lies inside s (no wrap-around for offsets read from the file).
+bool Fits(std::span<const u8> s, u64 o, u64 n) {
+    return o <= s.size() && n <= s.size() - o;
+}
+u16 U16(std::span<const u8> s, u64 o) {
+    return Fits(s, o, 2) ? dsmod_sdk::Le16(s.data() + o) : 0;
+}
+u32 U32(std::span<const u8> s, u64 o) {
+    return Fits(s, o, 4) ? dsmod_sdk::Le32(s.data() + o) : 0;
+}
+u64 U64(std::span<const u8> s, u64 o) {
+    return Fits(s, o, 8) ? dsmod_sdk::Le64(s.data() + o) : 0;
+}
+bool Magic(std::span<const u8> s, std::string_view m) {
+    return s.size() >= m.size() && std::memcmp(s.data(), m.data(), m.size()) == 0;
+}
+u16 EU16(std::span<const u8> s, u64 o, bool be) {
+    if (!Fits(s, o, 2))
+        return 0;
+    return be ? static_cast<u16>(s[o] << 8 | s[o + 1]) : U16(s, o);
+}
+u32 EU32(std::span<const u8> s, u64 o, bool be) {
+    if (!Fits(s, o, 4))
+        return 0;
+    return be ? dsmod_sdk::Be32(s.data() + o) : U32(s, o);
+}
+
+struct Format {
+    u32 bw, bh, bpb, channels;
+};
+std::optional<Format> GetFormat(u32 f) {
+    switch (f >> 8) {
+    case 2:
+        return Format{1, 1, 1, 1};
+    case 9:
+        return Format{1, 1, 2, 2};
+    case 11:
+    case 12:
+        return Format{1, 1, 4, 4};
+    case 26:
+        return Format{4, 4, 8, 4};
+    case 27:
+    case 28:
+        return Format{4, 4, 16, 4};
+    case 29:
+        return Format{4, 4, 8, 1};
+    case 30:
+        return Format{4, 4, 16, 2};
+    case 32:
+        return Format{4, 4, 16, 4};
+    case 45:
+        return Format{4, 4, 16, 4};
+    case 46:
+        return Format{5, 4, 16, 4};
+    case 47:
+        return Format{5, 5, 16, 4};
+    case 48:
+        return Format{6, 5, 16, 4};
+    case 49:
+        return Format{6, 6, 16, 4};
+    case 50:
+        return Format{8, 5, 16, 4};
+    case 51:
+        return Format{8, 6, 16, 4};
+    case 52:
+        return Format{8, 8, 16, 4};
+    case 53:
+        return Format{10, 5, 16, 4};
+    case 54:
+        return Format{10, 6, 16, 4};
+    case 55:
+        return Format{10, 8, 16, 4};
+    case 56:
+        return Format{10, 10, 16, 4};
+    case 57:
+        return Format{12, 10, 16, 4};
+    case 58:
+        return Format{12, 12, 16, 4};
+    default:
+        return std::nullopt;
+    }
+}
+u32 Pdep(u32 value, u32 mask) {
+    u32 result = 0;
+    for (u32 bit = 1; mask; bit += bit) {
+        if (value & bit)
+            result |= mask & (~mask + 1);
+        mask &= mask - 1;
+    }
+    return result;
+}
+std::optional<std::vector<u8>> Unswizzle2d(std::span<const u8> source, u32 bpp, u32 width,
+                                           u32 height, u32 block_height) {
+    if (!bpp || block_height > 5)
+        return std::nullopt;
+    const u64 row_bytes = static_cast<u64>(width) * bpp;
+    const u64 aligned_width = (row_bytes + 63) & ~UINT64_C(63);
+    const u64 aligned_height = (static_cast<u64>(height) + (UINT64_C(8) << block_height) - 1) &
+                               ~((UINT64_C(8) << block_height) - 1);
+    if (aligned_width * aligned_height > source.size() || row_bytes * height > MaxSource)
+        return std::nullopt;
+    std::vector<u8> output(static_cast<std::size_t>(row_bytes * height));
+    const u32 stride = static_cast<u32>(aligned_width);
+    const u32 gobs_x = stride >> 6;
+    const u32 block_size = gobs_x << (9 + block_height);
+    const u32 height_mask = (1u << block_height) - 1;
+    for (u32 y = 0; y < height; ++y) {
+        const u32 swizzled_y = Pdep(y, 0b011010000);
+        const u32 block_y = y >> 3;
+        const u32 offset_y =
+            (block_y >> block_height) * block_size + ((block_y & height_mask) << 9);
+        for (u32 x = 0; x < width; ++x) {
+            const u32 byte_x = x * bpp;
+            const u64 offset = static_cast<u64>(offset_y) +
+                               (static_cast<u64>(byte_x >> 6) << (9 + block_height)) +
+                               (Pdep(byte_x, 0b100101111) | swizzled_y);
+            if (offset + bpp > source.size())
+                return std::nullopt;
+            std::memcpy(output.data() + static_cast<std::size_t>(y) * row_bytes + byte_x,
+                        source.data() + offset, bpp);
+        }
+    }
+    return output;
+}
+
+struct Texture {
+    u32 w, h, format, size, arrays, layout, cmap;
+    u16 tile;
+    u64 image;
+    std::string name;
+};
+
+std::span<const u8> BntxView(std::span<const u8> source) {
+    const std::array<u8, 4> bm{'B', 'N', 'T', 'X'};
+    auto it = std::search(source.begin(), source.end(), bm.begin(), bm.end());
+    if (it == source.end())
+        return {};
+    auto b = source.subspan(static_cast<std::size_t>(it - source.begin()));
+    if (b.size() < 0x30)
+        return {};
+    const u32 declared = U32(b, 0x1c);
+    if (declared >= 0x30 && declared <= b.size())
+        b = b.first(declared);
+    return b;
+}
+
+std::vector<Texture> Textures(std::span<const u8> b) {
+    std::vector<Texture> out;
+    if (b.empty())
+        return out;
+    const u32 count = U32(b, 0x24);
+    const u64 array = U64(b, 0x28);
+    if (!count || count > 4096 || !Fits(b, array, u64{count} * 8))
+        return out;
+    for (u32 i = 0; i < count; ++i) {
+        const u64 o = U64(b, array + u64{i} * 8);
+        if (!Fits(b, o, 0xa0) || !Magic(b.subspan(o), "BRTI"))
+            continue;
+        Texture t{U32(b, o + 0x24), U32(b, o + 0x28), U32(b, o + 0x1c), U32(b, o + 0x50),
+                  U32(b, o + 0x30), U32(b, o + 0x34), U32(b, o + 0x58), U16(b, o + 0x12),
+                  0,                {}};
+        const u64 mip = U64(b, o + 0x70);
+        if (!Fits(b, mip, 8))
+            continue;
+        t.image = U64(b, mip);
+        const u64 no = U64(b, o + 0x60);
+        if (Fits(b, no, 2)) {
+            const u16 nl = U16(b, no);
+            if (Fits(b, no + 2, nl))
+                t.name.assign(reinterpret_cast<const char*>(b.data() + no + 2), nl);
+        }
+        if (!t.w || !t.h || t.w > MaxDimension || t.h > MaxDimension ||
+            static_cast<u64>(t.w) * t.h > MaxPixels || !t.arrays || t.image >= b.size())
+            continue;
+        out.push_back(std::move(t));
+    }
+    return out;
+}
+
+std::optional<Image> DecodeTexture(std::span<const u8> b, const Texture& t, AstcDecoder astc) {
+    auto f = GetFormat(t.format);
+    if (!f)
+        return std::nullopt;
+    const u32 bx = (t.w + f->bw - 1) / f->bw, by = (t.h + f->bh - 1) / f->bh;
+    const std::size_t linear_size = static_cast<std::size_t>(bx) * by * f->bpb;
+    const std::size_t array_size = t.size / t.arrays;
+    if (!Fits(b, t.image, array_size))
+        return std::nullopt;
+    auto src = b.subspan(t.image, array_size);
+    std::vector<u8> blocks(linear_size);
+    if (t.tile == 0) {
+        auto linear = Unswizzle2d(src, f->bpb, bx, by, t.layout & 7);
+        if (!linear)
+            return std::nullopt;
+        blocks = std::move(*linear);
+    } else if (t.tile == 1) {
+        const std::size_t row = static_cast<std::size_t>(bx) * f->bpb;
+        std::size_t pitch = (row + 31) / 32 * 32;
+        if (pitch * by > src.size())
+            pitch = row;
+        if (pitch * by > src.size())
+            return std::nullopt;
+        for (u32 y = 0; y < by; ++y)
+            std::memcpy(blocks.data() + y * row, src.data() + y * pitch, row);
+    } else {
+        return std::nullopt;
+    }
+    std::vector<u8> channels(static_cast<std::size_t>(t.w) * t.h * f->channels);
+    const u32 fc = t.format >> 8;
+    if (fc == 2 || fc == 9 || fc == 11) {
+        if (blocks.size() < channels.size())
+            return std::nullopt;
+        std::copy_n(blocks.begin(), channels.size(), channels.begin());
+    } else if (fc == 12) {
+        if (blocks.size() < channels.size())
+            return std::nullopt;
+        for (std::size_t p = 0; p < channels.size(); p += 4) {
+            channels[p] = blocks[p + 2];
+            channels[p + 1] = blocks[p + 1];
+            channels[p + 2] = blocks[p];
+            channels[p + 3] = blocks[p + 3];
+        }
+    } else if (fc >= 45 && fc <= 58) {
+        if (!astc.decode || !astc.decode(astc.userdata, t.w, t.h, f->bw, f->bh, blocks.data(),
+                                         blocks.size(), channels.data(), channels.size()))
+            return std::nullopt;
+    } else {
+        for (u32 y = 0; y < by; ++y)
+            for (u32 x = 0; x < bx; ++x) {
+                const u8* s = blocks.data() + (static_cast<std::size_t>(y) * bx + x) * f->bpb;
+                u8* d = channels.data() +
+                        (static_cast<std::size_t>(y) * 4 * t.w + x * 4) * f->channels;
+                switch (fc) {
+                case 26:
+                    bcn::DecodeBc1(s, d, x * 4, y * 4, t.w, t.h);
+                    break;
+                case 27:
+                    bcn::DecodeBc2(s, d, x * 4, y * 4, t.w, t.h);
+                    break;
+                case 28:
+                    bcn::DecodeBc3(s, d, x * 4, y * 4, t.w, t.h);
+                    break;
+                case 29:
+                    bcn::DecodeBc4(s, d, x * 4, y * 4, t.w, t.h, (t.format & 255) == 2);
+                    break;
+                case 30:
+                    bcn::DecodeBc5(s, d, x * 4, y * 4, t.w, t.h, (t.format & 255) == 2);
+                    break;
+                case 32:
+                    bcn::DecodeBc7(s, d, x * 4, y * 4, t.w, t.h);
+                    break;
+                default:
+                    return std::nullopt;
+                }
+            }
+    }
+    Image out{t.w, t.h, std::vector<u8>(static_cast<std::size_t>(t.w) * t.h * 4)};
+    for (std::size_t p = 0; p < static_cast<std::size_t>(t.w) * t.h; ++p)
+        for (u32 c = 0; c < 4; ++c) {
+            const u8 sel = static_cast<u8>(t.cmap >> (c * 8));
+            out.rgba[p * 4 + c] =
+                sel == 0   ? 0
+                : sel == 1 ? 255
+                           : (sel - 2u < f->channels ? channels[p * f->channels + sel - 2] : 0);
+        }
+    return out;
+}
+
+bool SafeName(std::string_view s) {
+    return !s.empty() && s.size() <= 96 && std::all_of(s.begin(), s.end(), [](unsigned char c) {
+        return std::isalnum(c) || c == '_' || c == '^' || c == '-';
+    });
+}
+
+} // namespace
+
+std::optional<std::vector<u8>> Zstd(std::span<const u8> in) {
+    if (in.size() < 4 || dsmod_sdk::Le32(in.data()) != 0xFD2FB528u)
+        return in.size() <= MaxSource ? std::optional{std::vector<u8>(in.begin(), in.end())}
+                                      : std::nullopt;
+    const unsigned long long size = ZSTD_getFrameContentSize(in.data(), in.size());
+    if (size == ZSTD_CONTENTSIZE_ERROR || size == ZSTD_CONTENTSIZE_UNKNOWN || size == 0 ||
+        size > MaxSource)
+        return std::nullopt;
+    std::vector<u8> out(static_cast<std::size_t>(size));
+    const std::size_t got = ZSTD_decompress(out.data(), out.size(), in.data(), in.size());
+    if (ZSTD_isError(got) || got != out.size())
+        return std::nullopt;
+    return out;
+}
+
+struct Dictionaries::Impl {
+    std::vector<ZSTD_DDict*> dicts;
+    ~Impl() {
+        for (auto* d : dicts)
+            ZSTD_freeDDict(d);
+    }
+};
+
+Dictionaries::Dictionaries() : impl(std::make_unique<Impl>()) {}
+Dictionaries::~Dictionaries() = default;
+
+bool Dictionaries::Load(std::span<const u8> zsdic_pack) {
+    const auto sarc = Zstd(zsdic_pack);
+    if (!sarc)
+        return false;
+    for (const auto& name : SarcNames(*sarc)) {
+        if (!name.ends_with(".zsdic"))
+            continue;
+        const auto bytes = SarcMember(*sarc, name);
+        if (!bytes)
+            continue;
+        if (auto* d = ZSTD_createDDict(bytes->data(), bytes->size()))
+            impl->dicts.push_back(d);
+    }
+    return !impl->dicts.empty();
+}
+
+bool Dictionaries::Empty() const {
+    return impl->dicts.empty();
+}
+
+std::optional<std::vector<u8>> Dictionaries::Decompress(std::span<const u8> in) const {
+    if (in.size() < 4 || dsmod_sdk::Le32(in.data()) != 0xFD2FB528u)
+        return in.size() <= MaxSource ? std::optional{std::vector<u8>(in.begin(), in.end())}
+                                      : std::nullopt;
+    const unsigned id = ZSTD_getDictID_fromFrame(in.data(), in.size());
+    if (id == 0)
+        return Zstd(in);
+    const ZSTD_DDict* dict = nullptr;
+    for (const auto* d : impl->dicts)
+        if (ZSTD_getDictID_fromDDict(d) == id)
+            dict = d;
+    if (!dict)
+        return std::nullopt;
+    const unsigned long long size = ZSTD_getFrameContentSize(in.data(), in.size());
+    if (size == ZSTD_CONTENTSIZE_ERROR || size == ZSTD_CONTENTSIZE_UNKNOWN || size == 0 ||
+        size > MaxSource)
+        return std::nullopt;
+    std::unique_ptr<ZSTD_DCtx, decltype(&ZSTD_freeDCtx)> ctx{ZSTD_createDCtx(), &ZSTD_freeDCtx};
+    if (!ctx)
+        return std::nullopt;
+    std::vector<u8> out(static_cast<std::size_t>(size));
+    const std::size_t got =
+        ZSTD_decompress_usingDDict(ctx.get(), out.data(), out.size(), in.data(), in.size(), dict);
+    if (ZSTD_isError(got) || got != out.size())
+        return std::nullopt;
+    return out;
+}
+
+namespace {
+template <typename F>
+void SarcWalk(std::span<const u8> s, F&& visit) {
+    if (s.size() < 0x20 || !Magic(s, "SARC"))
+        return;
+    const bool be = s[6] == 0xfe && s[7] == 0xff;
+    const u32 hs = EU16(s, 4, be);
+    const u32 data = EU32(s, 0xc, be);
+    if (hs + 12 > s.size() || data > s.size() || !Magic(s.subspan(hs), "SFAT"))
+        return;
+    const u32 count = EU16(s, hs + 6, be);
+    const u32 nodes = hs + 12;
+    if (count > 8192 || nodes + count * 16 > s.size())
+        return;
+    const u32 sfnt = nodes + count * 16;
+    if (sfnt + 8 > s.size() || !Magic(s.subspan(sfnt), "SFNT"))
+        return;
+    const u32 names = sfnt + EU16(s, sfnt + 4, be);
+    for (u32 i = 0; i < count; ++i) {
+        const u32 n = nodes + i * 16;
+        const u32 attr = EU32(s, n + 4, be);
+        const u32 begin = EU32(s, n + 8, be), end = EU32(s, n + 12, be);
+        if (!(attr & 0x01000000))
+            continue;
+        const u64 no = names + u64{attr & 0xffffff} * 4;
+        if (no >= s.size())
+            continue;
+        const auto zero = std::find(s.begin() + no, s.end(), 0);
+        if (zero == s.end())
+            continue;
+        const std::string_view name(reinterpret_cast<const char*>(s.data() + no),
+                                    static_cast<std::size_t>(zero - s.begin()) - no);
+        if (begin <= end && u64{data} + end <= s.size())
+            if (visit(name, s.subspan(data + begin, end - begin)))
+                return;
+    }
+}
+} // namespace
+
+std::optional<std::vector<u8>> SarcMember(std::span<const u8> s, std::string_view wanted) {
+    std::optional<std::vector<u8>> out;
+    SarcWalk(s, [&](std::string_view name, std::span<const u8> bytes) {
+        if (name != wanted)
+            return false;
+        out.emplace(bytes.begin(), bytes.end());
+        return true;
+    });
+    return out;
+}
+
+std::vector<std::string> SarcNames(std::span<const u8> s) {
+    std::vector<std::string> out;
+    SarcWalk(s, [&](std::string_view name, std::span<const u8>) {
+        out.emplace_back(name);
+        return false;
+    });
+    return out;
+}
+
+std::vector<std::string> BntxNames(std::span<const u8> source) {
+    std::vector<std::string> out;
+    for (auto& t : Textures(BntxView(source)))
+        out.push_back(std::move(t.name));
+    return out;
+}
+
+std::optional<Image> DecodeBntx(std::span<const u8> source, std::string_view texture,
+                                AstcDecoder astc) {
+    const auto b = BntxView(source);
+    for (const auto& t : Textures(b))
+        if (texture.empty() || t.name == texture)
+            return DecodeTexture(b, t, astc);
+    return std::nullopt;
+}
+
+std::optional<std::pair<std::string, std::string>> Decoder::Resolve(std::string_view key) {
+    const auto slash = key.find('/');
+    if (slash == std::string_view::npos)
+        return std::nullopt;
+    const auto kind = key.substr(0, slash);
+    const auto rest = key.substr(slash + 1);
+    if (kind == "map") {
+        // <L>_<CC>-<RR>_<ZZ>[_<flags>]: layer letter, two-digit column and row, two-digit zoom
+        // (Depths tiles have no flags, so the shortest key is 10 characters)
+        if (rest.size() < 10 || !SafeName(rest) ||
+            (rest[0] != 'G' && rest[0] != 'S' && rest[0] != 'U') || rest[1] != '_' ||
+            rest[4] != '-' || rest[7] != '_')
+            return std::nullopt;
+        return std::pair{"/UI/Map/MainField/" + std::string{rest} + ".bntx.zs", std::string{}};
+    }
+    if (kind == "icon") {
+        // An actor's inventory icon (items, gear, abilities): one texture named like the file.
+        if (!SafeName(rest))
+            return std::nullopt;
+        return std::pair{"/UI/Tex/Icon/" + std::string{rest} + ".bntx.zs", std::string{}};
+    }
+    if (kind == "lyt") {
+        const auto s2 = rest.find('/');
+        if (s2 == std::string_view::npos)
+            return std::nullopt;
+        const auto archive = rest.substr(0, s2);
+        const auto tex = rest.substr(s2 + 1);
+        // Archive names carry dots (Common.Product.120.Nin_NX_NVN), so allow them here only.
+        const bool archive_ok =
+            !archive.empty() && archive.size() <= 96 &&
+            archive.find("..") == std::string_view::npos &&
+            std::all_of(archive.begin(), archive.end(), [](unsigned char c) {
+                return std::isalnum(c) || c == '_' || c == '-' || c == '.';
+            });
+        if (!archive_ok || !SafeName(tex))
+            return std::nullopt;
+        return std::pair{"/UI/LayoutArchive/" + std::string{archive} + ".blarc.zs",
+                         std::string{tex}};
+    }
+    return std::nullopt;
+}
+
+namespace {
+void AppendUtf8(std::string& out, u32 c) {
+    if (c < 0x80) {
+        out += static_cast<char>(c);
+    } else if (c < 0x800) {
+        out += static_cast<char>(0xC0 | c >> 6);
+        out += static_cast<char>(0x80 | (c & 0x3F));
+    } else if (c < 0x10000) {
+        out += static_cast<char>(0xE0 | c >> 12);
+        out += static_cast<char>(0x80 | (c >> 6 & 0x3F));
+        out += static_cast<char>(0x80 | (c & 0x3F));
+    } else {
+        out += static_cast<char>(0xF0 | c >> 18);
+        out += static_cast<char>(0x80 | (c >> 12 & 0x3F));
+        out += static_cast<char>(0x80 | (c >> 6 & 0x3F));
+        out += static_cast<char>(0x80 | (c & 0x3F));
+    }
+}
+
+// One TXT2 string (UTF-16LE, NUL-terminated) to UTF-8, dropping inline control tags.
+std::string Txt2String(std::span<const u8> t, u64 at, u64 end) {
+    std::string out;
+    while (at + 2 <= end) {
+        u32 c = U16(t, at);
+        at += 2;
+        if (c == 0)
+            break;
+        if (c == 0x0E) { // tag: group, type, parameter size, parameters
+            const u16 size = U16(t, at + 4);
+            at += 6 + size;
+            continue;
+        }
+        if (c == 0x0F) { // closing tag: group, type
+            at += 4;
+            continue;
+        }
+        if (c >= 0xD800 && c < 0xDC00 && at + 2 <= end) {
+            const u32 lo = U16(t, at);
+            if (lo >= 0xDC00 && lo < 0xE000) {
+                c = 0x10000 + ((c - 0xD800) << 10) + (lo - 0xDC00);
+                at += 2;
+            }
+        }
+        AppendUtf8(out, c);
+    }
+    return out;
+}
+} // namespace
+
+std::vector<std::pair<std::string, std::string>> MsbtEntries(std::span<const u8> m) {
+    std::vector<std::pair<std::string, std::string>> out;
+    if (m.size() < 0x20 || !Magic(m, "MsgStdBn") || U16(m, 8) != 0xFEFF || m[0xC] != 1)
+        return out; // little-endian UTF-16 only (what TOTK ships)
+    const u16 sections = U16(m, 0xE);
+    std::span<const u8> lbl, txt;
+    u64 at = 0x20;
+    for (u16 i = 0; i < sections && Fits(m, at, 16); ++i) {
+        const u32 size = U32(m, at + 4);
+        if (!Fits(m, at + 16, size))
+            break;
+        const auto data = m.subspan(at + 16, size);
+        if (Magic(m.subspan(at), "LBL1"))
+            lbl = data;
+        else if (Magic(m.subspan(at), "TXT2"))
+            txt = data;
+        at = (at + 16 + size + 15) / 16 * 16;
+    }
+    if (lbl.size() < 4 || txt.size() < 4)
+        return out;
+    const u32 strings = U32(txt, 0);
+    if (!Fits(txt, 4, u64{strings} * 4))
+        return out;
+    const u32 slots = U32(lbl, 0);
+    if (!Fits(lbl, 4, u64{slots} * 8))
+        return out;
+    for (u32 s = 0; s < slots; ++s) {
+        const u32 count = U32(lbl, 4 + s * 8);
+        u64 o = U32(lbl, 8 + s * 8);
+        for (u32 n = 0; n < count && Fits(lbl, o, 1); ++n) {
+            const u8 len = lbl[o];
+            if (!Fits(lbl, o + 1, len + 4u))
+                break;
+            std::string label(reinterpret_cast<const char*>(lbl.data() + o + 1), len);
+            const u32 index = U32(lbl, o + 1 + len);
+            o += 1 + len + 4;
+            if (index >= strings)
+                continue;
+            const u64 begin = U32(txt, 4 + index * 4);
+            const u64 end = index + 1 < strings ? U32(txt, 4 + (index + 1) * 4) : txt.size();
+            if (begin >= txt.size() || end > txt.size() || begin > end)
+                continue;
+            out.emplace_back(std::move(label), Txt2String(txt, begin, end));
+        }
+    }
+    return out;
+}
+
+std::unordered_map<std::string, ActorText> LoadActorNames(const RomfsReader& read,
+                                                          std::string_view lang) {
+    std::unordered_map<std::string, ActorText> names;
+    Dictionaries dicts;
+    if (const auto pack = read("/Pack/ZsDic.pack.zs"))
+        dicts.Load(*pack);
+    // The update renumbers the message archive; take the newest one present.
+    for (const char* version : {"142", "141", "140", "130", "121", "120", "112", "110", "100"}) {
+        const auto raw = read("/Mals/" + std::string{lang} + ".Product." + version + ".sarc.zs");
+        if (!raw)
+            continue;
+        const auto sarc = dicts.Decompress(*raw);
+        if (!sarc)
+            continue;
+        SarcWalk(*sarc, [&](std::string_view member, std::span<const u8> bytes) {
+            // Shrines: "0NNN" name and "2NNN" subtitle of DungeonNNN.
+            if (member == "LocationMsg/Dungeon.msbt") {
+                for (auto& [label, text] : MsbtEntries(bytes))
+                    if (label.size() == 4 && (label[0] == '0' || label[0] == '2') && !text.empty()) {
+                        auto& entry = names["Dungeon" + label.substr(1)];
+                        (label[0] == '0' ? entry.name : entry.caption) = std::move(text);
+                    }
+                return false;
+            }
+            // Lightroots "CheckPointNNN", towers "TowerNN" and other places, by label.
+            if (member == "LocationMsg/Location.msbt") {
+                for (auto& [label, text] : MsbtEntries(bytes))
+                    if (!text.empty())
+                        names[label].name = std::move(text);
+                return false;
+            }
+            if (!member.starts_with("ActorMsg/") || !member.ends_with(".msbt"))
+                return false;
+            for (auto& [label, text] : MsbtEntries(bytes)) {
+                constexpr std::string_view name{"_Name"}, caption{"_Caption"};
+                if (text.empty())
+                    continue;
+                if (label.size() > name.size() && label.ends_with(name))
+                    names[label.substr(0, label.size() - name.size())].name = std::move(text);
+                else if (label.size() > caption.size() && label.ends_with(caption))
+                    names[label.substr(0, label.size() - caption.size())].caption = std::move(text);
+            }
+            return false;
+        });
+        break;
+    }
+    return names;
+}
+
+struct Decoder::Impl {
+    explicit Impl(std::size_t b) : budget(b) {}
+    std::size_t budget, used{};
+    AstcDecoder astc{};
+    Dictionaries dicts;
+    bool dicts_tried{};
+    std::mutex mutex;
+    std::unordered_map<std::string, std::shared_ptr<const Image>> images;
+    std::list<std::string> lru;
+};
+
+Decoder::Decoder(std::size_t b) : impl(std::make_unique<Impl>(b)) {}
+Decoder::~Decoder() = default;
+
+void Decoder::SetAstcDecoder(AstcDecoder decoder) {
+    std::scoped_lock lock{impl->mutex};
+    impl->astc = decoder;
+}
+
+std::shared_ptr<const Image> Decoder::Load(const RomfsReader& read, std::string_view key) {
+    const std::string k{key};
+    AstcDecoder astc;
+    {
+        std::scoped_lock lock{impl->mutex};
+        if (const auto it = impl->images.find(k); it != impl->images.end()) {
+            impl->lru.remove(k);
+            impl->lru.push_front(k);
+            return it->second;
+        }
+        astc = impl->astc;
+    }
+    const auto where = Resolve(key);
+    if (!where)
+        return nullptr;
+    {
+        std::scoped_lock lock{impl->mutex};
+        if (!impl->dicts_tried) {
+            impl->dicts_tried = true;
+            if (const auto pack = read("/Pack/ZsDic.pack.zs"))
+                impl->dicts.Load(*pack);
+        }
+    }
+    const auto raw = read(where->first);
+    if (!raw)
+        return nullptr;
+    auto bytes = impl->dicts.Decompress(*raw);
+    if (!bytes)
+        return nullptr;
+    std::optional<Image> image;
+    if (key.starts_with("lyt/")) {
+        const auto bntx = SarcMember(*bytes, "timg/__Combined.bntx");
+        if (bntx)
+            image = DecodeBntx(*bntx, where->second, astc);
+    } else {
+        image = DecodeBntx(*bytes, where->second, astc);
+    }
+    if (!image || image->rgba.empty())
+        return nullptr;
+    auto shared = std::make_shared<const Image>(std::move(*image));
+    std::scoped_lock lock{impl->mutex};
+    if (const auto it = impl->images.find(k); it != impl->images.end())
+        return it->second;
+    impl->images.emplace(k, shared);
+    impl->lru.push_front(k);
+    impl->used += shared->rgba.size();
+    while (impl->used > impl->budget && impl->lru.size() > 1) {
+        const auto old = impl->lru.back();
+        impl->lru.pop_back();
+        if (const auto it = impl->images.find(old); it != impl->images.end()) {
+            impl->used -= it->second->rgba.size();
+            impl->images.erase(it);
+        }
+    }
+    return shared;
+}
+
+} // namespace TotkAssets

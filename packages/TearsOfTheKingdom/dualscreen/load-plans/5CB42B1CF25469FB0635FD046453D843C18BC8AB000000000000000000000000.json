@@ -1,0 +1,153 @@
+{
+  "title_id": "0100F2C0115B6000",
+  "build_id": "5CB42B1CF25469FB0635FD046453D843C18BC8AB000000000000000000000000",
+  "module": "main",
+  "layout": {
+    "segments": [
+      {
+        "location": 0,
+        "size": 45769200
+      },
+      {
+        "location": 45772800,
+        "size": 10154076
+      },
+      {
+        "location": 55930880,
+        "size": 4967776
+      }
+    ],
+    "bss_size": 758432
+  },
+  "mailbox_size": 4096,
+  "mailbox_epoch_offset": 4092,
+  "format": 2,
+  "patches": [
+    {
+      "offset": 3698480,
+      "expected": "50000094",
+      "replacement": "00000094",
+      "relocations": [
+        {
+          "offset": 0,
+          "kind": "aarch64_branch26",
+          "target": "code",
+          "addend": 0
+        }
+      ]
+    }
+  ],
+  "guest_code": {
+    "bytes": "fd7ba8a9fd030091e00701a9e20f02a9e41703a9e61f04a9f35305a9130000907302009189ca8a52896aa972690200b9690640b929050011690600b96922009134fddf88696240b99f02096b800c00546aa2019149fd5f883f01146b000c005454fd0b888bffff35691240b96af23f914afddf8860008052ca0a00343f010a6b810a0054690e40b93f050071c00700543f090071200100543f0d0071e00000543f110071a00200543f150071a00500544000805247000014800080520a0000904a0140f96a0800b4e0030aaa611640b9621a40b9030080123f0d007160000054000000943900001404008052250080520000009435000014800080520a0000904a0140f96a0600b43c000094ff0301d1ff7f00a909008092e9a700a9e9a701a9e91700f9ff1b00f9290080d2e91f00f9e0030aaae18302910200009042000091631640b9641a40b925008052260180520700805200000094ff0301911b000014800080520a0000904a0140f92a0300b4e0030aaa611640b9621a40b900000094120000148000805209000090290140f9090200b429f540f9c90100b4292d40f9890100b4298140f9490100b413000094e1830191e00309aa000000941f0000f1e0179f1a030000141f1c0072e0179f1a606600b96982019134fd9f88e00741a9e20f42a9e41743a9e61f44a9f35345a9fd7bd8a800000014e18301912f3000912f0000f90b2080522b0800b96c0204910d0080d28e696d38ee692d38ae000034ad050091bffd03f163ffff54ff692d38c0035fd6",
+    "relocations": [
+      {
+        "offset": 28,
+        "kind": "aarch64_adrp",
+        "target": "mailbox",
+        "addend": 0
+      },
+      {
+        "offset": 32,
+        "kind": "aarch64_add_lo12",
+        "target": "mailbox",
+        "addend": 0
+      },
+      {
+        "offset": 188,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 192,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 224,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 34191480
+      },
+      {
+        "offset": 240,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 34226556
+      },
+      {
+        "offset": 252,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 256,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 312,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 56672360
+      },
+      {
+        "offset": 316,
+        "kind": "aarch64_add_lo12",
+        "target": "main",
+        "addend": 56672360
+      },
+      {
+        "offset": 340,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 34156032
+      },
+      {
+        "offset": 356,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 360,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61273720
+      },
+      {
+        "offset": 380,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 34247960
+      },
+      {
+        "offset": 392,
+        "kind": "aarch64_adrp",
+        "target": "main",
+        "addend": 61649456
+      },
+      {
+        "offset": 396,
+        "kind": "aarch64_ldr64_lo12",
+        "target": "main",
+        "addend": 61649456
+      },
+      {
+        "offset": 440,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 33338092
+      },
+      {
+        "offset": 500,
+        "kind": "aarch64_branch26",
+        "target": "main",
+        "addend": 3698800
+      }
+    ]
+  }
+}
