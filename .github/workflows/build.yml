@@ -11,7 +11,7 @@ jobs:
     env:
       VERSION: 0.1.0
       # Test package only: where the debug build streams its log (alex's PC on the LAN).
-      NETLOG: 192.168.1.203:47801
+      NETLOG: 192.168.1.255:47801  # LAN broadcast: any PC running the listener
       BUILD_ID: 5CB42B1CF25469FB0635FD046453D843C18BC8AB000000000000000000000000
     steps:
       - uses: actions/checkout@v4

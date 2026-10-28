@@ -57,6 +57,9 @@ void Push(std::string line) {
 void SendLoop() {
     auto& s = S();
     const int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    // The target may be the LAN's broadcast address, so whichever PC runs the listener hears it.
+    const int on = 1;
+    setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &on, sizeof on);
     sockaddr_in to{};
     to.sin_family = AF_INET;
     to.sin_port = htons(TOTK_NETLOG_PORT);
