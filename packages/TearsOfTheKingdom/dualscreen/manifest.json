@@ -74,6 +74,11 @@
    "action": "travel_go",
    "argument": 0
   },
+  "markers_panel": {
+   "kind": "module",
+   "action": "markers_panel",
+   "argument": 0
+  },
   "inventory_category_0": {
    "kind": "module",
    "action": "inventory_category",
@@ -4339,6 +4344,71 @@
    "action": "spawn_add",
    "argument": 10
   },
+  "markers_toggle_0": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 0
+  },
+  "markers_toggle_1": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 1
+  },
+  "markers_toggle_2": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 2
+  },
+  "markers_toggle_3": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 3
+  },
+  "markers_toggle_4": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 4
+  },
+  "markers_toggle_5": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 5
+  },
+  "markers_toggle_6": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 6
+  },
+  "markers_toggle_7": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 7
+  },
+  "markers_toggle_8": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 8
+  },
+  "markers_toggle_9": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 9
+  },
+  "markers_toggle_10": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 10
+  },
+  "markers_toggle_11": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 11
+  },
+  "markers_toggle_12": {
+   "kind": "module",
+   "action": "markers_toggle",
+   "argument": 12
+  },
   "cheat_toggle_0": {
    "kind": "module",
    "action": "cheat_toggle",
@@ -4387,7 +4457,7 @@
     "dynamic_markers": [
      {
       "group": "travel",
-      "count": 400,
+      "count": 1200,
       "x": "totk.travel.{i}.x",
       "y": "totk.travel.{i}.y",
       "kind": "totk.travel.{i}.kind",
@@ -7896,9 +7966,890 @@
      "on_tap": "go_ready"
     },
     {
+     "type": "rect",
+     "rect": [
+      836,
+      120,
+      380,
+      804
+     ],
+     "bg": "#E6101416",
+     "color": "#46FFFCC6",
+     "frame": 1,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      120,
+      6,
+      804
+     ],
+     "bg": "#FF0090FD",
+     "color": "#00000000",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      140,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.0.icon",
+     "tint_bind": "totk.markers.0.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
      "type": "label",
      "rect": [
-      516,
+      912,
+      144,
+      0,
+      0
+     ],
+     "text": "All markers",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      144,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.0.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      132,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_0",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      860,
+      190,
+      332,
+      1
+     ],
+     "bg": "#50FFFCC6",
+     "color": "#00000000",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      200,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.1.icon",
+     "tint_bind": "totk.markers.1.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      204,
+      0,
+      0
+     ],
+     "text": "Shrines",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      204,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.1.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      192,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_1",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      260,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.2.icon",
+     "tint_bind": "totk.markers.2.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      264,
+      0,
+      0
+     ],
+     "text": "Lightroots",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      264,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.2.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      252,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_2",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      320,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.3.icon",
+     "tint_bind": "totk.markers.3.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      324,
+      0,
+      0
+     ],
+     "text": "Skyview towers",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      324,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.3.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      312,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_3",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      380,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.4.icon",
+     "tint_bind": "totk.markers.4.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      384,
+      0,
+      0
+     ],
+     "text": "Koroks",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      384,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.4.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      372,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_4",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      440,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.5.icon",
+     "tint_bind": "totk.markers.5.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      444,
+      0,
+      0
+     ],
+     "text": "Bosses",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      444,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.5.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      432,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_5",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      500,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.6.icon",
+     "tint_bind": "totk.markers.6.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      504,
+      0,
+      0
+     ],
+     "text": "Stables",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      504,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.6.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      492,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_6",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      560,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.7.icon",
+     "tint_bind": "totk.markers.7.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      564,
+      0,
+      0
+     ],
+     "text": "Towns",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      564,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.7.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      552,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_7",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      620,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.8.icon",
+     "tint_bind": "totk.markers.8.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      624,
+      0,
+      0
+     ],
+     "text": "Caves and wells",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      624,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.8.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      612,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_8",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      680,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.9.icon",
+     "tint_bind": "totk.markers.9.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      684,
+      0,
+      0
+     ],
+     "text": "Bubbul gems",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      684,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.9.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      672,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_9",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      740,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.10.icon",
+     "tint_bind": "totk.markers.10.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      744,
+      0,
+      0
+     ],
+     "text": "Poes",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      744,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.10.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      732,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_10",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      800,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.11.icon",
+     "tint_bind": "totk.markers.11.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      804,
+      0,
+      0
+     ],
+     "text": "Weapons",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      804,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.11.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      792,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_11",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      860,
+      850,
+      332,
+      1
+     ],
+     "bg": "#50FFFCC6",
+     "color": "#00000000",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "image",
+     "rect": [
+      858,
+      860,
+      40,
+      40
+     ],
+     "src_bind": "totk.markers.12.icon",
+     "tint_bind": "totk.markers.12.tint",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      912,
+      864,
+      0,
+      0
+     ],
+     "text": "Show found",
+     "text_scale": 5,
+     "color": "#FFFFFCC6",
+     "align": "left",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 220,
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      1192,
+      864,
+      0,
+      0
+     ],
+     "text": "",
+     "text_scale": 5,
+     "color": "#FF32C5FF",
+     "align": "right",
+     "italic": false,
+     "slant_deg": 0.0,
+     "text_role": "numeral_readout",
+     "bind_text": "totk.markers.12.text",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "rect",
+     "rect": [
+      836,
+      852,
+      380,
+      60
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_toggle_12",
+     "need_bind": "totk.markers.panel"
+    },
+    {
+     "type": "label",
+     "rect": [
+      640,
       988,
       0,
       0
@@ -7910,7 +8861,7 @@
      "italic": true,
      "slant_deg": 9.0,
      "text_role": "menu_text",
-     "wrap_width": 500,
+     "wrap_width": 270,
      "max_lines": 1,
      "fit_text": true,
      "text_min_scale": 4,
@@ -7919,6 +8870,49 @@
      "hide_bind": "totk.travel.sel.can_travel",
      "hide_eq": 1,
      "need_bind": "totk.supported"
+    },
+    {
+     "type": "image",
+     "rect": [
+      264,
+      944,
+      224,
+      112
+     ],
+     "src": "file:assets/cmdbar-224x112-normal.png",
+     "tint": "#FFFFFFFF"
+    },
+    {
+     "type": "label",
+     "rect": [
+      376,
+      979,
+      0,
+      0
+     ],
+     "text": "Markers",
+     "text_scale": 6,
+     "color": "#FF32C5FF",
+     "align": "center",
+     "italic": true,
+     "slant_deg": 9.0,
+     "text_role": "menu_text",
+     "fit_text": true,
+     "text_min_scale": 4,
+     "max_lines": 1,
+     "wrap_width": 196
+    },
+    {
+     "type": "rect",
+     "rect": [
+      264,
+      944,
+      224,
+      112
+     ],
+     "color": "#00000000",
+     "frame": 0,
+     "on_tap": "markers_panel"
     },
     {
      "type": "image",

@@ -72,6 +72,7 @@ jobs:
           cmake --build build/linux
           build/linux/totk-gamedata-test
           build/linux/totk-travel-test
+          build/linux/totk-markers-test
           strip build/linux/0100F2C0115B6000.so
 
       - name: Package
