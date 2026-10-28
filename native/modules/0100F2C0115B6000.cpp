@@ -597,6 +597,8 @@ struct Module {
         if (Load32(totk::mailbox::ResultSeq, done) && done == travel_seq && Load32(totk::mailbox::ResultCode, code)) {
             helper_busy = false;
             TotkNetLog::Log("helper: op %u answered %u", pending_op, code);
+            if (pending_op == totk::mailbox::OpEat)
+                LogEatResult(h);
             if (pending_op == totk::mailbox::OpAdd) {
                 std::scoped_lock lock{mutex};
                 spawn_result = code == 0 ? "Added " + pending_label
@@ -623,6 +625,27 @@ struct Module {
                     "The game didn't answer; try again";
             }
         }
+    }
+
+    // Debug log only: the pouch's last-eat fields (heal accepted byte at +0x364, then the heal
+    // and effect values the game sent), to tell "game refused" from "never asked" on a device.
+    void LogEatResult(const EdenDsmodHostApi& h) {
+        u64 pouch{};
+        if (!h.read_memory || h.read_memory(h.userdata, h.main_base + 0x3A6F678, &pouch, 8) != EDEN_DSMOD_TRUE ||
+            !pouch)
+            return;
+        std::array<u8, 0x60> f{};
+        if (h.read_memory(h.userdata, pouch + 0x360, f.data(), f.size()) != EDEN_DSMOD_TRUE)
+            return;
+        u32 w368, w3b4;
+        u64 q370, q378;
+        std::memcpy(&w368, f.data() + 0x08, 4);
+        std::memcpy(&q370, f.data() + 0x10, 8);
+        std::memcpy(&q378, f.data() + 0x18, 8);
+        std::memcpy(&w3b4, f.data() + 0x54, 4);
+        TotkNetLog::Log("eat: accepted %u, +0x368 %08x, +0x370 %016llx, +0x378 %016llx, +0x3B4 %08x",
+                        f[0x04], w368, static_cast<unsigned long long>(q370),
+                        static_cast<unsigned long long>(q378), w3b4);
     }
 
     // Hand one request to the helper: name (if any) and arguments first, the sequence word last.
