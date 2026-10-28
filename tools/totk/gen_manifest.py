@@ -173,11 +173,40 @@ def map_overlays(base, detail=None):
     return out
 
 
-# Shrines, lightroots and towers, one slot per point on the layer on show (kind 0 = empty slot).
-TRAVEL_MARKERS = {"group": "travel", "count": 400, "x": "totk.travel.{i}.x",
+# Map markers, one slot per point on the layer on show (kind 0 = empty slot): the shrines,
+# lightroots and towers you can travel to first, then the all-markers layer (koroks, bosses,
+# caves and the rest) for the categories turned on, kept to the part of the map in view.
+MARKER_SLOTS = 1200
+TRAVEL_MARKERS = {"group": "travel", "count": MARKER_SLOTS, "x": "totk.travel.{i}.x",
                   "y": "totk.travel.{i}.y", "kind": "totk.travel.{i}.kind", "hide_when_kind": 0,
                   "icon_src_bind": "totk.travel.{i}.icon", "tint_bind": "totk.travel.{i}.tint",
                   "dim_bind": "totk.travel.{i}.dim", "size": 40, "selected_size": 60}
+
+
+# The all-markers panel (Markers button): row 0 turns every category on or off, then one row per
+# category in the module's order (totk_markers.h Category), then whether found ones stay shown.
+MARKER_ROWS = ["All markers", "Shrines", "Lightroots", "Skyview towers", "Koroks", "Bosses",
+               "Stables", "Towns", "Caves and wells", "Bubbul gems", "Poes", "Weapons",
+               "Show found"]
+
+
+def markers_panel():
+    on = {"need_bind": "totk.markers.panel"}
+    x, y0, w, row_h = 836, 132, 380, 60
+    out = [rect([x, 120, w, 24 + row_h * len(MARKER_ROWS)], "#E6101416", FRAME, frame=1, **on),
+           rect([x, 120, 6, 24 + row_h * len(MARKER_ROWS)], ACCENT, **on)]
+    for i, name in enumerate(MARKER_ROWS):
+        y = y0 + i * row_h
+        if i in (1, len(MARKER_ROWS) - 1):
+            out.append(rect([x + 24, y - 2, w - 48, 1], RULE, **on))
+        out += [{"type": "image", "rect": [x + 22, y + 8, 40, 40],
+                 "src_bind": f"totk.markers.{i}.icon", "tint_bind": f"totk.markers.{i}.tint", **on},
+                text(x + 76, y + 12, name, 5, CREAM, align="left", fit_text=True,
+                     text_min_scale=4, max_lines=1, wrap_width=220, **on),
+                bound(x + w - 24, y + 12, f"totk.markers.{i}.text", 5, BLUE, align="right",
+                      upright=True, **on),
+                tap([x, y, w, row_h], f"markers_toggle_{i}", **on)]
+    return out
 
 
 def map_widget(r, wid, **kw):
@@ -322,9 +351,11 @@ def map_page():
           bound(56, 834, "totk.travel.sel.status", 4, BLUE, align="left", **sel),
           bound(56, 878, "totk.travel.sel.hint", 4, CREAM_DIM, align="left", **sel)]
     w += command(24, 224, "Back", "go_ready", BLUE)
-    w += [text(516, 988, "Pinch to zoom \u00b7 Drag to pan", 4, HINT_BLUE, wrap_width=500,
+    w += markers_panel()
+    w += [text(640, 988, "Pinch to zoom \u00b7 Drag to pan", 4, HINT_BLUE, wrap_width=270,
                max_lines=1, fit_text=True, text_min_scale=4, outline=OUTLINE, outline_px=2,
                hide_bind="totk.travel.sel.can_travel", hide_eq=1, **G)]
+    w += command(264, 224, "Markers", "markers_panel", BLUE)
     w += command(784, 204, "Travel", "travel_go", BLUE, need_bind="totk.travel.sel.can_travel")
     w += command(1000, 216, "Layers", "map_layers", BLUE)
     return {"id": "map", "title": "Map", "widgets": w + unsupported_notice()}
@@ -499,7 +530,7 @@ def main():
     actions = {f"go_{pid}": {"kind": "page", "page": pid, "transition": "fade", "duration_ms": 150}
                for pid in NAV}
     actions["travel_select"] = {"kind": "module", "action": "travel_select", "argument": "$payload"}
-    for name in ["map_layers", "inventory_sort", "inventory_use", "travel_go"]:
+    for name in ["map_layers", "inventory_sort", "inventory_use", "travel_go", "markers_panel"]:
         actions[name] = {"kind": "module", "action": name, "argument": 0}
     for i in range(len(TABS)):
         actions[f"inventory_category_{i}"] = {"kind": "module", "action": "inventory_category",
@@ -513,6 +544,8 @@ def main():
         actions[f"spawn_choose_{i}"] = {"kind": "module", "action": "spawn_choose", "argument": i}
     for n in (1, 10):
         actions[f"spawn_add_{n}"] = {"kind": "module", "action": "spawn_add", "argument": n}
+    for i in range(len(MARKER_ROWS)):
+        actions[f"markers_toggle_{i}"] = {"kind": "module", "action": "markers_toggle", "argument": i}
     for i in range(len(CHEATS)):
         actions[f"cheat_toggle_{i}"] = {"kind": "module", "action": "cheat_toggle", "argument": i}
     manifest = {

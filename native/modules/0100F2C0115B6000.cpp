@@ -37,6 +37,7 @@
 #include "totk_assets.h"
 #include "totk_font.h"
 #include "totk_gamedata.h"
+#include "totk_markers.h"
 #include "totk_netlog.h"
 #include "totk_travel.h"
 #include "totk_travel_mailbox.h"
@@ -191,11 +192,25 @@ constexpr std::string_view ShrineScenes[]{
     "Cave/Cave_Tabantha_0003_GroupSet_000", "Cave/Well_0006_GroupSet_000",
     "Cave/Well_0023_GroupSet_000",
 };
-constexpr std::size_t MaxTravel = 400;
-// Marker pictures from the Common layout archive, by travel::Kind.
-constexpr const char* TravelIcons[]{"module:totk:common/MapIconDungeon_L_Icon^s",
-                                    "module:totk:common/MapIconArrivalPoint_L_FrameIcon^s",
-                                    "module:totk:common/MapIconTower_00^s"};
+// Map marker slots (manifest MARKER_SLOTS): travel points first, then the all-markers layer.
+constexpr std::size_t MaxTravel = 1200;
+// Marker pictures from the Common layout archive and their colours, by markers::Category (the
+// first three are travel::Kind). The ^s icons are white masks; the ^w ones are drawn in colour.
+constexpr const char* MarkerIcons[]{
+    "module:totk:common/MapIconDungeon_L_Icon^s",   "module:totk:common/MapIconArrivalPoint_L_FrameIcon^s",
+    "module:totk:common/MapIconTower_00^s",         "module:totk:common/MapIconKorok^w",
+    "module:totk:common/MapIconSkull_72x72^w",      "module:totk:common/MapIconBuildingStableInn_58x58^w",
+    "module:totk:common/MapIconBuildingVillage_58x58^w", "module:totk:common/MapIconCaveM_72x72^w",
+    "module:totk:common/MapIconOre_72x72^w",        "module:totk:common/Nt_RupeeIconNew_00^w",
+    "module:totk:common/MapIconWeapon_72x72^w"};
+// Shrine amber, lightroot green, tower blue, korok leaf, boss red, stable tan, town cream, cave
+// brown, Bubbul gem pink, poe violet, weapon steel.
+constexpr s64 MarkerTints[]{0xFFF2A93B, 0xFF9BE36B, 0xFF5CC8F0, 0xFFCFE36A, 0xFFF06A5A, 0xFFF0D29A,
+                            0xFFFFF4D6, 0xFFE0A86C, 0xFFF59AD8, 0xFFA99CFF, 0xFFD8DEE8};
+static_assert(std::size(MarkerIcons) == totk::markers::NumCategories &&
+              std::size(MarkerTints) == totk::markers::NumCategories);
+// Canvas px per world unit (the whole map is about 0.1) before a dense category shows.
+constexpr double MarkerMinPpw[]{0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0.8, 0.4};
 
 struct TravelPoint {
     totk::travel::Kind kind;
@@ -208,34 +223,72 @@ struct TravelPoint {
 struct World {
     std::vector<TravelPoint> points;
     std::vector<u8> sky; // SkyCols x SkyRows, 1 = sky island nearby
+    std::vector<totk::markers::Marker> markers; // the all-markers layer
 };
 
+// Where a scene's markers sit: on a fixed layer, or by height like Link (the MainField grid
+// holds the low sky islands too).
+constexpr u8 LayerByHeight = 0xFF;
+
 World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& stop) {
+    namespace mk = totk::markers;
     World world;
     world.sky.assign(static_cast<std::size_t>(SkyCols * SkyRows), 0);
     TotkAssets::Dictionaries dicts;
     if (const auto pack = read("/Pack/ZsDic.pack.zs"))
         dicts.Load(*pack);
-    std::unordered_map<std::string, bool> seen;
-    std::vector<totk::travel::TowerTag> tags;
-    const auto scene = [&](const std::string& path, int layer) {
+    const auto file = [&](const std::string& path) -> std::optional<std::vector<u8>> {
         if (stop.load(std::memory_order_relaxed))
-            return;
+            return std::nullopt;
         const auto raw = read(path);
-        const auto bytes = raw ? dicts.Decompress(*raw) : std::nullopt;
+        return raw ? dicts.Decompress(*raw) : std::nullopt;
+    };
+    // Completion flags of koroks and bosses, from the GameData list the update ships.
+    std::unordered_map<u32, mk::StructMembers> structs;
+    for (const char* version : {"142", "141", "140", "130", "121", "120", "112", "110", "100"})
+        if (const auto list = file(std::string{"/GameData/GameDataList.Product."} + version + ".byml.zs")) {
+            constexpr u32 wanted[]{mk::KorokStruct, mk::CarryKorokStruct, mk::BossStruct};
+            structs = mk::LoadStructs(*list, wanted);
+            break;
+        }
+    const auto members = [&](u32 hash) -> const mk::StructMembers* {
+        const auto it = structs.find(hash);
+        return it == structs.end() ? nullptr : &it->second;
+    };
+    const auto* bosses = members(mk::BossStruct);
+    std::unordered_map<std::string, bool> seen;
+    std::unordered_map<u64, bool> seen_actors;
+    std::vector<totk::travel::TowerTag> tags;
+    // travel: look for shrines, lightroots and towers; markers: the layer's actors.
+    const auto scene = [&](const std::string& path, int layer, bool travel, bool markers, u8 marker_layer) {
+        const auto bytes = file(path);
         if (!bytes)
             return;
-        for (auto& p : totk::travel::Scan(*bytes, &tags)) {
-            using totk::travel::Kind;
-            std::string label = p.kind == Kind::Tower ? "Tower" : p.state_key.substr(p.state_key.find('.') + 1);
-            // Shrine entrances and towers can be placed in more than one scene.
-            char where[48];
-            std::snprintf(where, sizeof where, "%s@%.0f,%.0f", label.c_str(), p.x, p.z);
-            if (!seen.emplace(p.state_key.empty() ? where : p.state_key, true).second)
-                continue;
-            world.points.push_back({p.kind, p.kind == Kind::Lightroot ? Depths : layer, p.x, p.y, p.z,
-                                    p.state_key.empty() ? 0 : Murmur3(p.state_key), std::move(label)});
-        }
+        if (travel)
+            for (auto& p : totk::travel::Scan(*bytes, &tags)) {
+                using totk::travel::Kind;
+                std::string label = p.kind == Kind::Tower ? "Tower" : p.state_key.substr(p.state_key.find('.') + 1);
+                // Shrine entrances and towers can be placed in more than one scene.
+                char where[48];
+                std::snprintf(where, sizeof where, "%s@%.0f,%.0f", label.c_str(), p.x, p.z);
+                if (!seen.emplace(p.state_key.empty() ? where : p.state_key, true).second)
+                    continue;
+                world.points.push_back({p.kind, p.kind == Kind::Lightroot ? Depths : layer, p.x, p.y, p.z,
+                                        p.state_key.empty() ? 0 : Murmur3(p.state_key), std::move(label)});
+            }
+        if (markers)
+            totk::travel::ForEachActor(*bytes, [&](std::string_view gyaml, float x, float y, float z,
+                                                   const totk::byml::Node& actor) {
+                const auto cat = mk::ActorCategory(gyaml);
+                if (!cat)
+                    return;
+                const u64 id = actor["Hash"].Integer().value_or(0);
+                if (id && !seen_actors.emplace(id, true).second)
+                    return;
+                const u32 flag = *cat == mk::Category::Boss && bosses && id ? mk::MemberFlag(*bosses, id) : 0;
+                world.markers.push_back({*cat, marker_layer, flag ? mk::Done::Bool : mk::Done::None, x, y, z,
+                                         flag, std::string{gyaml}});
+            });
         if (layer == Sky)
             totk::travel::ForEachActor(*bytes, [&](std::string_view, float x, float, float z, const auto&) {
                 for (int dz = -1; dz <= 1; ++dz)
@@ -246,14 +299,26 @@ World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& st
     };
     for (const auto& [field, layer] : {std::pair{"MainField", Surface}, std::pair{"MinusField", Depths}})
         for (char col = 'A'; col <= 'J'; ++col)
-            for (int row = 1; row <= 8; ++row)
-                scene(std::string{"/Banc/"} + field + "/" + col + "-" + std::to_string(row) +
-                          "_Static.bcett.byml.zs",
-                      layer);
+            for (int row = 1; row <= 8; ++row) {
+                const std::string base = std::string{"/Banc/"} + field + "/" + col + "-" + std::to_string(row);
+                const u8 at = layer == Depths ? u8{Depths} : LayerByHeight;
+                scene(base + "_Static.bcett.byml.zs", layer, true, true, at);
+                scene(base + "_Dynamic.bcett.byml.zs", layer, false, true, at);
+            }
     for (const auto name : SkyScenes)
-        scene("/Banc/MainField/Sky/" + std::string{name} + "_Static.bcett.byml.zs", Sky);
+        for (const char* part : {"_Static", "_Dynamic"})
+            scene("/Banc/MainField/Sky/" + std::string{name} + part + ".bcett.byml.zs", Sky,
+                  part[1] == 'S', true, Sky);
+    // Shrine entrances in caves, wells and Hyrule Castle; the caves' own actors come next.
     for (const auto name : ShrineScenes)
-        scene("/Banc/MainField/" + std::string{name} + "_Static.bcett.byml.zs", Surface);
+        scene("/Banc/MainField/" + std::string{name} + "_Static.bcett.byml.zs", Surface, true,
+              !name.starts_with("Cave/"), Surface);
+    scene("/Banc/MainField/Castle/Set_HyruleCastle_IslandGround_A_Dynamic.bcett.byml.zs", Surface, false, true,
+          Surface);
+    for (const auto name : mk::CaveScenes)
+        for (const char* part : {"_Static", "_Dynamic"})
+            scene("/Banc/MainField/Cave/" + std::string{name} + part + ".bcett.byml.zs", Surface, false, true,
+                  Surface);
     // Name each tower after the cannon beside it (within ~8 units in the 1.4.2 scenes).
     for (auto& p : world.points) {
         if (p.kind != totk::travel::Kind::Tower)
@@ -265,6 +330,20 @@ World LoadWorld(const TotkAssets::RomfsReader& read, const std::atomic<bool>& st
                 p.label = t.tower;
             }
     }
+    // Places (stables, towns, caves, wells, chasms) and koroks have files of their own.
+    if (const auto places = file("/Banc/MainField/LocationArea/MainField.locationarea.byml.zs"))
+        mk::ScanPlaces(*places, Surface, world.markers);
+    if (const auto places = file("/Banc/MinusField/LocationArea/MinusField.locationarea.byml.zs"))
+        mk::ScanPlaces(*places, Depths, world.markers);
+    if (const auto koroks = file("/Banc/MainField/HiddenKorok/MainField.hiddenkorok.byml.zs")) {
+        const std::size_t first = world.markers.size();
+        mk::ScanKoroks(*koroks, members(mk::KorokStruct), members(mk::CarryKorokStruct), world.markers);
+        for (std::size_t i = first; i < world.markers.size(); ++i)
+            world.markers[i].layer = LayerByHeight;
+    }
+    for (auto& m : world.markers)
+        if (m.layer == LayerByHeight)
+            m.layer = static_cast<u8>(LayerAt(m.x, m.y, m.z, world.sky));
     return world;
 }
 
@@ -490,6 +569,16 @@ struct Module {
                             static_cast<long long>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                                        std::chrono::steady_clock::now() - t0)
                                                        .count()));
+            std::array<int, totk::markers::NumCategories> cats{};
+            int flagged = 0;
+            for (const auto& m : world.markers) {
+                ++cats[static_cast<std::size_t>(m.cat)];
+                flagged += m.done != totk::markers::Done::None;
+            }
+            TotkNetLog::Log("world: markers: %d koroks, %d bosses, %d stables, %d towns, %d caves, %d bubbulfrogs, "
+                            "%d poes, %d weapons; %d with a done flag",
+                            cats[3], cats[4], cats[5], cats[6], cats[7], cats[8], cats[9], cats[10], flagged);
+            marker_done.assign(world.markers.size(), 0);
             world_ready.store(true, std::memory_order_release);
         });
     }
@@ -548,8 +637,14 @@ struct Module {
     std::mutex mutex;  // guards the view state below (actions arrive off the sample thread)
     std::chrono::steady_clock::time_point last_heartbeat{};
     int view_layer{-1}; // -1 = follow Link
-    std::vector<int> travel_slots; // map marker slot -> world.points index
+    std::vector<int> travel_slots; // map marker slot -> world.points index, or -1 - world.markers index
     int travel_selected{-1};       // world.points index
+    int marker_selected{-1};       // world.markers index
+    // The all-markers layer (Markers panel): categories on show, whether done ones stay.
+    std::array<bool, totk::markers::NumCategories> marker_on{};
+    bool markers_panel{false}, show_found{true};
+    std::vector<u8> marker_done; // sample thread: 1 = found / defeated, refreshed a slice at a time
+    std::size_t done_cursor{0};
     int link_layer{Surface};
 
     void Configure(const EdenDsmodHostExtensions* ext) {
@@ -795,8 +890,30 @@ struct Module {
         if (action == "travel_select") {
             std::scoped_lock lock{mutex};
             const bool known = arg >= 0 && static_cast<std::size_t>(arg) < travel_slots.size();
-            const int point = known ? travel_slots[static_cast<std::size_t>(arg)] : -1;
+            const int slot = known ? travel_slots[static_cast<std::size_t>(arg)] : -1;
+            const int point = known && slot >= 0 ? slot : -1, marker = known && slot < 0 ? -1 - slot : -1;
             travel_selected = travel_selected == point ? -1 : point;
+            marker_selected = marker_selected == marker ? -1 : marker;
+            return EDEN_DSMOD_TRUE;
+        }
+        if (action == "markers_panel") {
+            std::scoped_lock lock{mutex};
+            markers_panel = !markers_panel;
+            return EDEN_DSMOD_TRUE;
+        }
+        // Row 0: every category; then one per category; the last row: show found ones.
+        if (action == "markers_toggle" && arg >= 0 &&
+            arg <= static_cast<std::int64_t>(totk::markers::NumCategories) + 1) {
+            std::scoped_lock lock{mutex};
+            const auto i = static_cast<std::size_t>(arg);
+            if (i == 0) {
+                const bool all = std::ranges::all_of(marker_on, [](bool on) { return on; });
+                marker_on.fill(!all);
+            } else if (i <= marker_on.size()) {
+                marker_on[i - 1] = !marker_on[i - 1];
+            } else {
+                show_found = !show_found;
+            }
             return EDEN_DSMOD_TRUE;
         }
         if (action == "cheat_toggle" && arg >= 0 && arg < static_cast<std::int64_t>(NumCheats)) {
@@ -1473,22 +1590,42 @@ struct Module {
         }
     }
 
-    // Shrine, lightroot and tower markers of the layer on show. A shrine shows once found
-    // (DungeonState past Hidden) and a lightroot once lit; towers have no known state key yet.
+    // The map's markers on the layer on show. First the travel points: a shrine shows once found
+    // (DungeonState past Hidden), a lightroot once lit and a tower once activated; with their
+    // category on in the Markers panel the others show too, dimmed. Then, on the Map page, the
+    // all-markers layer's categories that are on, kept to the part of the map in view (and the
+    // dense ones to closer zooms) so a sample never publishes more than the slots.
     template <class G>
     void PublishTravel(const EdenDsmodHostApi& h, G& gmd) {
+        namespace mk = totk::markers;
         static const u32 Hidden = Murmur3("Hidden"), Open = Murmur3("Open"), Enter = Murmur3("Enter"),
                          Clear = Murmur3("Clear");
-        int layer, selected, request;
+        int layer, selected, request, marker_sel;
+        std::array<bool, mk::NumCategories> on;
+        bool found_too, panel;
         {
             std::scoped_lock lock{mutex};
             layer = view_layer < 0 ? link_layer : view_layer;
             selected = travel_selected;
+            marker_sel = marker_selected;
             request = std::exchange(travel_request, -1);
+            on = marker_on;
+            found_too = show_found;
+            panel = markers_panel;
         }
+        PublishMarkersPanel(h, on, found_too, panel);
         std::vector<int> slots;
         std::string sel_name, sel_status;
         bool sel_shown = false, sel_travel = false;
+        const auto publish_slot = [&](int kind, float x, float z, const char* icon, s64 tint, bool dim) {
+            const std::string key = "totk.travel." + std::to_string(slots.size() - 1);
+            h.publish_i64(h.userdata, (key + ".kind").c_str(), kind);
+            h.publish_f64(h.userdata, (key + ".x").c_str(), x);
+            h.publish_f64(h.userdata, (key + ".y").c_str(), -z);
+            h.publish_text(h.userdata, (key + ".icon").c_str(), icon);
+            h.publish_i64(h.userdata, (key + ".tint").c_str(), tint);
+            h.publish_i64(h.userdata, (key + ".dim").c_str(), dim ? 1 : 0);
+        };
         if (world_ready.load(std::memory_order_acquire)) {
             const auto towers = gmd.GetBoolArray(0x8C826FCFu);
             for (std::size_t i = 0; i < world.points.size() && slots.size() < MaxTravel; ++i) {
@@ -1502,7 +1639,8 @@ struct Module {
                 if (p.kind == Kind::Shrine) {
                     shown = state && *state != Hidden;
                     travel = state && (*state == Open || *state == Enter || *state == Clear);
-                    status = !state ? "" : *state == Clear ? "Completed" : travel ? "Visited" : "Not yet entered";
+                    status = !state ? "" : *state == Clear ? "Completed" : travel ? "Visited"
+                                         : shown ? "Not yet entered" : "Not found yet";
                     if (const auto sub = ItemCaption(p.label); !sub.empty())
                         status = sub + "  -  " + status;
                 } else if (p.kind == Kind::Tower) {
@@ -1512,25 +1650,17 @@ struct Module {
                     shown = n >= 1 && towers && static_cast<std::size_t>(n) <= towers->size() &&
                             (*towers)[static_cast<std::size_t>(n - 1)];
                     travel = shown;
-                    status = "Activated";
+                    status = shown ? "Activated" : "Not activated yet";
                 } else if (p.kind == Kind::Lightroot) {
                     shown = state && *state == Open;
                     travel = shown;
-                    status = "Lit";
+                    status = shown ? "Lit" : "Not lit yet";
                 }
-                if (!shown)
+                if (!shown && !on[static_cast<std::size_t>(p.kind)])
                     continue;
-                const std::size_t slot = slots.size();
                 slots.push_back(static_cast<int>(i));
-                const std::string key = "totk.travel." + std::to_string(slot);
-                h.publish_i64(h.userdata, (key + ".kind").c_str(), 1 + static_cast<int>(p.kind));
-                h.publish_f64(h.userdata, (key + ".x").c_str(), p.x);
-                h.publish_f64(h.userdata, (key + ".y").c_str(), -p.z);
-                h.publish_text(h.userdata, (key + ".icon").c_str(), TravelIcons[static_cast<int>(p.kind)]);
-                // The icons are white masks the game colours: shrine amber, lightroot green, tower blue.
-                constexpr s64 Tints[]{0xFFF2A93B, 0xFF9BE36B, 0xFF5CC8F0};
-                h.publish_i64(h.userdata, (key + ".tint").c_str(), Tints[static_cast<int>(p.kind)]);
-                h.publish_i64(h.userdata, (key + ".dim").c_str(), travel ? 0 : 1);
+                publish_slot(1 + static_cast<int>(p.kind), p.x, p.z, MarkerIcons[static_cast<int>(p.kind)],
+                             MarkerTints[static_cast<int>(p.kind)], !travel);
                 if (static_cast<int>(i) == selected) {
                     sel_shown = true;
                     sel_travel = travel;
@@ -1538,15 +1668,51 @@ struct Module {
                     sel_name = TravelName(p);
                 }
             }
+            RefreshMarkerDone(gmd);
+            // The Map page's view as last drawn: centre, canvas px per world unit and size.
+            const char* page = h.get_text ? h.get_text(h.userdata, "__page") : nullptr;
+            const auto view = [&](const char* field) {
+                return h.get_f64 ? h.get_f64(h.userdata, (std::string{"@map_view_"} + field + ":Hyrule").c_str(),
+                                             std::nan(""))
+                                 : std::nan("");
+            };
+            const double cx = view("cx"), cy = view("cy"), ppw = view("ppw"), vw = view("w"), vh = view("h");
+            const bool any = std::any_of(on.begin() + 3, on.end(), [](bool b) { return b; });
+            if (any && page && std::string_view{page} == "map" && std::isfinite(cx) && std::isfinite(cy) &&
+                std::isfinite(ppw) && ppw > 0 && std::isfinite(vw) && std::isfinite(vh)) {
+                // A little past the edges, so markers are there before a pan reaches them.
+                const double hw = vw * 0.6 / ppw, hh = vh * 0.6 / ppw;
+                for (std::size_t i = 0; i < world.markers.size() && slots.size() < MaxTravel; ++i) {
+                    const auto& m = world.markers[i];
+                    const auto c = static_cast<std::size_t>(m.cat);
+                    if (!on[c] || m.layer != layer || ppw < MarkerMinPpw[c])
+                        continue;
+                    if (std::abs(m.x - cx) > hw || std::abs(-m.z - cy) > hh)
+                        continue;
+                    const bool done = i < marker_done.size() && marker_done[i];
+                    if (done && !found_too && static_cast<int>(i) != marker_sel)
+                        continue;
+                    slots.push_back(-1 - static_cast<int>(i));
+                    publish_slot(1 + static_cast<int>(c), m.x, m.z, MarkerIcons[c], MarkerTints[c], done);
+                    if (static_cast<int>(i) == marker_sel) {
+                        sel_shown = true;
+                        sel_name = MarkerName(m);
+                        sel_status = MarkerStatus(m, done);
+                    }
+                }
+            }
         }
-        for (std::size_t slot = slots.size(); slot < MaxTravel; ++slot)
-            h.publish_i64(h.userdata, ("totk.travel." + std::to_string(slot) + ".kind").c_str(), 0);
         {
             std::scoped_lock lock{mutex};
             travel_slots = std::move(slots);
-            if (!sel_shown)
+            // A selection whose marker is gone (layer, panel or view changed) is dropped.
+            if (!sel_shown && travel_selected == selected)
                 travel_selected = -1;
+            if (!sel_shown && marker_selected == marker_sel)
+                marker_selected = -1;
         }
+        if (marker_sel >= 0)
+            selected = -1; // a layer marker is no travel destination
         h.publish_i64(h.userdata, "totk.travel.sel.valid", sel_shown ? 1 : 0);
         h.publish_text(h.userdata, "totk.travel.sel.name", sel_name.c_str());
         h.publish_text(h.userdata, "totk.travel.sel.status", sel_status.c_str());
@@ -1557,11 +1723,107 @@ struct Module {
             SendTravel(world.points[static_cast<std::size_t>(request)]);
         const bool ready = helper_alive && !helper_busy && !loading;
         h.publish_i64(h.userdata, "totk.travel.sel.can_travel", sel_travel && ready ? 1 : 0);
-        std::string hint = !sel_travel ? "You can't travel here yet"
+        std::string hint = marker_sel >= 0 ? ""
+                           : !sel_travel ? "You can't travel here yet"
                            : (helper_busy && pending_op == totk::mailbox::OpTravel) || loading ? (travel_message.empty() ? "Traveling..." : travel_message)
                            : !helper_alive ? "Travel needs the game running with this mod loaded"
                            : travel_message;
         h.publish_text(h.userdata, "totk.travel.sel.hint", hint.c_str());
+    }
+
+    // The Markers panel: each row's icon, colour and state.
+    void PublishMarkersPanel(const EdenDsmodHostApi& h, const std::array<bool, totk::markers::NumCategories>& on,
+                             bool found_too, bool panel) {
+        h.publish_i64(h.userdata, "totk.markers.panel", panel ? 1 : 0);
+        if (!panel)
+            return;
+        const auto n = std::count(on.begin(), on.end(), true);
+        h.publish_text(h.userdata, "totk.markers.0.text",
+                       n == 0 ? "Off" : n == static_cast<long>(on.size()) ? "On" : "Some");
+        for (std::size_t c = 0; c < on.size(); ++c) {
+            const std::string key = "totk.markers." + std::to_string(c + 1);
+            // Shrines, lightroots and towers you have found always show; the row adds the rest.
+            const char* text = c < 3 ? (on[c] ? "All" : "Found") : on[c] ? "On" : "Off";
+            h.publish_text(h.userdata, (key + ".text").c_str(), text);
+            h.publish_text(h.userdata, (key + ".icon").c_str(), MarkerIcons[c]);
+            h.publish_i64(h.userdata, (key + ".tint").c_str(), on[c] || c < 3 ? MarkerTints[c] : 0x80FFFCC6);
+        }
+        h.publish_text(h.userdata, ("totk.markers." + std::to_string(on.size() + 1) + ".text").c_str(),
+                       found_too ? "On" : "Off");
+    }
+
+    // Found koroks and defeated bosses, a slice of the flagged markers per sample.
+    template <class G>
+    void RefreshMarkerDone(G& gmd) {
+        namespace mk = totk::markers;
+        constexpr std::size_t Slice = 256;
+        const std::size_t n = world.markers.size();
+        if (n == 0 || marker_done.size() != n)
+            return;
+        static const u32 Clear = Murmur3("Clear");
+        for (std::size_t k = 0, checked = 0; k < n && checked < Slice; ++k) {
+            const std::size_t i = done_cursor;
+            done_cursor = (done_cursor + 1) % n;
+            const auto& m = world.markers[i];
+            if (m.done == mk::Done::None)
+                continue;
+            ++checked;
+            if (m.done == mk::Done::Bool)
+                marker_done[i] = gmd.GetBool(m.flag).value_or(false) ? 1 : 0;
+            else if (const auto v = gmd.GetEnum(m.flag))
+                marker_done[i] = *v == Clear ? 1 : 0;
+        }
+    }
+
+    // A layer marker's name in the popup: the game's own where it has one.
+    std::string MarkerName(const totk::markers::Marker& m) const {
+        using totk::markers::Category;
+        switch (m.cat) {
+        case Category::Korok:
+            return m.label == "KorokCarry" ? "Korok friend" : "Korok seed";
+        case Category::Boss:
+            if (const auto name = ItemText(m.label); name != m.label)
+                return name;
+            return std::string{totk::markers::BossKind(m.label)};
+        case Category::Bubbul:
+            if (const auto name = ItemText(m.label); name != m.label)
+                return name;
+            return "Bubbulfrog";
+        case Category::Poe:
+            return m.label == "MinusRupee_02" ? "Grand Poe" : m.label == "MinusRupee_01" ? "Large Poe" : "Poe";
+        default:
+            break;
+        }
+        if (const auto name = ItemText(m.label); name != m.label)
+            return name;
+        return m.label;
+    }
+
+    std::string MarkerStatus(const totk::markers::Marker& m, bool done) const {
+        using totk::markers::Category;
+        const bool flagged = m.done != totk::markers::Done::None;
+        switch (m.cat) {
+        case Category::Korok:
+            return !flagged ? "Korok" : done ? "Found" : m.label == "KorokCarry" ? "Not reunited yet" : "Not found yet";
+        case Category::Boss: {
+            const std::string kind{totk::markers::BossKind(m.label)};
+            return !flagged ? kind : kind + (done ? "  -  Defeated" : "  -  Not defeated yet");
+        }
+        case Category::Stable:
+            return "Stable";
+        case Category::Town:
+            return "Town";
+        case Category::Cave:
+            return m.label.starts_with("Well_") ? "Well" : m.label.starts_with("DeepHole_") ? "Chasm" : "Cave";
+        case Category::Bubbul:
+            return "Bubbul gem";
+        case Category::Poe:
+            return "Poe";
+        case Category::Weapon:
+            return "Weapon";
+        default:
+            return "";
+        }
     }
 
     // The Ready page's dials: shrines completed, lightroots lit and towers activated, each of

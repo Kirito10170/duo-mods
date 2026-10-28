@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Minimal little-endian BYML (v2-v7) reader for TOTK's scene files (Banc/*.bcett.byml): enough to
-// walk dictionaries and arrays and read strings and numbers. Bounds-checked; a malformed file
-// yields empty nodes, never a crash.
+// Minimal BYML (v2-v7) reader for TOTK's scene files (Banc/*.bcett.byml, little-endian) and its
+// GameData list (big-endian): enough to walk dictionaries and arrays and read strings and
+// numbers. Bounds-checked; a malformed file yields empty nodes, never a crash.
 
 #pragma once
 
@@ -54,6 +54,8 @@ public:
     std::optional<std::string_view> String() const;
     /// Float, Int, UInt or Double as a double.
     std::optional<double> Number() const;
+    /// Int, UInt, Int64 or UInt64 exactly (hashes and instance ids).
+    std::optional<std::uint64_t> Integer() const;
 
 private:
     const Document* doc_{};
@@ -64,7 +66,11 @@ private:
 class Document {
 public:
     explicit Document(std::span<const std::uint8_t> data) : data_{data} {
-        if (data.size() < 16 || data[0] != 'Y' || data[1] != 'B')
+        if (data.size() < 16)
+            return;
+        if (data[0] == 'B' && data[1] == 'Y')
+            big_ = true;
+        else if (data[0] != 'Y' || data[1] != 'B')
             return;
         const std::uint16_t version = U16(2);
         if (version < 2 || version > 10)
@@ -84,27 +90,10 @@ public:
 
     // ---- used by Node ----
     std::uint8_t U8(std::size_t at) const { return at < data_.size() ? data_[at] : 0; }
-    std::uint16_t U16(std::size_t at) const {
-        std::uint16_t v{};
-        if (at + 2 <= data_.size())
-            std::memcpy(&v, data_.data() + at, 2);
-        return v;
-    }
-    std::uint32_t U24(std::size_t at) const {
-        return at + 3 <= data_.size() ? data_[at] | data_[at + 1] << 8 | data_[at + 2] << 16 : 0;
-    }
-    std::uint32_t U32(std::size_t at) const {
-        std::uint32_t v{};
-        if (at + 4 <= data_.size())
-            std::memcpy(&v, data_.data() + at, 4);
-        return v;
-    }
-    std::uint64_t U64(std::size_t at) const {
-        std::uint64_t v{};
-        if (at + 8 <= data_.size())
-            std::memcpy(&v, data_.data() + at, 8);
-        return v;
-    }
+    std::uint16_t U16(std::size_t at) const { return static_cast<std::uint16_t>(Read(at, 2)); }
+    std::uint32_t U24(std::size_t at) const { return static_cast<std::uint32_t>(Read(at, 3)); }
+    std::uint32_t U32(std::size_t at) const { return static_cast<std::uint32_t>(Read(at, 4)); }
+    std::uint64_t U64(std::size_t at) const { return Read(at, 8); }
     /// Entry i of the string table at `table` (key or value table).
     std::optional<std::string_view> TableString(std::uint32_t table, std::uint32_t i) const {
         if (!table || U8(table) != static_cast<std::uint8_t>(Kind::StringTable) ||
@@ -123,9 +112,18 @@ public:
     std::uint32_t StringTable() const { return strings_; }
 
 private:
+    std::uint64_t Read(std::size_t at, std::size_t n) const {
+        if (at + n > data_.size())
+            return 0;
+        std::uint64_t v{};
+        for (std::size_t i = 0; i < n; ++i)
+            v |= static_cast<std::uint64_t>(data_[at + i]) << (8 * (big_ ? n - 1 - i : i));
+        return v;
+    }
+
     std::span<const std::uint8_t> data_;
     std::uint32_t keys_{}, strings_{}, root_{};
-    bool ok_{};
+    bool ok_{}, big_{};
 };
 
 inline std::uint32_t Node::Size() const {
@@ -192,6 +190,22 @@ inline std::optional<double> Node::Number() const {
         std::memcpy(&d, &bits, 8);
         return d;
     }
+    default:
+        return std::nullopt;
+    }
+}
+
+inline std::optional<std::uint64_t> Node::Integer() const {
+    if (!doc_)
+        return std::nullopt;
+    switch (Type()) {
+    case Kind::Int:
+        return static_cast<std::uint64_t>(static_cast<std::int64_t>(static_cast<std::int32_t>(value_)));
+    case Kind::UInt:
+        return value_;
+    case Kind::Int64:
+    case Kind::UInt64:
+        return doc_->U64(value_);
     default:
         return std::nullopt;
     }
